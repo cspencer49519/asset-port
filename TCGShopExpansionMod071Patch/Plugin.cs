@@ -9,11 +9,12 @@ namespace TCGShopExpansionMod071Patch;
 
 [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 [BepInDependency("com.DarkDragoon.TCGShopExpansionMod", BepInDependency.DependencyFlags.HardDependency)]
+[BepInDependency("cklapperich.ArtExpander", BepInDependency.DependencyFlags.SoftDependency)]
 public sealed class Plugin : BaseUnityPlugin
 {
     public const string PluginGuid = "local.tcgshop.expansionmod071patch";
     public const string PluginName = "TCGShopExpansionMod 0.71 Patch";
-    public const string PluginVersion = "1.0.2";
+    public const string PluginVersion = "1.0.14";
 
     internal static ManualLogSource Log { get; private set; } = null!;
 
@@ -67,6 +68,21 @@ public sealed class Plugin : BaseUnityPlugin
             Log.LogWarning("Could not patch LightManager_Awake_Prefix.");
         }
 
-        Log.LogInfo("Patched ExpansionMod for game 0.71 (skip SetCardExtrasImages + safe card UI hooks).");
+        MethodInfo? mainPostfix = AccessTools.Method(playerPatches, "CardUI_SetCardUI_Main_Postfix");
+
+        if (mainPostfix != null)
+        {
+            harmony.Patch(
+                mainPostfix,
+                prefix: new HarmonyMethod(typeof(TetramonOverlay071Patches), nameof(TetramonOverlay071Patches.SkipMainPostfixForTetramon_Prefix)));
+        }
+        else
+        {
+            Log.LogWarning("Could not patch CardUI_SetCardUI_Main_Postfix for Tetramon skip.");
+        }
+
+        ArtExpanderBridge.TryInitialize();
+
+        Log.LogInfo("Patched ExpansionMod for game 0.71 (Tetramon overlay + safe card UI hooks).");
     }
 }

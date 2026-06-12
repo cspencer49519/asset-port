@@ -36,6 +36,10 @@
       <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="TCGShopExpansionMod">
       <HintPath>..\..\TCG Card Shop Simulator\BepInEx\plugins\TCGShopExpansionMod\TCGShopExpansionMod.dll</HintPath>
       <Private>false</Private>
