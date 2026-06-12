@@ -1,0 +1,1050 @@
+{
+  "generated_at": "2026-06-12T17:34:12.695122+00:00",
+  "tool": "AssetsTools.NET",
+  "applied": [],
+  "skipped_same": [],
+  "skipped_filtered": [
+    {
+      "path_id": 54,
+      "name": "JapanOutline06 Atlas"
+    },
+    {
+      "path_id": 55,
+      "name": "JapanOutline02 Atlas"
+    },
+    {
+      "path_id": 56,
+      "name": "ChineseTradOutline02 Atlas"
+    },
+    {
+      "path_id": 57,
+      "name": "FredokaOne-Regular SDF border2 Atlas"
+    },
+    {
+      "path_id": 58,
+      "name": "KoreanOutline03 Atlas"
+    },
+    {
+      "path_id": 59,
+      "name": "KoreanOutline02 Atlas"
+    },
+    {
+      "path_id": 60,
+      "name": "ChineseOutline04 Atlas"
+    },
+    {
+      "path_id": 61,
+      "name": "JapanOutline05 Atlas"
+    },
+    {
+      "path_id": 62,
+      "name": "ChineseTradOutline03 Atlas"
+    },
+    {
+      "path_id": 63,
+      "name": "JapanOutline11 Atlas"
+    },
+    {
+      "path_id": 64,
+      "name": "KoreanOutline01 Atlas"
+    },
+    {
+      "path_id": 65,
+      "name": "KoreanOutline04 Atlas"
+    },
+    {
+      "path_id": 66,
+      "name": "JapanOutline07 Atlas"
+    },
+    {
+      "path_id": 67,
+      "name": "UISprite"
+    },
+    {
+      "path_id": 68,
+      "name": "Background"
+    },
+    {
+      "path_id": 69,
+      "name": "UIMask"
+    },
+    {
+      "path_id": 70,
+      "name": "Generic_North_Flat"
+    },
+    {
+      "path_id": 71,
+      "name": "T_MoneyCoinGBP"
+    },
+    {
+      "path_id": 72,
+      "name": "LDR_LLL1_28"
+    },
+    {
+      "path_id": 73,
+      "name": "T_MoneyCoinEuro"
+    },
+    {
+      "path_id": 74,
+      "name": "LDR_LLL1_26"
+    },
+    {
+      "path_id": 75,
+      "name": "LDR_LLL1_35"
+    },
+    {
+      "path_id": 76,
+      "name": "VerifiedTick"
+    },
+    {
+      "path_id": 77,
+      "name": "XBox_Dpad_Right_Fontstyle"
+    },
+    {
+      "path_id": 78,
+      "name": "LibraryLogo"
+    },
+    {
+      "path_id": 79,
+      "name": "Generic_Dpad_Left_Flat"
+    },
+    {
+      "path_id": 80,
+      "name": "LDR_LLL1_1"
+    },
+    {
+      "path_id": 81,
+      "name": "LDR_LLL1_30"
+    },
+    {
+      "path_id": 82,
+      "name": "XBox_Dpad_Down_Fontstyle"
+    },
+    {
+      "path_id": 83,
+      "name": "Gradient"
+    },
+    {
+      "path_id": 84,
+      "name": "PS5_Right_Stick_Up_Flat"
+    },
+    {
+      "path_id": 85,
+      "name": "LDR_LLL1_61"
+    },
+    {
+      "path_id": 86,
+      "name": "LDR_LLL1_47"
+    },
+    {
+      "path_id": 87,
+      "name": "PS5_System_Flat"
+    },
+    {
+      "path_id": 88,
+      "name": "DiscordButton"
+    },
+    {
+      "path_id": 89,
+      "name": "LDR_LLL1_16"
+    },
+    {
+      "path_id": 90,
+      "name": "LDR_LLL1_44"
+    },
+    {
+      "path_id": 92,
+      "name": "CenterDot_CrossOutline"
+    },
+    {
+      "path_id": 93,
+      "name": "Generic_L2_Flat"
+    },
+    {
+      "path_id": 94,
+      "name": "PS5_Left_Stick_Right_Flat"
+    },
+    {
+      "path_id": 95,
+      "name": "Generic_R2_Flat"
+    },
+    {
+      "path_id": 96,
+      "name": "LDR_LLL1_40"
+    },
+    {
+      "path_id": 97,
+      "name": "LDR_LLL1_2"
+    },
+    {
+      "path_id": 98,
+      "name": "LDR_LLL1_37"
+    },
+    {
+      "path_id": 101,
+      "name": "PS5_Right_Stick_Click_Flat"
+    },
+    {
+      "path_id": 102,
+      "name": "Font Texture"
+    },
+    {
+      "path_id": 103,
+      "name": "T_MoneyCoinCAD"
+    },
+    {
+      "path_id": 104,
+      "name": "chevron"
+    },
+    {
+      "path_id": 105,
+      "name": "PS5_Options_Flat"
+    },
+    {
+      "path_id": 107,
+      "name": "Icon_QuestionMark"
+    },
+    {
+      "path_id": 108,
+      "name": "T_MoneyCoinYen"
+    },
+    {
+      "path_id": 109,
+      "name": "LDR_LLL1_15"
+    },
+    {
+      "path_id": 111,
+      "name": "LDR_LLL1_34"
+    },
+    {
+      "path_id": 112,
+      "name": "LDR_LLL1_24"
+    },
+    {
+      "path_id": 113,
+      "name": "XBox_Dpad_Fontstyle"
+    },
+    {
+      "path_id": 114,
+      "name": "LDR_LLL1_36"
+    },
+    {
+      "path_id": 116,
+      "name": "LDR_LLL1_3"
+    },
+    {
+      "path_id": 117,
+      "name": "XBox_Right_Stick_Left_Fontstyle"
+    },
+    {
+      "path_id": 118,
+      "name": "LDR_LLL1_7"
+    },
+    {
+      "path_id": 119,
+      "name": "LDR_LLL1_1"
+    },
+    {
+      "path_id": 121,
+      "name": "LDR_LLL1_49"
+    },
+    {
+      "path_id": 122,
+      "name": "LDR_LLL1_60"
+    },
+    {
+      "path_id": 123,
+      "name": "KeyboardBtn_Spacebar"
+    },
+    {
+      "path_id": 124,
+      "name": "KeyboardBtn_Shift"
+    },
+    {
+      "path_id": 125,
+      "name": "Generic_Left_Stick_Right_Flat"
+    },
+    {
+      "path_id": 127,
+      "name": "PS5_Left_Stick_Up_Flat"
+    },
+    {
+      "path_id": 128,
+      "name": "CtrlBtnSelectHighlight"
+    },
+    {
+      "path_id": 129,
+      "name": "LDR_LLL1_63"
+    },
+    {
+      "path_id": 130,
+      "name": "Generic_Dpad_Flat"
+    },
+    {
+      "path_id": 131,
+      "name": "PS5_Triangle_Flat"
+    },
+    {
+      "path_id": 132,
+      "name": "Generic_Right_Stick_Right_Flat"
+    },
+    {
+      "path_id": 133,
+      "name": "PS5_Circle_Flat"
+    },
+    {
+      "path_id": 134,
+      "name": "LDR_LLL1_0"
+    },
+    {
+      "path_id": 135,
+      "name": "LDR_LLL1_39"
+    },
+    {
+      "path_id": 136,
+      "name": "XBox_Left_Stick_Left_Fontstyle"
+    },
+    {
+      "path_id": 137,
+      "name": "PS5_Right_Stick_Down_Flat"
+    },
+    {
+      "path_id": 138,
+      "name": "Generic_Dpad_Right_Flat"
+    },
+    {
+      "path_id": 139,
+      "name": "GameStartBG_Blur"
+    },
+    {
+      "path_id": 140,
+      "name": "Generic_Right_Stick_Down_Flat"
+    },
+    {
+      "path_id": 141,
+      "name": "LDR_LLL1_55"
+    },
+    {
+      "path_id": 142,
+      "name": "Generic_Left_Stick_Left_Fontstyle"
+    },
+    {
+      "path_id": 143,
+      "name": "LDR_LLL1_0"
+    },
+    {
+      "path_id": 144,
+      "name": "XBox_Right_Stick_Click_Fontstyle"
+    },
+    {
+      "path_id": 145,
+      "name": "PS5_Dpad_Down_Flat"
+    },
+    {
+      "path_id": 146,
+      "name": "icon_cross_small"
+    },
+    {
+      "path_id": 147,
+      "name": "KeyboardBtn_Ctrl"
+    },
+    {
+      "path_id": 148,
+      "name": "LDR_LLL1_13"
+    },
+    {
+      "path_id": 150,
+      "name": "LDR_LLL1_31"
+    },
+    {
+      "path_id": 151,
+      "name": "XBox_LB_Fontstyle"
+    },
+    {
+      "path_id": 152,
+      "name": "T_MoneyCoinMYR"
+    },
+    {
+      "path_id": 153,
+      "name": "XBox_Left_Stick_Down_Fontstyle"
+    },
+    {
+      "path_id": 154,
+      "name": "LDR_LLL1_20"
+    },
+    {
+      "path_id": 155,
+      "name": "LDR_LLL1_4"
+    },
+    {
+      "path_id": 156,
+      "name": "LDR_LLL1_7"
+    },
+    {
+      "path_id": 157,
+      "name": "LDR_LLL1_56"
+    },
+    {
+      "path_id": 158,
+      "name": "XBox_RT_Fontstyle"
+    },
+    {
+      "path_id": 159,
+      "name": "LDR_LLL1_9"
+    },
+    {
+      "path_id": 160,
+      "name": "T_MoneyCoin"
+    },
+    {
+      "path_id": 161,
+      "name": "LDR_LLL1_43"
+    },
+    {
+      "path_id": 162,
+      "name": "LDR_LLL1_19"
+    },
+    {
+      "path_id": 164,
+      "name": "AreaTex"
+    },
+    {
+      "path_id": 165,
+      "name": "LDR_LLL1_18"
+    },
+    {
+      "path_id": 166,
+      "name": "XBox_Menu_Fontstyle"
+    },
+    {
+      "path_id": 167,
+      "name": "LDR_LLL1_11"
+    },
+    {
+      "path_id": 168,
+      "name": "LeftMouseClick"
+    },
+    {
+      "path_id": 169,
+      "name": "PS5_Left_Stick_Down_Flat"
+    },
+    {
+      "path_id": 171,
+      "name": "Generic_Left_Stick_Up_Flat"
+    },
+    {
+      "path_id": 172,
+      "name": "LDR_LLL1_6"
+    },
+    {
+      "path_id": 173,
+      "name": "CenterDot_DotOutline"
+    },
+    {
+      "path_id": 175,
+      "name": "T_MoneyCoinAUD"
+    },
+    {
+      "path_id": 176,
+      "name": "LDR_LLL1_58"
+    },
+    {
+      "path_id": 177,
+      "name": "LDR_LLL1_32"
+    },
+    {
+      "path_id": 178,
+      "name": "PS5_Dpad_Up_Flat"
+    },
+    {
+      "path_id": 179,
+      "name": "KeyboardBtn"
+    },
+    {
+      "path_id": 180,
+      "name": "Font Texture"
+    },
+    {
+      "path_id": 182,
+      "name": "LDR_LLL1_46"
+    },
+    {
+      "path_id": 183,
+      "name": "PS5_Right_Stick_Left_Flat"
+    },
+    {
+      "path_id": 185,
+      "name": "Generic_Left_Stick_Down_Flat"
+    },
+    {
+      "path_id": 186,
+      "name": "PS5_L2_Flat"
+    },
+    {
+      "path_id": 187,
+      "name": "PS5_Dpad_Right_Flat"
+    },
+    {
+      "path_id": 188,
+      "name": "LDR_LLL1_54"
+    },
+    {
+      "path_id": 189,
+      "name": "XBox_Share_Fontstyle"
+    },
+    {
+      "path_id": 190,
+      "name": "XBox_LT_Fontstyle"
+    },
+    {
+      "path_id": 192,
+      "name": "LDR_LLL1_38"
+    },
+    {
+      "path_id": 193,
+      "name": "XBox_A_Fontstyle"
+    },
+    {
+      "path_id": 194,
+      "name": "LDR_LLL1_12"
+    },
+    {
+      "path_id": 195,
+      "name": "PS5_Dpad_Left_Flat"
+    },
+    {
+      "path_id": 196,
+      "name": "PS5_L1_Flat"
+    },
+    {
+      "path_id": 197,
+      "name": "font_gradient"
+    },
+    {
+      "path_id": 198,
+      "name": "images"
+    },
+    {
+      "path_id": 199,
+      "name": "LDR_LLL1_6"
+    },
+    {
+      "path_id": 200,
+      "name": "XBox_B_Fontstyle"
+    },
+    {
+      "path_id": 201,
+      "name": "Generic_Start_Flat"
+    },
+    {
+      "path_id": 202,
+      "name": "PS5_R1_Flat"
+    },
+    {
+      "path_id": 203,
+      "name": "LDR_LLL1_62"
+    },
+    {
+      "path_id": 204,
+      "name": "LDR_LLL1_5"
+    },
+    {
+      "path_id": 205,
+      "name": "Generic_Left_Stick_Click_Flat"
+    },
+    {
+      "path_id": 206,
+      "name": "PS5_Dpad_Flat"
+    },
+    {
+      "path_id": 207,
+      "name": "LeftMouseHold"
+    },
+    {
+      "path_id": 208,
+      "name": "PS5_Right_Stick_Right_Flat"
+    },
+    {
+      "path_id": 209,
+      "name": "Generic_West_Flat"
+    },
+    {
+      "path_id": 210,
+      "name": "LDR_LLL1_2"
+    },
+    {
+      "path_id": 211,
+      "name": "LDR_LLL1_29"
+    },
+    {
+      "path_id": 212,
+      "name": "RightMouseHold"
+    },
+    {
+      "path_id": 213,
+      "name": "LDR_LLL1_5"
+    },
+    {
+      "path_id": 214,
+      "name": "Generic_Left_Stick_Left_Flat"
+    },
+    {
+      "path_id": 216,
+      "name": "LDR_LLL1_10"
+    },
+    {
+      "path_id": 217,
+      "name": "LDR_LLL1_48"
+    },
+    {
+      "path_id": 218,
+      "name": "LDR_LLL1_42"
+    },
+    {
+      "path_id": 219,
+      "name": "MiddleMouseScroll"
+    },
+    {
+      "path_id": 220,
+      "name": "RightMouseClick"
+    },
+    {
+      "path_id": 221,
+      "name": "LDR_LLL1_4"
+    },
+    {
+      "path_id": 222,
+      "name": "LDR_LLL1_33"
+    },
+    {
+      "path_id": 223,
+      "name": "LDR_LLL1_21"
+    },
+    {
+      "path_id": 225,
+      "name": "LDR_LLL1_45"
+    },
+    {
+      "path_id": 226,
+      "name": "PS5_Left_Stick_Click_Flat"
+    },
+    {
+      "path_id": 227,
+      "name": "Generic_Dpad_Down_Flat"
+    },
+    {
+      "path_id": 228,
+      "name": "LDR_LLL1_27"
+    },
+    {
+      "path_id": 229,
+      "name": "Icon_MenuIcon02_Shop"
+    },
+    {
+      "path_id": 230,
+      "name": "XBox_View_Fontstyle"
+    },
+    {
+      "path_id": 231,
+      "name": "CenterDot_Cross"
+    },
+    {
+      "path_id": 232,
+      "name": "LDR_LLL1_17"
+    },
+    {
+      "path_id": 233,
+      "name": "KeyboardBtn_Tab"
+    },
+    {
+      "path_id": 234,
+      "name": "LDR_LLL1_23"
+    },
+    {
+      "path_id": 235,
+      "name": "XBox_Left_Stick_Right_Fontstyle"
+    },
+    {
+      "path_id": 236,
+      "name": "LDR_LLL1_3"
+    },
+    {
+      "path_id": 237,
+      "name": "Generic_Left_Stick_Right_Fontstyle"
+    },
+    {
+      "path_id": 239,
+      "name": "Generic_L1_Flat"
+    },
+    {
+      "path_id": 240,
+      "name": "PS5_Share_Flat"
+    },
+    {
+      "path_id": 243,
+      "name": "LDR_LLL1_8"
+    },
+    {
+      "path_id": 244,
+      "name": "LDR_LLL1_53"
+    },
+    {
+      "path_id": 246,
+      "name": "XBox_Left_Stick_Up_Fontstyle"
+    },
+    {
+      "path_id": 247,
+      "name": "Generic_Dpad_Up_Flat"
+    },
+    {
+      "path_id": 248,
+      "name": "LDR_LLL1_41"
+    },
+    {
+      "path_id": 249,
+      "name": "XBox_Right_Stick_Right_Fontstyle"
+    },
+    {
+      "path_id": 250,
+      "name": "LDR_LLL1_52"
+    },
+    {
+      "path_id": 251,
+      "name": "XBox_Dpad_Left_Fontstyle"
+    },
+    {
+      "path_id": 252,
+      "name": "LDR_LLL1_51"
+    },
+    {
+      "path_id": 253,
+      "name": "PS5_R2_Flat"
+    },
+    {
+      "path_id": 254,
+      "name": "Generic_South_Flat"
+    },
+    {
+      "path_id": 255,
+      "name": "LDR_LLL1_50"
+    },
+    {
+      "path_id": 256,
+      "name": "Generic_Select_Flat"
+    },
+    {
+      "path_id": 257,
+      "name": "LDR_LLL1_59"
+    },
+    {
+      "path_id": 258,
+      "name": "SearchTex"
+    },
+    {
+      "path_id": 259,
+      "name": "Icon_PictoIcon_Lock"
+    },
+    {
+      "path_id": 260,
+      "name": "XBox_Y_Fontstyle"
+    },
+    {
+      "path_id": 261,
+      "name": "CenterDot_Dot"
+    },
+    {
+      "path_id": 262,
+      "name": "Generic_R1_Flat"
+    },
+    {
+      "path_id": 263,
+      "name": "LDR_LLL1_22"
+    },
+    {
+      "path_id": 264,
+      "name": "LDR_LLL1_57"
+    },
+    {
+      "path_id": 265,
+      "name": "Generic_East_Flat"
+    },
+    {
+      "path_id": 266,
+      "name": "Font Texture"
+    },
+    {
+      "path_id": 267,
+      "name": "XBox_Dpad_Up_Fontstyle"
+    },
+    {
+      "path_id": 268,
+      "name": "XBox_Right_Stick_Up_Fontstyle"
+    },
+    {
+      "path_id": 269,
+      "name": "XBox_RB_Fontstyle"
+    },
+    {
+      "path_id": 270,
+      "name": "PS5_Square_Flat"
+    },
+    {
+      "path_id": 271,
+      "name": "KeyboardBtn_Enter"
+    },
+    {
+      "path_id": 272,
+      "name": "T_MoneyCoinCNY"
+    },
+    {
+      "path_id": 273,
+      "name": "Generic_Right_Stick_Up_Flat"
+    },
+    {
+      "path_id": 274,
+      "name": "PS5_Left_Stick_Left_Flat"
+    },
+    {
+      "path_id": 275,
+      "name": "Generic_Right_Stick_Left_Flat"
+    },
+    {
+      "path_id": 276,
+      "name": "White_Pixel_1x1"
+    },
+    {
+      "path_id": 277,
+      "name": "PS5_Cross_Flat"
+    },
+    {
+      "path_id": 278,
+      "name": "WhiteTile"
+    },
+    {
+      "path_id": 279,
+      "name": "XBox_X_Fontstyle"
+    },
+    {
+      "path_id": 280,
+      "name": "XBox_Left_Stick_Click_Fontstyle"
+    },
+    {
+      "path_id": 281,
+      "name": "LDR_LLL1_25"
+    },
+    {
+      "path_id": 282,
+      "name": "Generic_Right_Stick_Click_Flat"
+    },
+    {
+      "path_id": 283,
+      "name": "panel-inside_white"
+    },
+    {
+      "path_id": 284,
+      "name": "LDR_LLL1_14"
+    },
+    {
+      "path_id": 285,
+      "name": "XBox_Right_Stick_Down_Fontstyle"
+    },
+    {
+      "path_id": 286,
+      "name": "LiberationSans SDF Atlas"
+    },
+    {
+      "path_id": 287,
+      "name": "LiberationSans SDF Atlas"
+    },
+    {
+      "path_id": 288,
+      "name": "FredokaOne-Regular SDF border Atlas"
+    },
+    {
+      "path_id": 289,
+      "name": "FredokaOne-Regular SDF Atlas"
+    },
+    {
+      "path_id": 290,
+      "name": "JapanOutline04 Atlas"
+    },
+    {
+      "path_id": 291,
+      "name": "RussianOutline Atlas"
+    },
+    {
+      "path_id": 292,
+      "name": "ChineseOutline02 Atlas"
+    },
+    {
+      "path_id": 293,
+      "name": "ThaiOutline Atlas"
+    },
+    {
+      "path_id": 294,
+      "name": "JapanOutline01 Atlas"
+    },
+    {
+      "path_id": 295,
+      "name": "ChineseOutline05 Atlas"
+    },
+    {
+      "path_id": 296,
+      "name": "ChineseOutline03 Atlas"
+    },
+    {
+      "path_id": 297,
+      "name": "KoreanOutline05 Atlas"
+    },
+    {
+      "path_id": 298,
+      "name": "HindiOutline Atlas"
+    },
+    {
+      "path_id": 299,
+      "name": "JapanOutline10 Atlas"
+    },
+    {
+      "path_id": 300,
+      "name": "JapanOutline03 Atlas"
+    },
+    {
+      "path_id": 301,
+      "name": "JapanOutline09 Atlas"
+    },
+    {
+      "path_id": 302,
+      "name": "JapanOutline08 Atlas"
+    },
+    {
+      "path_id": 303,
+      "name": "ChineseOutline01 Atlas"
+    },
+    {
+      "path_id": 304,
+      "name": "ArabicOutline Atlas"
+    },
+    {
+      "path_id": 305,
+      "name": "ChineseTradOutline01 Atlas"
+    }
+  ],
+  "skipped_no_mod": [],
+  "skipped_unreadable": [],
+  "errors": [
+    {
+      "path_id": 91,
+      "name": "EvoBasicIcon",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 99,
+      "name": "EvoBorder",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 100,
+      "name": "CardFrontIconOnly",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 106,
+      "name": "CardBack",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 110,
+      "name": "T_CardLegendGlowAlpha2",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 115,
+      "name": "CardIcon_Legend",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 120,
+      "name": "RainbowFoil",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 126,
+      "name": "GradedCardCase",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 149,
+      "name": "T_CardLegendGlow",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 163,
+      "name": "GradedCardCaseBack",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 170,
+      "name": "CardBG_Air",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 174,
+      "name": "GradeCardScratch10",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 181,
+      "name": "CardDarkFadeBar",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 184,
+      "name": "BatD",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 191,
+      "name": "CardBorderMask",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 215,
+      "name": "CardBorder_EX",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 224,
+      "name": "CardCenterFrameFullArtMask",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 238,
+      "name": "Ghost_PiggyD",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 241,
+      "name": "CardFrontFullArt_Air",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 242,
+      "name": "CardFullMask",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    },
+    {
+      "path_id": 245,
+      "name": "BatC",
+      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+    }
+  ],
+  "counts": {
+    "applied": 0,
+    "skipped_same": 0,
+    "skipped_filtered": 231,
+    "skipped_no_mod": 0,
+    "skipped_unreadable": 0,
+    "errors": 21
+  },
+  "output_size": 47282752
+}

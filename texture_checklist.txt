@@ -1,0 +1,5 @@
+CardBG_Air
+CardBack
+CardBorder_EX
+CardIcon_Legend
+Ghost_PiggyD

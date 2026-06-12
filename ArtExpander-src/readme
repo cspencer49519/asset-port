@@ -1,0 +1,48 @@
+USING ASSET BUNDLES:
+
+Install Unity, then make a  new Unity 2021.3.38 project.
+
+1. Prepare Your Files:
+   - Put all your PNG files in your Unity project's Assets folder
+   - Organize them in folders matching the structure:
+     ```
+     animated/
+         MonsterType_black/
+             0.png
+             1.png
+             2.png
+             etc...
+         MonsterType_white/
+             0.png
+             1.png
+             2.png
+             etc...
+     ```
+
+2. Mark Files for Bundle:
+   - In Unity's Project window, select ALL the PNG files you want to include
+   - In the Inspector panel at the bottom, find "Asset Bundle"
+   - Click the dropdown menu
+   - Select "New"
+   - Name it exactly "animated"
+
+3. Build the Bundle:
+   - Open Window → Asset Management → Asset Bundle Browser
+   - If you don't see this option:
+     - Open Window → Package Manager
+     - Click "+" in top left
+     - Choose "Add package by name"
+     - Type: "com.unity.assetbundlebrowser"
+     - Click "Add"
+   - In the Bundle Browser:
+     - Go to "Build" tab
+     - Set "Output Path" to anywhere convenient
+     - UNCHECK "Copy to StreamingAssets"
+     - Click "Build"
+
+4. After Building:
+   - Find the built file named "animated"
+   - Copy it to your mod's folder structure at "cardart/Ghost/animated.assets"
+   - DON'T copy the .manifest files - you only need the main bundle file
+
+This will create a single asset bundle containing all your PNG files, maintaining their folder structure for proper loading in your mod.

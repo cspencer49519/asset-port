@@ -1,0 +1,110 @@
+{
+  "generated_at": "2026-06-12T18:03:53.620570+00:00",
+  "reference": "TCG Card Shop Simulator-0.5 sharedassets0 trio",
+  "method": "card frame textures only (no foil/outline atlases), AT.NET write",
+  "mod_changes_found": 5,
+  "skipped_export": [],
+  "changes": [
+    {
+      "name": "CardBG_Air",
+      "path_id": 170,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardBG_Air.png",
+      "base_size": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "CardBack",
+      "path_id": 106,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardBack.png",
+      "base_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "CardBorder_EX",
+      "path_id": 215,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardBorder_EX.png",
+      "base_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "CardIcon_Legend",
+      "path_id": 115,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardIcon_Legend.png",
+      "base_size": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "Ghost_PiggyD",
+      "path_id": 238,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\Ghost_PiggyD.png",
+      "base_size": [
+        819,
+        1024
+      ]
+    }
+  ],
+  "applied": [
+    {
+      "name": "CardBG_Air",
+      "path_id": 170,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardBG_Air.png",
+      "base_size": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "CardBack",
+      "path_id": 106,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardBack.png",
+      "base_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "CardBorder_EX",
+      "path_id": 215,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardBorder_EX.png",
+      "base_size": [
+        1024,
+        1024
+      ]
+    },
+    {
+      "name": "CardIcon_Legend",
+      "path_id": 115,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\CardIcon_Legend.png",
+      "base_size": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "Ghost_PiggyD",
+      "path_id": 238,
+      "png": "c:\\TCGCardShopModWork\\asset-port\\exported-mod\\Ghost_PiggyD.png",
+      "base_size": [
+        819,
+        1024
+      ]
+    }
+  ],
+  "errors": [],
+  "output_size": 59554232,
+  "input_size": 47282752,
+  "counts": {
+    "mod_changes_found": 5,
+    "applied": 5,
+    "errors": 0,
+    "skipped_export": 0
+  }
+}

@@ -1,0 +1,30 @@
+# Build output
+**/bin/
+**/obj/
+
+# Local Unity asset binaries (copy from your game/mod install locally)
+base-071/
+vanilla-05/
+vanilla-062/
+mod-062/
+mod-paired/
+mod-paired-05/
+output/
+exported-mod/
+atnet-test/
+atnet-import-test/
+work-atnet/
+roundtrip-test/
+roundtrip-test2/
+
+# Archives and dumps
+*.zip
+*.assets
+*.assets.resS
+*.resource
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vs/
+.idea/
