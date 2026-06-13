@@ -1,5 +1,6 @@
 stages:
   - build
+  - release
 
 variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
@@ -25,3 +26,27 @@ build-patch:
     expire_in: 30 days
     paths:
       - TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
+
+# Creates a GitLab Release page when a version tag is pushed (e.g. v1.0.49).
+# Attach the full player zip via scripts/Publish-GitLabRelease.ps1 (requires GITLAB_TOKEN).
+create_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+  script:
+    - echo "Publishing release ${CI_COMMIT_TAG}"
+  release:
+    tag_name: "$CI_COMMIT_TAG"
+    name: "TCGShopExpansionMod 0.71 Patch $CI_COMMIT_TAG"
+    description: |
+      **TCG Card Shop Simulator 0.71** compatibility patch for Genobear Real TCG Overhaul.
+
+      Download **TCG-071-Genobear-*.zip** from release assets (upload via `scripts/Publish-GitLabRelease.ps1`).
+
+      Player install: see [docs/INSTALL-071.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_TAG}/docs/INSTALL-071.md)
+    assets:
+      links:
+        - name: "Source archive (zip)"
+          url: "${CI_PROJECT_URL}/-/archive/${CI_COMMIT_TAG}/asset-port-${CI_COMMIT_TAG}.zip"
+          link_type: "other"
