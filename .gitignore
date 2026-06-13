@@ -2,6 +2,12 @@
 **/bin/
 **/obj/
 
+# Release bundles (built locally; upload to GitLab Releases)
+dist/
+
+# CI reference assemblies (copy from game — see lib/game/README.md)
+lib/game/*.dll
+
 # Local Unity asset binaries (copy from your game/mod install locally)
 base-071/
 vanilla-05/
@@ -16,6 +22,7 @@ atnet-import-test/
 work-atnet/
 roundtrip-test/
 roundtrip-test2/
+assets/
 
 # Archives and dumps
 *.zip
@@ -28,3 +35,4 @@ roundtrip-test2/
 Thumbs.db
 .vs/
 .idea/
+_cardopening_decomp.txt

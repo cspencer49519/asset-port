@@ -1,0 +1,97 @@
+{
+  "packageName": "TCG Card Shop Simulator 0.71 Genobear Compatibility",
+  "gameVersion": "0.71",
+  "patchVersion": "1.0.49",
+  "patchGuid": "local.tcgshop.expansionmod071patch",
+  "dependencies": [
+    {
+      "id": "bepinex",
+      "name": "BepInEx Pack",
+      "required": true,
+      "minVersion": "5.4.22",
+      "url": "https://www.nexusmods.com/tcgcardshopsimulator/mods/27",
+      "installPath": "BepInEx/"
+    },
+    {
+      "id": "TCGShopNewCardsMod",
+      "name": "Add New Cards Mod",
+      "required": true,
+      "url": "https://www.nexusmods.com/tcgcardshopsimulator/mods/3",
+      "installPath": "BepInEx/plugins/TCGShopNewCardsMod/"
+    },
+    {
+      "id": "TCGShopExpansionMod",
+      "name": "More Card Expansions",
+      "required": true,
+      "version": "1.8.7",
+      "url": "https://www.nexusmods.com/tcgcardshopsimulator/mods/48",
+      "installPath": "BepInEx/plugins/TCGShopExpansionMod/"
+    },
+    {
+      "id": "TextureReplacer",
+      "name": "TextureReplacer",
+      "required": true,
+      "url": "https://www.nexusmods.com/tcgcardshopsimulator/mods/26",
+      "installPath": "BepInEx/plugins/TextureReplacer/"
+    },
+    {
+      "id": "ArtExpander",
+      "name": "ArtExpander + cardart.assets",
+      "required": true,
+      "note": "Bundled with Genobear Real TCG Overhaul (~15 GB cardart.assets).",
+      "installPath": "BepInEx/plugins/ArtExpander/"
+    },
+    {
+      "id": "TCGShopExpansionMod071Patch",
+      "name": "TCGShopExpansionMod 0.71 Patch",
+      "required": true,
+      "version": "1.0.49",
+      "installPath": "BepInEx/plugins/TCGShopExpansionMod071Patch/"
+    }
+  ],
+  "optionalMods": [
+    {
+      "id": "HolographicOverhaul",
+      "name": "Holographic Overhaul",
+      "url": "https://www.nexusmods.com/tcgcardshopsimulator/mods/44"
+    },
+    {
+      "id": "ConfigurationManager",
+      "name": "Configuration Manager",
+      "url": "https://www.nexusmods.com/tcgcardshopsimulator/mods/31"
+    }
+  ],
+  "paths": {
+    "gameExe": "Card Shop Simulator.exe",
+    "dataFolder": "Card Shop Simulator_Data",
+    "patchDll": "BepInEx/plugins/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.dll",
+    "expansionModDll": "BepInEx/plugins/TCGShopExpansionMod/TCGShopExpansionMod.dll",
+    "newCardsModDll": "BepInEx/plugins/TCGShopNewCardsMod/TCGShopNewCardsMod.dll",
+    "cardArtAssets": "BepInEx/plugins/ArtExpander/cardart.assets",
+    "sharedAssets": "Card Shop Simulator_Data/sharedassets0.assets",
+    "sharedAssetsResS": "Card Shop Simulator_Data/sharedassets0.assets.resS",
+    "sharedAssetsResource": "Card Shop Simulator_Data/sharedassets0.resource",
+    "logFile": "BepInEx/LogOutput.log"
+  },
+  "logSuccessMarkers": [
+    "TCGShopExpansionMod 0.71 Patch 1.0.49",
+    "Patched ExpansionMod for game 0.71",
+    "ArtExpander bridge ready"
+  ],
+  "logFailureMarkers": [
+    "MissingFieldException",
+    "m_CardBorderList",
+    "Shelf data not loaded properly"
+  ],
+  "expansionModConfig": {
+    "note": "Open in-game config (F1) under com.DarkDragoon.TCGShopExpansionMod",
+    "settings": {
+      "Access other card expansions": true,
+      "Enable custom card images for new expansions": true,
+      "Enable custom configs for new expansions": true,
+      "Enable custom card images for original expansions": true,
+      "Enable custom configs for original expansions": true,
+      "Enable custom images for cards on play tables": false
+    }
+  }
+}

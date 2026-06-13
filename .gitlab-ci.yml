@@ -1,0 +1,27 @@
+stages:
+  - build
+
+variables:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+# Optional CI build when reference DLLs are present in lib/game/ (see lib/game/README.md).
+build-patch:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - |
+      if [ ! -f lib/game/Assembly-CSharp.dll ]; then
+        echo "Skipping build: copy game DLLs to lib/game/ for CI (see lib/game/README.md)."
+        echo "Use scripts/Build-Release.ps1 locally instead."
+        exit 0
+      fi
+    - dotnet build TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.csproj -c Release
+  artifacts:
+    when: on_success
+    expire_in: 30 days
+    paths:
+      - TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll

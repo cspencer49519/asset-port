@@ -1,36 +1,48 @@
 # TCG Card Shop Simulator — 0.71 Mod Tooling
 
-Tools and compatibility patches for running mod packs (e.g. Genobear Real TCG Overhaul) on **TCG Card Shop Simulator 0.71**.
+Compatibility patch and install tooling for **Genobear Real TCG Overhaul** on **TCG Card Shop Simulator 0.71**.
 
-This repo tracks **source and scripts only**. Game installs, mod packs, and Unity `.assets` binaries stay on your machine outside git.
+## Players — start here
 
-## Contents
+**[docs/INSTALL-071.md](docs/INSTALL-071.md)** — step-by-step install (no coding required)
+
+After installing mods from Nexus and Genobear:
+
+```powershell
+.\scripts\Install-TCG071Mods.ps1 -GamePath "YOUR_STEAM_GAME_FOLDER"
+.\scripts\Verify-TCG071Install.ps1 -GamePath "YOUR_STEAM_GAME_FOLDER"
+```
+
+Download a release zip from GitLab (or run `scripts/Build-Release.ps1` locally).
+
+| Doc | Purpose |
+|-----|---------|
+| [INSTALL-071.md](docs/INSTALL-071.md) | Full install guide |
+| [VERSION_MATRIX.md](docs/VERSION_MATRIX.md) | Pinned mod versions + F1 settings |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Log errors and fixes |
+| [DEVELOPERS.md](docs/DEVELOPERS.md) | Build from source, release process |
+
+## What this repo provides
 
 | Path | Purpose |
 |------|---------|
-| `TCGShopExpansionMod071Patch/` | BepInEx Harmony patch — makes More Card Expansions work on 0.71 |
-| `port_with_vanilla05.py` | Selective `sharedassets0.assets` texture port (AssetsTools.NET) |
-| `port_*.py`, `probe_*.py` | Asset inspection and port helpers |
-| `GENOBEAR_REQUIREMENTS.md` | Mod compatibility notes |
-| `SHELF_ERROR_FIX.md` | ExpansionMod shelf-load crash diagnosis |
-| `ArtExpander-src/` | Optional ArtExpander reference source |
+| `TCGShopExpansionMod071Patch/` | BepInEx Harmony patch (v1.0.49) — ExpansionMod + pack/display fixes on 0.71 |
+| `manifest.json` | Version pins for install/verify scripts |
+| `scripts/` | `Install-TCG071Mods.ps1`, `Verify-TCG071Install.ps1`, `Build-Release.ps1` |
+| `port_*.py` | Maintainer asset port tools (not required for players) |
 
-## Build the 0.71 patch
-
-Requires the game installed at `../TCG Card Shop Simulator/` (sibling to this folder).
+## Maintainers — build release
 
 ```powershell
-dotnet build TCGShopExpansionMod071Patch\TCGShopExpansionMod071Patch.csproj -c Release
+.\scripts\Build-Release.ps1
 ```
 
-Copy `TCGShopExpansionMod071Patch\bin\Release\netstandard2.1\TCGShopExpansionMod071Patch.dll` to:
+Upload `dist/TCG-071-Genobear-*.zip` to GitLab Releases. See [DEVELOPERS.md](docs/DEVELOPERS.md).
 
-`../TCG Card Shop Simulator/BepInEx/plugins/TCGShopExpansionMod071Patch/`
+## Legacy notes
 
-## Local asset port workflow
-
-1. Place reference files in ignored folders (`base-071/`, `vanilla-05/`, etc.) — see `.gitignore`.
-2. Run `python port_with_vanilla05.py` (requires Python 3.11+, UnityPy, Pillow, AssetsTools.NET).
+- [GENOBEAR_REQUIREMENTS.md](GENOBEAR_REQUIREMENTS.md) — install checklist
+- [SHELF_ERROR_FIX.md](SHELF_ERROR_FIX.md) — `m_CardBorderList` / shelf load crash
 
 ## Remote
 
