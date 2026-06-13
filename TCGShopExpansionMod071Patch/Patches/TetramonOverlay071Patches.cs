@@ -13,6 +13,7 @@ internal static class TetramonOverlay071Patches
 {
     private const float FullCardMinHeight = 420f;
     private const float FullCardMinWidth = 280f;
+    private const float PackBackMeshOverscan = 1f;
 
     private static readonly string[] CardTextFieldNames =
     {
@@ -65,12 +66,13 @@ internal static class TetramonOverlay071Patches
             return;
         }
 
-        Sprite? cardArt = ResolveCardArt(__instance, cardData);
+        Sprite? cardArt = ResolveCardArt(__instance, cardData, out bool fromBridge);
         object? cardConfig = NewSwappingHandler.TryGetCardFromCache(cardData);
 
-        if (cardArt != null && LooksLikeFullCard(cardArt))
+        if (cardArt != null && (fromBridge || LooksLikeFullCard(cardArt)))
         {
             ApplyFullCardOverlay(__instance, cardArt);
+            FinalizeCard3dPresentation(__instance);
             return;
         }
 
@@ -79,20 +81,233 @@ internal static class TetramonOverlay071Patches
         if (cardArt != null)
         {
             ApplyCenterArtLayout(__instance, cardArt, cardConfig);
+            FinalizeCard3dPresentation(__instance);
             return;
         }
 
         RestoreCenterFrameIcon(__instance, cardData);
         ApplyNoArtFallback(__instance, cardConfig, cardData);
+        FinalizeCard3dPresentation(__instance);
     }
 
-    private static Sprite? ResolveCardArt(CardUI cardUi, CardData cardData)
+    /// <summary>
+    /// Pack opening: keep the 3D back mesh alive with correct Pokemon sprite UVs.
+    /// Stack cards waiting to flip also get an opaque UI back cover so the previous card front cannot bleed through.
+    /// </summary>
+    public static void SyncPackOpeningBackMesh(CardUI cardUi, Card3dUIGroup? card3d = null)
     {
-        // ArtExpander cache is authoritative; center frame may hold a wrongly scaled interim sprite.
-        Sprite? fromBridge = ArtExpanderBridge.LoadCardArt(cardData);
-        if (fromBridge != null)
+        card3d ??= CardUiFieldAccess.GetValue(cardUi, "m_Card3dUIGroup") as Card3dUIGroup;
+        if (card3d == null || !cardUi.IsCard3dUIGroupSet())
         {
-            return fromBridge;
+            return;
+        }
+
+        ApplyPackFlipBackMeshSync(cardUi, card3d);
+
+        if (PackOpeningState.ShouldShowPackBackFace(card3d))
+        {
+            EnsureUiCardBackCover(cardUi);
+            SuppressFrontOverlayDuringPackBack(cardUi);
+        }
+        else
+        {
+            RestoreFrontOverlayAfterPackBack(cardUi);
+        }
+    }
+
+    private static void FinalizeCard3dPresentation(CardUI cardUi)
+    {
+        if (!cardUi.IsCard3dUIGroupSet())
+        {
+            return;
+        }
+
+        if (PackOpeningState.IsPackOpeningInProgress())
+        {
+            SyncPackOpeningBackMesh(cardUi);
+            return;
+        }
+
+        ConfigureCard3dForFrontDisplay(cardUi);
+    }
+
+    /// <summary>
+    /// Front faces use the canvas overlay; fully hide the 3D back mesh so it cannot bleed over the front.
+    /// </summary>
+    public static void ConfigureCard3dForFrontDisplay(CardUI cardUi)
+    {
+        if (!cardUi.IsCard3dUIGroupSet())
+        {
+            return;
+        }
+
+        if (CardUiFieldAccess.GetValue(cardUi, "m_Card3dUIGroup") is not Card3dUIGroup card3d)
+        {
+            return;
+        }
+
+        if (card3d.m_CardBackMesh != null)
+        {
+            card3d.m_CardBackMesh.transform.localScale = Vector3.one;
+            card3d.m_CardBackMesh.SetActive(false);
+        }
+
+        if (cardUi.m_CardBackImage != null)
+        {
+            cardUi.m_CardBackImage.enabled = false;
+        }
+    }
+
+    /// <summary>Pack flip: show 3D back mesh with correct sprite UVs aligned to the card face.</summary>
+    public static void ApplyPackFlipBackMeshSync(CardUI cardUi, Card3dUIGroup? card3d = null)
+    {
+        card3d ??= CardUiFieldAccess.GetValue(cardUi, "m_Card3dUIGroup") as Card3dUIGroup;
+        if (card3d?.m_CardBackMesh == null)
+        {
+            return;
+        }
+
+        card3d.m_CardBackMesh.SetActive(true);
+        SetCard3dBackMeshVisible(card3d, visible: true);
+        SyncCard3dBackMeshFromUiBack(cardUi, card3d, overscan: PackBackMeshOverscan);
+    }
+
+    private static void EnsureUiCardBackCover(CardUI cardUi)
+    {
+        Sprite? backSprite = CardExtrasCacheAccess.TryGetCachedSprite("T_CardBackMesh")
+            ?? cardUi.m_CardBackImage?.sprite;
+        if (backSprite == null)
+        {
+            return;
+        }
+
+        if (cardUi.m_CardBack != null)
+        {
+            cardUi.m_CardBack.SetActive(true);
+        }
+
+        if (cardUi.m_CardBackImage == null)
+        {
+            return;
+        }
+
+        cardUi.m_CardBackImage.enabled = true;
+        cardUi.m_CardBackImage.sprite = backSprite;
+        cardUi.m_CardBackImage.type = Image.Type.Simple;
+        cardUi.m_CardBackImage.preserveAspect = false;
+        cardUi.m_CardBackImage.color = Color.white;
+        StretchImageToFill(cardUi.m_CardBackImage.rectTransform);
+    }
+
+    private static void SuppressFrontOverlayDuringPackBack(CardUI cardUi)
+    {
+        if (FindOverlayTransform(cardUi) is Transform overlayTransform
+            && overlayTransform.TryGetComponent(out Image overlay))
+        {
+            overlay.enabled = false;
+        }
+    }
+
+    private static void RestoreFrontOverlayAfterPackBack(CardUI cardUi)
+    {
+        if (FindOverlayTransform(cardUi) is Transform overlayTransform
+            && overlayTransform.TryGetComponent(out Image overlay)
+            && overlay.sprite != null)
+        {
+            overlay.enabled = true;
+        }
+    }
+
+    private static void SetCard3dBackMeshVisible(Card3dUIGroup card3d, bool visible)
+    {
+        if (card3d.m_CardBackMesh == null)
+        {
+            return;
+        }
+
+        Renderer? renderer = card3d.m_CardBackMesh.GetComponent<Renderer>();
+        if (renderer != null)
+        {
+            renderer.enabled = visible;
+        }
+    }
+
+    /// <summary>
+    /// Pack opening only: apply Pokemon back UVs to the 3D back mesh. Does not touch UI back image.
+    /// </summary>
+    private static void SyncCard3dBackMeshFromUiBack(CardUI cardUi, Card3dUIGroup card3d, float overscan = 1f)
+    {
+        Sprite? backSprite = CardExtrasCacheAccess.TryGetCachedSprite("T_CardBackMesh")
+            ?? cardUi.m_CardBackImage?.sprite;
+        if (backSprite == null || card3d.m_CardBackMesh == null)
+        {
+            return;
+        }
+
+        Renderer? renderer = card3d.m_CardBackMesh.GetComponent<Renderer>();
+        Material? material = renderer != null ? renderer.material : null;
+        if (material == null)
+        {
+            return;
+        }
+
+        ApplySpriteToMaterial(material, backSprite, overscan);
+
+        card3d.m_CardBackMesh.transform.localScale = overscan > 1f
+            ? Vector3.one * overscan
+            : Vector3.one;
+    }
+
+    private static void StretchImageToFill(RectTransform rect)
+    {
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+        rect.localScale = Vector3.one;
+    }
+
+    private static void ApplySpriteToMaterial(Material material, Sprite sprite, float overscan = 1f)
+    {
+        Texture texture = sprite.texture;
+        Rect rect = sprite.rect;
+        float invWidth = 1f / texture.width;
+        float invHeight = 1f / texture.height;
+        Vector2 scale = new(rect.width * invWidth / overscan, rect.height * invHeight / overscan);
+        Vector2 offset = new(
+            rect.x * invWidth + (scale.x * (overscan - 1f) * 0.5f),
+            rect.y * invHeight + (scale.y * (overscan - 1f) * 0.5f));
+
+        material.mainTexture = texture;
+        material.mainTextureScale = scale;
+        material.mainTextureOffset = offset;
+
+        if (material.HasProperty("_BaseMap"))
+        {
+            material.SetTexture("_BaseMap", texture);
+            material.SetTextureScale("_BaseMap", scale);
+            material.SetTextureOffset("_BaseMap", offset);
+        }
+
+        if (material.HasProperty("_EmissionMap"))
+        {
+            material.SetTexture("_EmissionMap", texture);
+            material.SetTextureScale("_EmissionMap", scale);
+            material.SetTextureOffset("_EmissionMap", offset);
+        }
+    }
+
+    private static Sprite? ResolveCardArt(CardUI cardUi, CardData cardData, out bool fromBridge)
+    {
+        fromBridge = false;
+
+        // ArtExpander cache is authoritative; center frame may hold a wrongly scaled interim sprite.
+        Sprite? bridgeArt = ArtExpanderBridge.LoadCardArt(cardData);
+        if (bridgeArt != null)
+        {
+            fromBridge = true;
+            return bridgeArt;
         }
 
         if (cardUi.m_CenterFrameImage == null || !cardUi.m_CenterFrameImage.enabled)
@@ -120,31 +335,47 @@ internal static class TetramonOverlay071Patches
     {
         float width = sprite.rect.width;
         float height = sprite.rect.height;
+        if (width <= 1f || height <= 1f)
+        {
+            return false;
+        }
+
         if (height >= FullCardMinHeight && width >= FullCardMinWidth)
         {
             return true;
         }
 
-        return height > width * 1.1f && height >= 350f;
+        if (height > width * 1.1f && height >= 350f)
+        {
+            return true;
+        }
+
+        // Portrait scans that fall below strict thresholds but are clearly not center icons.
+        return height >= 300f && height >= width * 0.85f;
     }
 
     private static void ApplyFullCardOverlay(CardUI cardUi, Sprite cardArt)
     {
+        EnsureCardShellVisible(cardUi);
+        CleanupLegacyPackArtifacts(cardUi);
+
         Image target = GetOrCreateOverlayImage(cardUi);
         target.sprite = cardArt;
         target.type = Image.Type.Simple;
         target.enabled = true;
-        target.preserveAspect = true;
+        target.preserveAspect = cardUi.IsCard3dUIGroupSet();
         target.color = Color.white;
         target.raycastTarget = false;
         target.maskable = true;
 
         StretchOverlayToCardFront(cardUi, target.rectTransform);
+        RemoveFrontBlocker(cardUi);
         target.rectTransform.SetAsLastSibling();
 
         HideCenterFrameArt(cardUi);
         HideVanillaChromeWhenOverlayShown(cardUi);
         HideDuplicateTextWhenOverlayShown(cardUi);
+        SetImageEnabled(cardUi.m_BrightnessControl, false);
 
         if (!LoggedFirstFullCard)
         {
@@ -254,44 +485,125 @@ internal static class TetramonOverlay071Patches
 
     private static void StretchOverlayToCardFront(CardUI cardUi, RectTransform overlayRect)
     {
-        RectTransform cardRoot = cardUi.transform as RectTransform;
-        if (cardRoot == null)
+        RectTransform? frontRoot = GetCardFrontRect(cardUi);
+        if (frontRoot == null)
         {
             return;
         }
 
-        overlayRect.SetParent(cardRoot, false);
-        overlayRect.anchorMin = Vector2.zero;
-        overlayRect.anchorMax = Vector2.one;
-        overlayRect.pivot = new Vector2(0.5f, 0.5f);
-        overlayRect.offsetMin = Vector2.zero;
-        overlayRect.offsetMax = Vector2.zero;
-        overlayRect.localScale = Vector3.one;
+        RectTransform? template = cardUi.m_CardBorderImage?.rectTransform
+            ?? cardUi.m_CardFrontImage?.rectTransform;
+
+        overlayRect.SetParent(frontRoot, false);
         overlayRect.localRotation = Quaternion.identity;
+
+        if (template != null && template != frontRoot)
+        {
+            CopyRectTransformLayout(template, overlayRect);
+            return;
+        }
+
+        StretchImageToFill(overlayRect);
+    }
+
+    private static void CopyRectTransformLayout(RectTransform source, RectTransform target)
+    {
+        target.anchorMin = source.anchorMin;
+        target.anchorMax = source.anchorMax;
+        target.pivot = source.pivot;
+        target.anchoredPosition = source.anchoredPosition;
+        target.sizeDelta = source.sizeDelta;
+        target.localScale = Vector3.one;
+    }
+
+    private static RectTransform? GetCardFrontRect(CardUI cardUi)
+    {
+        if (cardUi.m_CardFront != null)
+        {
+            return cardUi.m_CardFront.transform as RectTransform;
+        }
+
+        return cardUi.transform as RectTransform;
+    }
+
+    private static void RemoveFrontBlocker(CardUI cardUi)
+    {
+        Transform? blockerTransform = GetCardFrontTransform(cardUi).Find("TetramonFrontBlocker071");
+        if (blockerTransform != null)
+        {
+            blockerTransform.gameObject.SetActive(false);
+        }
+    }
+
+    private static Transform GetCardFrontTransform(CardUI cardUi)
+    {
+        if (cardUi.m_CardFront != null)
+        {
+            return cardUi.m_CardFront.transform;
+        }
+
+        return cardUi.transform;
+    }
+
+    private static void EnsureCardShellVisible(CardUI cardUi)
+    {
+        if (cardUi.m_CardFront != null)
+        {
+            cardUi.m_CardFront.SetActive(true);
+        }
+
+        if (cardUi.m_CardBack != null)
+        {
+            cardUi.m_CardBack.SetActive(true);
+        }
+    }
+
+    private static void CleanupLegacyPackArtifacts(CardUI cardUi)
+    {
+        Transform? legacyCover = cardUi.transform.Find("TetramonPackBackCover071");
+        if (legacyCover != null)
+        {
+            UnityEngine.Object.Destroy(legacyCover.gameObject);
+        }
+    }
+
+    private static Transform? FindOverlayTransform(CardUI cardUi)
+    {
+        Transform? underFront = GetCardFrontTransform(cardUi).Find("TetramonOverlay071");
+        if (underFront != null)
+        {
+            return underFront;
+        }
+
+        return cardUi.transform.Find("TetramonOverlay071");
     }
 
     private static Image GetOrCreateOverlayImage(CardUI cardUi)
     {
-        Transform? overlayTransform = cardUi.transform.Find("TetramonOverlay071");
-        if (overlayTransform != null && overlayTransform.TryGetComponent(out Image cachedOverlay))
+        if (FindOverlayTransform(cardUi) is Transform overlayTransform
+            && overlayTransform.TryGetComponent(out Image cachedOverlay))
         {
             return cachedOverlay;
         }
 
         GameObject overlayObject = new("TetramonOverlay071");
-        overlayObject.transform.SetParent(cardUi.transform, false);
+        RectTransform? frontRoot = GetCardFrontRect(cardUi);
+        overlayObject.transform.SetParent(frontRoot != null ? frontRoot : cardUi.transform, false);
         Image image = overlayObject.AddComponent<Image>();
         image.maskable = true;
+        StretchImageToFill(image.rectTransform);
         return image;
     }
 
     private static void DisableOverlayImage(CardUI cardUi)
     {
-        Transform? overlayTransform = cardUi.transform.Find("TetramonOverlay071");
-        if (overlayTransform != null && overlayTransform.TryGetComponent(out Image overlay))
+        if (FindOverlayTransform(cardUi) is Transform overlayTransform
+            && overlayTransform.TryGetComponent(out Image overlay))
         {
             overlay.enabled = false;
         }
+
+        RemoveFrontBlocker(cardUi);
     }
 
     private static void HideCenterFrameArt(CardUI cardUi)
@@ -403,10 +715,55 @@ internal static class TetramonOverlay071Patches
     {
         SetImageEnabled(cardUi.m_CardFrontImage, false);
         SetImageEnabled(cardUi.m_CardFrontImageTopLayer, false);
+        SetImageEnabled(cardUi.m_CardBGImage, false);
+        SetImageEnabled(cardUi.m_CardBorderImage, false);
+        SetImageEnabled(cardUi.m_CardFullBGImage, false);
+        SetImageEnabled(cardUi.m_CardFullTransparentLayerBGImage, false);
         SetImageEnabled(cardUi.m_RarityImage, false);
         SetImageEnabled(cardUi.m_FadeBarTopImage, false);
         SetImageEnabled(cardUi.m_FadeBarBtmImage, false);
         SetImageEnabled(cardUi.m_StatImage, false);
+        SetImageEnabled(cardUi.m_EvoBGImage, false);
+        SetImageEnabled(cardUi.m_DescriptionBGImage, false);
+        SetImageEnabled(cardUi.m_PlayEffectBGImage, false);
+        SetImageEnabled(cardUi.m_BrightnessControl, false);
+
+        SetGameObjectActive(cardUi.m_FadeBarTopImage?.gameObject, false);
+        SetGameObjectActive(cardUi.m_FadeBarBtmImage?.gameObject, false);
+        SetGameObjectActive(cardUi.m_DescriptionBGImage?.gameObject, false);
+        SetGameObjectActive(cardUi.m_StatImage?.gameObject, false);
+        SetGameObjectActive(cardUi.m_PlayEffectBGImage?.gameObject, false);
+        SetGameObjectActive(cardUi.m_EvoBGImage?.gameObject, false);
+
+        if (CardUiFieldAccess.GetValue(cardUi, "m_StatGrp") is GameObject statGrp)
+        {
+            statGrp.SetActive(false);
+        }
+
+        if (CardUiFieldAccess.GetValue(cardUi, "m_DescriptionGrp") is GameObject descriptionGrp)
+        {
+            descriptionGrp.SetActive(false);
+        }
+
+        if (CardUiFieldAccess.GetValue(cardUi, "m_EvoGrp") is GameObject evoGrpOnly)
+        {
+            evoGrpOnly.SetActive(false);
+        }
+
+        if (CardUiFieldAccess.GetValue(cardUi, "m_EvoBasicGrp") is GameObject evoBasicGrp)
+        {
+            evoBasicGrp.SetActive(false);
+        }
+
+        if (cardUi.m_CardBorderMask != null)
+        {
+            cardUi.m_CardBorderMask.enabled = false;
+        }
+
+        if (CardUiFieldAccess.GetValue(cardUi, "m_EvoAndArtistNameGrp") is GameObject evoGrp)
+        {
+            evoGrp.SetActive(false);
+        }
     }
 
     private static void HideDuplicateTextWhenOverlayShown(CardUI cardUi)
@@ -420,6 +777,14 @@ internal static class TetramonOverlay071Patches
     private static object? GetCardUiFieldValue(CardUI cardUi, string fieldName)
     {
         return CardUiFieldAccess.GetValue(cardUi, fieldName);
+    }
+
+    private static void SetGameObjectActive(GameObject? gameObject, bool active)
+    {
+        if (gameObject != null)
+        {
+            gameObject.SetActive(active);
+        }
     }
 
     private static void SetImageEnabled(Image? image, bool enabled)

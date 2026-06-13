@@ -25,6 +25,17 @@ internal static class ArtExpanderBridge
         EnsureInitialized();
     }
 
+    private static readonly ECardBorderType[] BorderFallbackOrder =
+    {
+        ECardBorderType.Base,
+        ECardBorderType.FirstEdition,
+        ECardBorderType.FullArt,
+        ECardBorderType.Silver,
+        ECardBorderType.Gold,
+        ECardBorderType.EX,
+        (ECardBorderType)(-1)
+    };
+
     public static Sprite? LoadCardArt(CardData cardData)
     {
         if (cardData == null || !EnsureInitialized() || !_available)
@@ -32,9 +43,34 @@ internal static class ArtExpanderBridge
             return null;
         }
 
-        foreach (object cache in ArtCaches)
+        Sprite? sprite = TryLoadFromCaches(cardData);
+        if (sprite != null)
         {
-            Sprite? sprite = LoadFromCache(cache, cardData);
+            return sprite;
+        }
+
+        if (cardData.isFoil)
+        {
+            CardData noFoil = CloneCardData(cardData);
+            noFoil.isFoil = false;
+            sprite = TryLoadFromCaches(noFoil);
+            if (sprite != null)
+            {
+                return sprite;
+            }
+        }
+
+        for (int i = 0; i < BorderFallbackOrder.Length; i++)
+        {
+            ECardBorderType fallbackBorder = BorderFallbackOrder[i];
+            if (fallbackBorder == cardData.borderType)
+            {
+                continue;
+            }
+
+            CardData altBorder = CloneCardData(cardData);
+            altBorder.borderType = fallbackBorder;
+            sprite = TryLoadFromCaches(altBorder);
             if (sprite != null)
             {
                 return sprite;
@@ -42,6 +78,27 @@ internal static class ArtExpanderBridge
         }
 
         return null;
+    }
+
+    private static Sprite? TryLoadFromCaches(CardData cardData)
+    {
+        for (int i = 0; i < ArtCaches.Count; i++)
+        {
+            Sprite? sprite = LoadFromCache(ArtCaches[i], cardData);
+            if (sprite != null)
+            {
+                return sprite;
+            }
+        }
+
+        return null;
+    }
+
+    private static CardData CloneCardData(CardData source)
+    {
+        CardData clone = new();
+        clone.CopyData(source);
+        return clone;
     }
 
     private static Sprite? LoadFromCache(object cache, CardData cardData)
