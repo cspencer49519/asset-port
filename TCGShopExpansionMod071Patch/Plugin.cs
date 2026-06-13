@@ -32,7 +32,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     public const string PluginName = "TCGShopExpansionMod 0.71 Patch";
 
-    public const string PluginVersion = "1.0.31";
+    public const string PluginVersion = "1.0.49";
 
 
 
@@ -75,6 +75,8 @@ public sealed class Plugin : BaseUnityPlugin
         harmony.PatchAll(typeof(CardUI071Patches));
 
         harmony.PatchAll(typeof(PackOpening071Patches));
+
+        harmony.PatchAll(typeof(InteractableCard3d071Patches));
 
         harmony.PatchAll(typeof(LightManager071Patches));
 

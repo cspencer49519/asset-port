@@ -11,13 +11,27 @@ internal static class CardExtrasCacheAccess
         .GetType("TCGShopExpansionMod.Handlers.CacheHandler")
         ?.GetField("cardExtrasImagesCache", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
+    private static readonly FieldInfo? OriginalCardBackTextureField = typeof(NewSwappingHandler).Assembly
+        .GetType("TCGShopExpansionMod.Handlers.CacheHandler")
+        ?.GetField("originalCardBackTexture", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
     public static Sprite? TryGetCachedSprite(string spriteName)
     {
-        if (CardExtrasImagesCacheField?.GetValue(null) is not List<Sprite> cache)
+        if (CardExtrasImagesCacheField?.GetValue(null) is List<Sprite> cache)
         {
-            return null;
+            Sprite? fromCache = NewSwappingHandler.TryGetSpriteFromCache(cache, spriteName);
+            if (fromCache != null)
+            {
+                return fromCache;
+            }
         }
 
-        return NewSwappingHandler.TryGetSpriteFromCache(cache, spriteName);
+        if (spriteName == "T_CardBackMesh"
+            && OriginalCardBackTextureField?.GetValue(null) is Sprite originalBack)
+        {
+            return originalBack;
+        }
+
+        return null;
     }
 }

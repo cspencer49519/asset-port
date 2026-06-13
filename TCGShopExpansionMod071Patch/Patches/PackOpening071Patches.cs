@@ -4,13 +4,20 @@ namespace TCGShopExpansionMod071Patch.Patches;
 
 internal static class PackOpening071Patches
 {
-    private static int _lastObservedStateIndex = -1;
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(CardOpeningSequence), "OpenScreen")]
+    public static void OpenScreen_Postfix(CardOpeningSequence __instance)
+    {
+        PackOpeningState.SyncFromSequence(__instance);
+        SyncAllPackOpeningPresentations(__instance);
+    }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(CardOpeningSequence), "InitOpenSequence")]
     public static void InitOpenSequence_Postfix(CardOpeningSequence __instance)
     {
-        SyncPackBackMeshes(__instance);
+        PackOpeningState.SyncFromSequence(__instance);
+        SyncAllPackOpeningPresentations(__instance);
     }
 
     [HarmonyPostfix]
@@ -19,24 +26,23 @@ internal static class PackOpening071Patches
     {
         if (!__instance.IsActive())
         {
-            _lastObservedStateIndex = -1;
             return;
         }
+
+        PackOpeningState.SyncFromSequence(__instance);
 
         int state = __instance.m_StateIndex;
         if (state is >= 0 and < 7)
         {
-            SyncPackBackMeshes(__instance);
+            SyncAllPackOpeningPresentations(__instance);
         }
-        else if (state >= 7 && _lastObservedStateIndex < 7)
+        else if (state >= 7)
         {
-            RefreshAllTetramonOverlays(__instance);
+            SyncAllFanRowPresentations(__instance);
         }
-
-        _lastObservedStateIndex = state;
     }
 
-    private static void SyncPackBackMeshes(CardOpeningSequence sequence)
+    private static void SyncAllPackOpeningPresentations(CardOpeningSequence sequence)
     {
         if (sequence.m_Card3dUIList == null)
         {
@@ -48,16 +54,21 @@ internal static class PackOpening071Patches
             Card3dUIGroup? card3d = sequence.m_Card3dUIList[i];
             CardUI? cardUi = card3d?.m_CardUI;
             CardData? cardData = cardUi?.GetCardData();
-            if (cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
+            if (cardUi == null || cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
             {
                 continue;
             }
 
-            TetramonOverlay071Patches.SyncPackOpeningBackMesh(cardUi, card3d);
+            TetramonOverlay071Patches.ConfigurePackOpeningCardPresentation(cardUi, card3d);
+
+            if (PackOpeningState.ShouldShowFrontDuringPackFlip(card3d))
+            {
+                TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(cardUi, cardData, forceFrontOverlay: true);
+            }
         }
     }
 
-    private static void RefreshAllTetramonOverlays(CardOpeningSequence sequence)
+    private static void SyncAllFanRowPresentations(CardOpeningSequence sequence)
     {
         if (sequence.m_Card3dUIList == null)
         {
@@ -67,14 +78,20 @@ internal static class PackOpening071Patches
         for (int i = 0; i < sequence.m_Card3dUIList.Count; i++)
         {
             Card3dUIGroup? card3d = sequence.m_Card3dUIList[i];
-            CardUI? cardUi = card3d?.m_CardUI;
-            CardData? cardData = cardUi?.GetCardData();
-            if (cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
+            if (card3d == null || !card3d.gameObject.activeSelf)
             {
                 continue;
             }
 
-            TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(cardUi, cardData);
+            CardUI? cardUi = card3d.m_CardUI;
+            CardData? cardData = cardUi?.GetCardData();
+            if (cardUi == null || cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
+            {
+                continue;
+            }
+
+            TetramonOverlay071Patches.ApplyPackOpeningFanRowPresentation(cardUi, card3d);
+            TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(cardUi, cardData, forceFrontOverlay: true);
         }
     }
 }

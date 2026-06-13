@@ -29,10 +29,30 @@ internal static class ExtrasHandler071Patches
 
         if (PackOpeningState.IsPackOpeningInProgress())
         {
-            TetramonOverlay071Patches.SyncPackOpeningBackMesh(cardUi, card3dUI);
+            if (PackOpeningState.ShouldShowFrontDuringPackFlip(card3dUI))
+            {
+                TetramonOverlay071Patches.ApplyPackOpeningFlipFrontPresentation(cardUi, card3dUI);
+            }
+            else
+            {
+                TetramonOverlay071Patches.ConfigurePackOpeningCardPresentation(cardUi, card3dUI);
+            }
+
             return;
         }
 
-        TetramonOverlay071Patches.ConfigureCard3dForFrontDisplay(cardUi);
+        if (CardUiDisplayContext.IsBinderAlbumCard(cardUi))
+        {
+            TetramonOverlay071Patches.ApplyFlatScreenCardPresentation(cardUi, card3dUI);
+            return;
+        }
+
+        if (!CardUiDisplayContext.ShouldUseRotatableWorldCardBack(cardUi))
+        {
+            TetramonOverlay071Patches.ApplyFlatScreenCardPresentation(cardUi, card3dUI);
+            return;
+        }
+
+        TetramonOverlay071Patches.SyncTetramonCardBackAfterExpansionMod(cardUi, card3dUI);
     }
 }

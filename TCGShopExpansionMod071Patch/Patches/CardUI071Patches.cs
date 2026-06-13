@@ -11,10 +11,7 @@ internal static class CardUI071Patches
     {
         try
         {
-            if (__instance != null && cardData != null && cardData.expansionType == ECardExpansionType.Tetramon)
-            {
-                TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(__instance, cardData);
-            }
+            ApplyTetramonPresentation(__instance, cardData);
         }
         catch (Exception overlayError)
         {
@@ -28,5 +25,30 @@ internal static class CardUI071Patches
         }
 
         return null;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
+    [HarmonyPatch(typeof(CardUI), "SetCardUI", new[] { typeof(CardData) })]
+    public static void SetCardUI_Postfix_Last(CardUI __instance, CardData cardData)
+    {
+        try
+        {
+            ApplyTetramonPresentation(__instance, cardData);
+        }
+        catch (Exception overlayError)
+        {
+            Plugin.Log.LogWarning($"Pokemon card overlay (late) failed: {overlayError.GetType().Name}: {overlayError.Message}");
+        }
+    }
+
+    private static void ApplyTetramonPresentation(CardUI __instance, CardData cardData)
+    {
+        if (__instance == null || cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
+        {
+            return;
+        }
+
+        TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(__instance, cardData);
     }
 }
