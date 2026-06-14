@@ -1,8 +1,10 @@
 # Install — Genobear / Real TCG Overhaul on game 0.71
 
-This guide is for **players**. You do not need Visual Studio or Python.
+This guide is for **players**. You do not need Visual Studio.
 
 Tested stack: **TCG Card Shop Simulator 0.71** + **Genobear Real TCG Overhaul** + **TCGShopExpansionMod071Patch 1.0.49**.
+
+The release zip includes install/verify scripts for **PowerShell**, **Windows CMD**, and **Linux/macOS (bash)**. CMD and shell scripts use **Python** (`python` / `python3`) to read `manifest.json`.
 
 ## What you need
 
@@ -17,7 +19,7 @@ Tested stack: **TCG Card Shop Simulator 0.71** + **Genobear Real TCG Overhaul** 
 | **0.71 patch** (this repo release) | GitLab release zip or `dist/` from maintainer |
 | Ported **sharedassets0** trio (optional zip) | Release `assets/` folder or Genobear 0.71 add-on |
 
-## Quick install (Windows)
+## Quick install (Windows — PowerShell)
 
 1. Install the game and run it **once** (creates folders).
 2. Install **BepInEx** into the game folder (see Nexus mod 27).
@@ -44,6 +46,37 @@ Use your real game path. If the game is a **sibling** of `asset-port` on a dev m
 
 10. **Smoke test:** start or load a save → open a **Tetramon** pack → check **display case** shelves.
 
+## Quick install (Windows — CMD)
+
+Same steps 1–6 as above, then from Command Prompt in the extracted release folder:
+
+```bat
+scripts\Install-TCG071Mods.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
+scripts\Verify-TCG071Install.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
+```
+
+Requires `python` or `py -3` on PATH. If Python is unavailable, use the PowerShell scripts above.
+
+Flags: `/GamePath`, `/SkipAssets`, `/Force`, `/WhatIf`.
+
+## Quick install (Linux / macOS — Steam or Proton)
+
+Same Nexus/Genobear setup as Windows. The game runs under Proton on Linux; install paths still use `Card Shop Simulator.exe` inside the Steam game folder.
+
+1. Download and extract the release zip.
+2. Ensure `python3` is installed.
+3. From the extracted folder:
+
+```bash
+chmod +x scripts/*.sh
+./scripts/Install-TCG071Mods.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
+./scripts/Verify-TCG071Install.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
+```
+
+If Steam is installed under `~/.local/share/Steam/`, the installer auto-detects that path when `--game-path` is omitted. macOS users can omit `--game-path` if the game lives under `~/Library/Application Support/Steam/steamapps/common/`.
+
+Flags: `--game-path`, `--skip-assets`, `--force`, `--dry-run`.
+
 ## What the installer does
 
 - Copies `TCGShopExpansionMod071Patch.dll` to `BepInEx/plugins/TCGShopExpansionMod071Patch/`
@@ -52,12 +85,12 @@ Use your real game path. If the game is a **sibling** of `asset-port` on a dev m
 
 ## Install flags
 
-| Flag | Effect |
-|------|--------|
-| `-GamePath` | Path to game root (folder containing `Card Shop Simulator.exe`) |
-| `-SkipAssets` | Only install the 0.71 patch DLL |
-| `-WhatIf` | Show actions without copying files |
-| `-Force` | Overwrite patch DLL without prompt |
+| PowerShell | CMD | bash | Effect |
+|------------|-----|------|--------|
+| `-GamePath` | `/GamePath` or first arg | `--game-path` or first arg | Path to game root |
+| `-SkipAssets` | `/SkipAssets` | `--skip-assets` | Only install the 0.71 patch DLL |
+| `-WhatIf` | `/WhatIf` | `--dry-run` | Show actions without copying files |
+| `-Force` | `/Force` | `--force` | Overwrite patch DLL without prompt |
 
 ## Manual install (no script)
 

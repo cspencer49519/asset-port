@@ -57,6 +57,11 @@ Copy-Item -LiteralPath (Join-Path $repoRoot "manifest.json") -Destination "$dist
 Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs") -File | Copy-Item -Destination "$distRoot\docs\"
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG071Mods.ps1") -Destination "$distRoot\scripts\"
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG071Install.ps1") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG071Mods.bat") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG071Install.bat") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG071Mods.sh") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG071Install.sh") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\read_manifest.py") -Destination "$distRoot\scripts\"
 
 $assetSources = @(
     (Join-Path $repoRoot "assets"),

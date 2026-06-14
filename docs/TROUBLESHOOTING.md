@@ -2,10 +2,18 @@
 
 Primary log file: **`BepInEx/LogOutput.log`** (in the game folder).
 
-Run the verifier first:
+Run the verifier first (pick your shell):
 
 ```powershell
 .\scripts\Verify-TCG071Install.ps1 -GamePath "YOUR_GAME_PATH"
+```
+
+```bat
+scripts\Verify-TCG071Install.bat "YOUR_GAME_PATH"
+```
+
+```bash
+./scripts/Verify-TCG071Install.sh --game-path "YOUR_GAME_PATH"
 ```
 
 ## “Shelf data not loaded properly” / return to title
@@ -16,7 +24,7 @@ Run the verifier first:
 
 1. Confirm `BepInEx/plugins/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.dll` exists.
 2. Log must show `TCGShopExpansionMod 0.71 Patch` and `Patched ExpansionMod for game 0.71`.
-3. Re-run `Install-TCG071Mods.ps1` if the patch is missing or outdated.
+3. Re-run the install script (`Install-TCG071Mods.ps1`, `.bat`, or `.sh`) if the patch is missing or outdated.
 
 See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 

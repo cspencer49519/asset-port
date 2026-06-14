@@ -31,7 +31,7 @@ Output: `TCGShopExpansionMod071Patch\bin\Release\netstandard2.1\TCGShopExpansion
 Creates `dist/TCG-071-Genobear-{version}/` with:
 
 - `patches/TCGShopExpansionMod071Patch.dll`
-- `manifest.json`, `docs/`, `scripts/`
+- `manifest.json`, `docs/`, `scripts/` (six player scripts: `.ps1`, `.bat`, `.sh` install/verify + `read_manifest.py`)
 - `assets/` (if `output/` or `assets/` contains ported sharedassets trio)
 
 Zip `dist/TCG-071-Genobear-*` for GitLab release upload.
