@@ -155,7 +155,7 @@ elseif ($PSCmdlet.ShouldProcess($pluginDll, "Install patch DLL")) {
 }
 
 if (-not $SkipAssets) {
-    Write-Step "Optional sharedassets trio"
+    Write-Step "Ported sharedassets trio (Genobear card frames)"
     $dataDir = Join-Path $gameRoot $manifest.paths.dataFolder
     $assetsSource = Join-Path $releaseRoot "assets"
     if (-not (Test-Path $assetsSource)) {
@@ -164,7 +164,7 @@ if (-not $SkipAssets) {
 
     if (-not (Test-Path $assetsSource)) {
         Write-Warn "No assets/ or output/ folder in release — skipping sharedassets install."
-        Write-Warn "Port sharedassets locally or download the assets zip from GitLab Releases."
+        Write-Warn "Card frames will stay vanilla until you get a full release zip with assets/."
     }
     else {
         $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
@@ -196,9 +196,9 @@ else {
 
 Write-Host ""
 Write-Step "Manual steps still required"
-Write-Host "  1. Install Nexus mods listed in docs/INSTALL-071.md"
-Write-Host "  2. Install Genobear pack + cardart.assets (~15 GB)"
-Write-Host "  3. Run: .\scripts\Verify-TCG071Install.ps1 -GamePath `"$gameRoot`""
-Write-Host "  4. Launch game, press F1, configure ExpansionMod (see docs/VERSION_MATRIX.md)"
+Write-Host "  1. Install Nexus mods + Genobear (phases 1-3 in docs/INSTALL-071.md) if not done yet"
+Write-Host "  2. Run: .\scripts\Verify-TCG071Install.ps1 -GamePath `"$gameRoot`""
+Write-Host "  3. Launch game, press F1, configure ExpansionMod (see docs/VERSION_MATRIX.md)"
+Write-Host "  4. Do not use -SkipAssets on a normal install — card frames need the ported trio"
 Write-Host ""
 Write-Ok "Install complete."

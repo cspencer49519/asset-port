@@ -73,6 +73,12 @@
     "sharedAssetsResource": "Card Shop Simulator_Data/sharedassets0.resource",
     "logFile": "BepInEx/LogOutput.log"
   },
+  "sharedAssets": {
+    "requiredForGenobearFrames": true,
+    "note": "Pre-ported trio from release assets/ folder. Do not use raw Genobear 0.62 sharedassets on game 0.71.",
+    "portedMinBytes": 100000000,
+    "vanillaBytes": 47282752
+  },
   "logSuccessMarkers": [
     "TCGShopExpansionMod 0.71 Patch 1.0.49",
     "Patched ExpansionMod for game 0.71",

@@ -54,6 +54,19 @@ for /f "delims=" %%P in ('"%PYTHON%" "%SCRIPT_DIR%\read_manifest.py" "%MANIFEST%
 for /f "delims=" %%P in ('"%PYTHON%" "%SCRIPT_DIR%\read_manifest.py" "%MANIFEST%" paths.cardArtAssets') do call :check_file "%%P" 0
 for /f "delims=" %%P in ('"%PYTHON%" "%SCRIPT_DIR%\read_manifest.py" "%MANIFEST%" paths.sharedAssets') do call :check_file "%%P" 0
 
+for /f "delims=" %%P in ('"%PYTHON%" "%SCRIPT_DIR%\read_manifest.py" "%MANIFEST%" paths.sharedAssets') do set "SHARED_ASSETS_REL=%%P"
+set "SHARED_PATH=%GAME_ROOT%\%SHARED_ASSETS_REL%"
+if exist "%SHARED_PATH%" (
+    for %%F in ("%SHARED_PATH%") do set "SHARED_SIZE=%%~zF"
+    for /f "delims=" %%V in ('"%PYTHON%" "%SCRIPT_DIR%\read_manifest.py" "%MANIFEST%" sharedAssets.vanillaBytes') do set "VANILLA_BYTES=%%V"
+    for /f "delims=" %%V in ('"%PYTHON%" "%SCRIPT_DIR%\read_manifest.py" "%MANIFEST%" sharedAssets.portedMinBytes') do set "PORTED_BYTES=%%V"
+    if !SHARED_SIZE! LEQ !VANILLA_BYTES! (
+        call :warn "sharedassets0.assets is vanilla size (!SHARED_SIZE! bytes) - re-run install without /SkipAssets"
+    ) else if !SHARED_SIZE! GEQ !PORTED_BYTES! (
+        call :pass "sharedassets0.assets looks ported (!SHARED_SIZE! bytes)"
+    )
+)
+
 for /f "delims=" %%P in ('"%PYTHON%" "%SCRIPT_DIR%\read_manifest.py" "%MANIFEST%" paths.logFile') do set "LOG_FILE=%%P"
 set "LOG_PATH=%GAME_ROOT%\%LOG_FILE%"
 

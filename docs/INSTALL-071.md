@@ -1,109 +1,164 @@
 # Install — Genobear / Real TCG Overhaul on game 0.71
 
-This guide is for **players**. You do not need Visual Studio.
+Step-by-step guide for **players**. No coding required.
 
-Tested stack: **TCG Card Shop Simulator 0.71** + **Genobear Real TCG Overhaul** + **TCGShopExpansionMod071Patch 1.0.49**.
+**Tested stack:** TCG Card Shop Simulator **0.71** + Genobear Real TCG Overhaul + **TCGShopExpansionMod071Patch 1.0.49**.
 
-The release zip includes install/verify scripts for **PowerShell**, **Windows CMD**, and **Linux/macOS (bash)**. CMD and shell scripts use **Python** (`python` / `python3`) to read `manifest.json`.
+---
 
-## What you need
+## TL;DR — four phases
 
-| Item | Where |
-|------|--------|
-| Game **0.71** on Steam | [TCG Card Shop Simulator](https://store.steampowered.com/app/3077020/) |
-| BepInEx Pack | [Nexus mod 27](https://www.nexusmods.com/tcgcardshopsimulator/mods/27) |
-| Add New Cards Mod | [Nexus mod 3](https://www.nexusmods.com/tcgcardshopsimulator/mods/3) |
-| More Card Expansions **1.8.7** | [Nexus mod 48](https://www.nexusmods.com/tcgcardshopsimulator/mods/48) |
-| TextureReplacer | [Nexus mod 26](https://www.nexusmods.com/tcgcardshopsimulator/mods/26) |
-| Genobear pack + **cardart.assets** (~15 GB) | Genobear / MEGA (see pack README) |
-| **0.71 patch** (this repo release) | GitLab release zip or `dist/` from maintainer |
-| Ported **sharedassets0** trio (optional zip) | Release `assets/` folder or Genobear 0.71 add-on |
+| Phase | What | Who installs it |
+|-------|------|-----------------|
+| **1** | Game + BepInEx | You (Steam + [Nexus mod 27](https://www.nexusmods.com/tcgcardshopsimulator/mods/27)) |
+| **2** | Core Nexus mods | You (mods 3, 26, 48) |
+| **3** | Genobear pack + `cardart.assets` (~15 GB) | You (Genobear / MEGA) |
+| **4** | **0.71 patch + ported sharedassets** | **Our release zip + install script** |
 
-## Quick install (Windows — PowerShell)
+The install script copies the compatibility patch DLL and the **pre-ported `sharedassets0` trio** into your game. You do **not** need to run Python or port assets yourself.
 
-1. Install the game and run it **once** (creates folders).
-2. Install **BepInEx** into the game folder (see Nexus mod 27).
-3. Install Nexus mods **3**, **48**, and **26** into `BepInEx/plugins/` per each mod’s instructions.
-4. Install **Genobear** (New Cards data, ArtExpander, `cardart.assets`, configs) per Genobear README.
-5. Download the **TCG-071-Genobear** release zip from GitLab.
-6. Extract anywhere (e.g. `Downloads\TCG-071-Genobear`).
-7. Open PowerShell in that folder and run:
+---
+
+## What the release zip contains
+
+Download **TCG-071-Genobear-1.0.49.zip** from GitLab Releases (or build locally with `scripts/Build-Release.ps1`).
+
+| Folder / file | Purpose |
+|---------------|---------|
+| `patches/TCGShopExpansionMod071Patch.dll` | Makes ExpansionMod 1.8.7 work on game 0.71 |
+| `assets/sharedassets0.*` | **Pre-ported** card-frame textures for 0.71 (required for Genobear frames) |
+| `scripts/Install-TCG071Mods.*` | Copies patch + sharedassets into your game (backs up originals) |
+| `scripts/Verify-TCG071Install.*` | Checks files and log markers |
+| `docs/` | This guide, troubleshooting, version pins |
+
+If the zip has **no `assets/` folder**, the release was built without ported sharedassets — card frames will look wrong until you get a full release or ask a maintainer.
+
+---
+
+## What you install manually (before the script)
+
+### Required Nexus mods
+
+Install into `BepInEx/plugins/` per each mod’s README.
+
+| Mod | Nexus | Folder (typical) |
+|-----|-------|------------------|
+| BepInEx Pack | [mod 27](https://www.nexusmods.com/tcgcardshopsimulator/mods/27) | Game root (`BepInEx/`) |
+| Add New Cards Mod | [mod 3](https://www.nexusmods.com/tcgcardshopsimulator/mods/3) | `BepInEx/plugins/TCGShopNewCardsMod/` |
+| More Card Expansions **1.8.7** | [mod 48](https://www.nexusmods.com/tcgcardshopsimulator/mods/48) | `BepInEx/plugins/TCGShopExpansionMod/` |
+| TextureReplacer | [mod 26](https://www.nexusmods.com/tcgcardshopsimulator/mods/26) | `BepInEx/plugins/TextureReplacer/` |
+
+### Genobear Real TCG Overhaul
+
+Follow the Genobear pack README. At minimum you need:
+
+| Item | Location |
+|------|----------|
+| `ArtExpander.dll` | `BepInEx/plugins/ArtExpander/` |
+| **`cardart.assets` (~15 GB)** | `BepInEx/plugins/ArtExpander/` |
+| New Cards / expansion data | Per Genobear README |
+| Config / image packs | Per Genobear README |
+
+**Do not** copy Genobear’s raw `sharedassets0.assets` from the 0.62 pack into game 0.71. Use the **ported trio from our release** (phase 4).
+
+### Recommended (not required)
+
+| Mod | Why |
+|-----|-----|
+| [Configuration Manager](https://www.nexusmods.com/tcgcardshopsimulator/mods/31) | In-game **F1** menu for ExpansionMod settings |
+| [Holographic Overhaul](https://www.nexusmods.com/tcgcardshopsimulator/mods/44) | Foil effects (Genobear foil textures are not ported into sharedassets) |
+
+---
+
+## Full install order
+
+1. Install **TCG Card Shop Simulator 0.71** from Steam.
+2. Launch the game **once**, then quit (creates `BepInEx` folders on first BepInEx install).
+3. Install **BepInEx** ([mod 27](https://www.nexusmods.com/tcgcardshopsimulator/mods/27)) into the game folder.
+4. Install Nexus mods **3**, **26**, and **48** (ExpansionMod **1.8.7**).
+5. Install **Genobear** — especially `cardart.assets` under `ArtExpander/`.
+6. (Recommended) Install **Configuration Manager** for F1 settings.
+7. Download and extract **TCG-071-Genobear-1.0.49.zip** anywhere (e.g. `Downloads/TCG-071-Genobear`).
+8. Run the **install script** (see platform section below). **Do not** use `--skip-assets` / `-SkipAssets` on a normal install.
+9. Run the **verify script** on the same game path.
+10. Launch the game. Open config with **F1** → **com.DarkDragoon.TCGShopExpansionMod** → set values in [VERSION_MATRIX.md](VERSION_MATRIX.md).
+11. **Smoke test:** load a save → open a **Tetramon** pack → check **display case** shelves and card frames.
+
+---
+
+## Run the install script
+
+Pick **one** platform. Replace the path with your real Steam game folder.
+
+### Windows — PowerShell (recommended)
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
+cd "D:\Downloads\TCG-071-Genobear-1.0.49"
 .\scripts\Install-TCG071Mods.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
-```
-
-Use your real game path. If the game is a **sibling** of `asset-port` on a dev machine, you can omit `-GamePath`.
-
-8. Run the verifier:
-
-```powershell
 .\scripts\Verify-TCG071Install.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
 
-9. Launch the game. Press **F1** → **com.DarkDragoon.TCGShopExpansionMod** → enable settings listed in [VERSION_MATRIX.md](VERSION_MATRIX.md).
-
-10. **Smoke test:** start or load a save → open a **Tetramon** pack → check **display case** shelves.
-
-## Quick install (Windows — CMD)
-
-Same steps 1–6 as above, then from Command Prompt in the extracted release folder:
+### Windows — CMD
 
 ```bat
+cd /d D:\Downloads\TCG-071-Genobear-1.0.49
 scripts\Install-TCG071Mods.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 scripts\Verify-TCG071Install.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
 
-Requires `python` or `py -3` on PATH. If Python is unavailable, use the PowerShell scripts above.
+Requires `python` or `py -3` on PATH.
 
-Flags: `/GamePath`, `/SkipAssets`, `/Force`, `/WhatIf`.
-
-## Quick install (Linux / macOS — Steam or Proton)
-
-Same Nexus/Genobear setup as Windows. The game runs under Proton on Linux; install paths still use `Card Shop Simulator.exe` inside the Steam game folder.
-
-1. Download and extract the release zip.
-2. Ensure `python3` is installed.
-3. From the extracted folder:
+### Linux / macOS (Steam / Proton / CrossOver)
 
 ```bash
+cd ~/Downloads/TCG-071-Genobear-1.0.49
 chmod +x scripts/*.sh
 ./scripts/Install-TCG071Mods.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
 ./scripts/Verify-TCG071Install.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
 ```
 
-If Steam is installed under `~/.local/share/Steam/`, the installer auto-detects that path when `--game-path` is omitted. macOS users can omit `--game-path` if the game lives under `~/Library/Application Support/Steam/steamapps/common/`.
+- Linux Steam may use `~/.local/share/Steam/steamapps/common/...` — the script auto-detects if you omit `--game-path`.
+- macOS: `~/Library/Application Support/Steam/steamapps/common/TCG Card Shop Simulator`
 
-Flags: `--game-path`, `--skip-assets`, `--force`, `--dry-run`.
+---
 
 ## What the installer does
 
-- Copies `TCGShopExpansionMod071Patch.dll` to `BepInEx/plugins/TCGShopExpansionMod071Patch/`
-- Optionally installs ported `sharedassets0.assets` (+ `.resS`, `.resource`) with a timestamped backup
-- Does **not** install Nexus mods or Genobear art (you must add those manually)
+| Action | Details |
+|--------|---------|
+| Installs patch DLL | `BepInEx/plugins/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.dll` |
+| Installs sharedassets trio | `Card Shop Simulator_Data/sharedassets0.assets`, `.assets.resS`, `.resource` |
+| Backs up originals | `Card Shop Simulator_Data/_backup_sharedassets_YYYYMMDD-HHMMSS/` |
+| Does **not** install | Nexus mods, Genobear art, BepInEx itself |
 
-## Install flags
+### Install flags
 
 | PowerShell | CMD | bash | Effect |
 |------------|-----|------|--------|
-| `-GamePath` | `/GamePath` or first arg | `--game-path` or first arg | Path to game root |
-| `-SkipAssets` | `/SkipAssets` | `--skip-assets` | Only install the 0.71 patch DLL |
-| `-WhatIf` | `/WhatIf` | `--dry-run` | Show actions without copying files |
+| `-GamePath` | first arg or `/GamePath` | `--game-path` or first arg | Path to game root |
+| `-SkipAssets` | `/SkipAssets` | `--skip-assets` | Patch DLL only — **card frames stay vanilla** |
+| `-WhatIf` | `/WhatIf` | `--dry-run` | Show actions without copying |
 | `-Force` | `/Force` | `--force` | Overwrite patch DLL without prompt |
+
+---
 
 ## Manual install (no script)
 
-1. Create folder: `BepInEx/plugins/TCGShopExpansionMod071Patch/`
+1. Create `BepInEx/plugins/TCGShopExpansionMod071Patch/`.
 2. Copy `patches/TCGShopExpansionMod071Patch.dll` from the release zip into that folder.
-3. (Optional) Back up then replace these three files in `Card Shop Simulator_Data/` from release `assets/`:
+3. Back up then replace all **three** files in `Card Shop Simulator_Data/` from release `assets/`:
    - `sharedassets0.assets`
    - `sharedassets0.assets.resS`
    - `sharedassets0.resource`
 
-## After install
+All three must come from the **same ported release**. Never mix 0.62 `.assets` with 0.71 `.resS`.
 
-Check `BepInEx/LogOutput.log` for:
+---
+
+## After install — log checks
+
+Open `BepInEx/LogOutput.log`. You should see:
 
 ```
 TCGShopExpansionMod 0.71 Patch 1.0.49
@@ -111,8 +166,44 @@ Patched ExpansionMod for game 0.71
 ArtExpander bridge ready
 ```
 
-If something fails, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+### ExpansionMod settings (F1)
+
+Under **com.DarkDragoon.TCGShopExpansionMod** (requires Configuration Manager or BepInEx config UI):
+
+| Setting | Value |
+|---------|-------|
+| Access other card expansions | **true** |
+| Enable custom card images for new expansions | **true** |
+| Enable custom configs for new expansions | **true** |
+| Enable custom card images for original expansions | **true** |
+| Enable custom configs for original expansions | **true** |
+| Enable custom images for cards on play tables | **false** |
+
+Full matrix: [VERSION_MATRIX.md](VERSION_MATRIX.md).
+
+### Success checklist
+
+- [ ] Save loads (no “Shelf data not loaded properly”)
+- [ ] Tetramon pack: correct card art and Genobear-style frames
+- [ ] Display case: correct fronts/backs
+- [ ] Verify script passes (warnings only for optional items you skipped)
+
+---
+
+## Common mistakes
+
+| Mistake | Result |
+|---------|--------|
+| Skipping our install script / using `-SkipAssets` | Vanilla card frames, wrong borders |
+| Copying Genobear 0.62 `sharedassets0` into 0.71 | Crash or white screen |
+| Missing `cardart.assets` | Pokémon/Tetramon art missing or icons only |
+| ExpansionMod not 1.8.7 | Shelf load crash without patch |
+| Only replacing `.assets`, not `.resS` + `.resource` | White screen or broken UI |
+
+Fixes: [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
+---
 
 ## Developers
 
-Build from source: [DEVELOPERS.md](DEVELOPERS.md).
+Build from source and asset porting: [DEVELOPERS.md](DEVELOPERS.md) (maintainers only).

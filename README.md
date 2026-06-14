@@ -4,9 +4,11 @@ Compatibility patch and install tooling for **Genobear Real TCG Overhaul** on **
 
 ## Players — start here
 
-**[docs/INSTALL-071.md](docs/INSTALL-071.md)** — step-by-step install (no coding required)
+**[docs/INSTALL-071.md](docs/INSTALL-071.md)** — full step-by-step guide (Nexus mods, Genobear, then one install script).
 
-After installing mods from Nexus and Genobear, use one of these script pairs from the release zip:
+**What the release zip does for you:** copies the 0.71 compatibility patch **and** the pre-ported `sharedassets0` trio (Genobear card frames). You do **not** need to port assets yourself.
+
+After installing Nexus mods and Genobear, run one script pair from the extracted release zip:
 
 ```powershell
 .\scripts\Install-TCG071Mods.ps1 -GamePath "YOUR_STEAM_GAME_FOLDER"

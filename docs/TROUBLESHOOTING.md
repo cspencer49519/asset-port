@@ -1,8 +1,8 @@
 # Troubleshooting — 0.71 + Genobear + 071 patch
 
-Primary log file: **`BepInEx/LogOutput.log`** (in the game folder).
+Primary log: **`BepInEx/LogOutput.log`** (in the game folder).
 
-Run the verifier first (pick your shell):
+Run the verifier first:
 
 ```powershell
 .\scripts\Verify-TCG071Install.ps1 -GamePath "YOUR_GAME_PATH"
@@ -16,6 +16,25 @@ scripts\Verify-TCG071Install.bat "YOUR_GAME_PATH"
 ./scripts/Verify-TCG071Install.sh --game-path "YOUR_GAME_PATH"
 ```
 
+Full install guide: [INSTALL-071.md](INSTALL-071.md).
+
+---
+
+## Wrong or vanilla card frames
+
+**Symptoms:** Game runs but cards use default borders/frames instead of Genobear style.
+
+**Cause:** Ported `sharedassets0` trio not installed (used `-SkipAssets`, patch-only zip, or never ran install script).
+
+**Fix:**
+
+1. Re-run install script **without** `-SkipAssets` / `--skip-assets`.
+2. Confirm release zip contains `assets/sharedassets0.assets` (~160+ MB, not ~47 MB).
+3. Verify script should report `sharedassets0.assets looks ported`.
+4. Restore from `_backup_sharedassets_*` only if a bad swap caused crashes — then re-run install.
+
+---
+
 ## “Shelf data not loaded properly” / return to title
 
 **Cause:** More Card Expansions 1.8.7 hits removed field `m_CardBorderList` on game 0.71.
@@ -24,9 +43,11 @@ scripts\Verify-TCG071Install.bat "YOUR_GAME_PATH"
 
 1. Confirm `BepInEx/plugins/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.dll` exists.
 2. Log must show `TCGShopExpansionMod 0.71 Patch` and `Patched ExpansionMod for game 0.71`.
-3. Re-run the install script (`Install-TCG071Mods.ps1`, `.bat`, or `.sh`) if the patch is missing or outdated.
+3. Re-run the install script if the patch is missing or outdated.
 
 See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
+
+---
 
 ## Patch not loading
 
@@ -34,9 +55,12 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 |---------|-----|
 | No “071 Patch” line in log | Install DLL to `BepInEx/plugins/TCGShopExpansionMod071Patch/` |
 | BepInEx not loading plugins | Reinstall BepInEx mod 27; run game once |
-| ExpansionMod missing | Install Nexus mod 48; patch has hard dependency |
+| ExpansionMod missing | Install Nexus mod 48 (v1.8.7); patch has hard dependency |
+| `FileNotFoundException: MonoMod.Backports` | Copy `MonoMod.Backports.dll` and `MonoMod.ILHelpers.dll` from BepInEx pack into `BepInEx/core/` (some Wine/Mac installs) |
 
-## Pokemon cards show vanilla art / icons only
+---
+
+## Pokemon / Tetramon cards show vanilla art or icons only
 
 **Cause:** ArtExpander or `cardart.assets` missing.
 
@@ -46,6 +70,32 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 2. Log should contain `ArtExpander bridge ready`.
 3. Install Genobear HD art bundle per pack README.
 
+---
+
+## Game crash on launch after sharedassets change
+
+**Cause:** Mixed game versions — e.g. Genobear 0.62 `.assets` with 0.71 `.resS`.
+
+**Fix:**
+
+1. Restore all three files from `Card Shop Simulator_Data/_backup_sharedassets_*`.
+2. Re-install the **ported trio** from the release zip via install script.
+3. Never copy only one file from a different game version.
+
+---
+
+## White screen / broken UI after asset swap
+
+**Cause:** Corrupt or mis-paired `sharedassets0` trio (bad port, missing `.resS`, or UnityPy-broken port).
+
+**Fix:**
+
+1. Restore backup from `Card Shop Simulator_Data/_backup_sharedassets_*`.
+2. Re-run install script using assets from a **trusted release zip** only.
+3. Do not use homemade UnityPy `save()` ports for 0.71.
+
+---
+
 ## Pack opening / display case visual bugs
 
 Ensure patch version **1.0.49** or newer in log.
@@ -54,27 +104,30 @@ Ensure patch version **1.0.49** or newer in log.
 |-------|--------|
 | Wide stretched cards | Update to latest 071 patch |
 | No pack backs | ExpansionMod + patch both loaded |
-| Display case wrong faces | Load save after patch install |
+| Display case wrong faces | Load save after patch install; check F1 ExpansionMod settings |
 
-## White screen / broken UI after asset swap
+---
 
-**Cause:** Wrong or incomplete `sharedassets0` trio (bad port or missing `.resS`).
+## ArtExpander GhostCardPatch error in log
 
-**Fix:**
+Harmony patch mismatch between Genobear’s bundled ArtExpander and game 0.71 — often **non-fatal**. Card art still loads if `cardart.assets` is present and log shows `ArtExpander bridge ready`.
 
-1. Restore backup from `Card Shop Simulator_Data/_backup_sharedassets_*`.
-2. Re-install only the **ported trio** from a trusted release zip.
-3. Do not mix 0.62 `.assets` with 0.71 `.resS` files.
+If the game crashes on ArtExpander load, replace `ArtExpander.dll` with a 0.71-compatible build (see maintainer notes in [DEVELOPERS.md](DEVELOPERS.md)).
 
-## ArtExpander GhostCardPatch error
+---
 
-Harmony patch mismatch with 0.71 — **expected**. Full card art still works if `cardart.assets` is present.
+## F1 / ExpansionMod settings not visible
+
+Install [Configuration Manager](https://www.nexusmods.com/tcgcardshopsimulator/mods/31) (Nexus mod 31), then press **F1** in-game.
+
+---
 
 ## Getting help
 
 Include:
 
 1. Patch version line from log
-2. Output of `Verify-TCG071Install.ps1`
-3. Last 100 lines of `LogOutput.log` around first error
+2. Output of verify script
+3. Last ~100 lines of `LogOutput.log` around first error
 4. [VERSION_MATRIX.md](VERSION_MATRIX.md) versions you installed
+5. Whether verify reported ported vs vanilla `sharedassets0.assets` size

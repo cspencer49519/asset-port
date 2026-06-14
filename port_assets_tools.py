@@ -1,50 +1,69 @@
-"""Port mod textures using AssetsTools.NET (UABEA-compatible write path).
+"""Port mod textures using UnityPy export + AssetsTools.NET write.
 
-UnityPy save corrupts font/UI references; this writer preserves the full
-assets file structure and only replaces selected Texture2D byte payloads.
+UnityPy save corrupts 0.71 sharedassets/.resS pairing (white screen). UnityPy read
+is reliable for decoding mod textures. AssetsTools.NET v3 preserves file structure
+when writing patched Texture2D payloads.
 """
 from __future__ import annotations
 
 import json
 import re
 import shutil
-import struct
 from datetime import datetime, timezone
 from pathlib import Path
 
+import UnityPy
+from PIL import Image
 import clr
 
-clr.AddReference(r"C:\uabea-windows\AssetsTools.NET.dll")
-clr.AddReference(r"C:\uabea-windows\AssetsTools.NET.Texture.dll")
+ATNET_DIR = Path(__file__).resolve().parent / "tools" / "atnet"
+clr.AddReference(str(ATNET_DIR / "AssetsTools.NET.dll"))
+clr.AddReference(str(ATNET_DIR / "AssetsTools.NET.Texture.dll"))
 
-from AssetsTools.NET import AssetsFileWriter, AssetsReplacer  # noqa: E402
-from AssetsTools.NET.Extra import AssetClassID, AssetsManager  # noqa: E402
+from AssetsTools.NET import AssetsFileWriter  # noqa: E402
+from AssetsTools.NET.Extra import AssetsManager  # noqa: E402
 from AssetsTools.NET.Texture import TextureFile, TextureFormat  # noqa: E402
-from PIL import Image  # noqa: E402
-from System.Collections.Generic import List  # noqa: E402
 
-ROOT = Path(r"c:\TCGCardShopModWork\asset-port")
+ROOT = Path(__file__).resolve().parent
+ATNET = ROOT / "tools" / "atnet"
 BASE_DIR = ROOT / "base-071"
 MOD_ASSETS = ROOT / "mod-062" / "sharedassets0.assets"
 MOD_PAIRED = ROOT / "mod-paired"
 EXPORTED = ROOT / "exported-mod"
 OUTPUT = ROOT / "output"
 REPORT = ROOT / "port_report_atnet.json"
-TPK = Path(r"C:\uabea-windows\classdata.tpk")
+TPK = ATNET / "classdata.tpk"
 
 PORT_NAME = re.compile(
     r"^(?:"
     r"Bat[A-D]"
     r"|Card"
     r"|Ghost_"
-    r"|RainbowFoil"
-    r"|Evo(?:BasicIcon|Border)"
-    r"|T_Card"
     r"|GradedCard"
     r"|GradeCard"
     r")",
     re.IGNORECASE,
 )
+
+# Foil/outline/font atlases must stay vanilla 0.71 — mod pixels break TMP glyph layout.
+SKIP_TEXTURE = re.compile(
+    r"(?:"
+    r"^RainbowFoil$"
+    r"|^Evo(?:BasicIcon|Border)$"
+    r"|^T_Card"
+    r"|Outline"
+    r"|^CenterDot_.*Outline$"
+    r"|^FredokaOne"
+    r"|^Font Texture$"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def should_port(name: str) -> bool:
+    if SKIP_TEXTURE.search(name):
+        return False
+    return bool(PORT_NAME.match(name))
 
 
 def ensure_mod_paired() -> None:
@@ -54,21 +73,24 @@ def ensure_mod_paired() -> None:
         shutil.copy2(BASE_DIR / name, MOD_PAIRED / name)
 
 
-def bgra_to_png(bgra: bytes, width: int, height: int, path: Path) -> None:
-    rgba = bytearray(len(bgra))
-    for i in range(0, len(bgra), 4):
-        rgba[i] = bgra[i + 2]
-        rgba[i + 1] = bgra[i + 1]
-        rgba[i + 2] = bgra[i]
-        rgba[i + 3] = bgra[i + 3]
-    img = Image.frombytes("RGBA", (width, height), bytes(rgba))
-    img = img.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    img.save(path)
+def prepare_image(img: Image.Image) -> Image.Image:
+    if img.mode not in ("RGB", "RGBA"):
+        img = img.convert("RGBA")
+    return img
 
 
-def png_to_bgra(path: Path) -> tuple[bytes, int, int]:
+def pad_size(width: int, height: int, block: int = 4) -> tuple[int, int]:
+    return (
+        width if width % block == 0 else width + (block - width % block),
+        height if height % block == 0 else height + (block - height % block),
+    )
+
+
+def png_to_bgra(path: Path, target_w: int, target_h: int) -> tuple[bytes, int, int]:
     img = Image.open(path).convert("RGBA")
+    tw, th = pad_size(target_w, target_h)
+    if img.size != (tw, th):
+        img = img.resize((tw, th), Image.Resampling.LANCZOS)
     img = img.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
     width, height = img.size
     rgba = img.tobytes()
@@ -81,12 +103,26 @@ def png_to_bgra(path: Path) -> tuple[bytes, int, int]:
     return bytes(bgra), width, height
 
 
-def import_png_into_base(base_field, png_path: Path) -> None:
-    fmt = TextureFormat(base_field["m_TextureFormat"].AsInt)
-    bgra, width, height = png_to_bgra(png_path)
-    enc = TextureFile.Encode(bgra, fmt, width, height)
+def encode_bgra(bgra: bytes, fmt: TextureFormat, width: int, height: int) -> tuple[bytes, TextureFormat]:
+    enc = TextureFile.EncodeManagedData(bgra, fmt, width, height, False)
+    if enc is not None and len(enc) > 0:
+        return bytes(enc), fmt
+    enc = TextureFile.EncodeNativeData(bgra, fmt, width, height, 4, False)
+    if enc is not None and len(enc) > 0:
+        return bytes(enc), fmt
+    fmt = TextureFormat.RGBA32
+    enc = TextureFile.EncodeManagedData(bgra, fmt, width, height, False)
     if enc is None:
         raise RuntimeError(f"Encode failed for format {fmt}")
+    return bytes(enc), fmt
+
+
+def import_png_into_base(base_field, png_path: Path) -> None:
+    tw = base_field["m_Width"].AsInt
+    th = base_field["m_Height"].AsInt
+    fmt = TextureFormat(base_field["m_TextureFormat"].AsInt)
+    bgra, width, height = png_to_bgra(png_path, tw, th)
+    enc, fmt = encode_bgra(bgra, fmt, width, height)
 
     stream = base_field["m_StreamData"]
     stream["offset"].AsInt = 0
@@ -100,117 +136,160 @@ def import_png_into_base(base_field, png_path: Path) -> None:
     base_field["m_CompleteImageSize"].AsInt = len(enc)
     base_field["m_Width"].AsInt = width
     base_field["m_Height"].AsInt = height
-
-    image_data = base_field["image data"]
-    image_data.AsByteArray = enc
+    base_field["image data"].AsByteArray = enc
 
 
-def port_textures() -> dict:
+def export_changes() -> tuple[list[dict], dict]:
     ensure_mod_paired()
     EXPORTED.mkdir(parents=True, exist_ok=True)
-    if OUTPUT.exists():
-        shutil.rmtree(OUTPUT)
-    OUTPUT.mkdir(parents=True)
 
-    work = ROOT / "work-atnet"
-    if work.exists():
-        shutil.rmtree(work)
-    shutil.copytree(BASE_DIR, work)
-
-    manager = AssetsManager()
-    manager.LoadClassPackage(str(TPK))
-    base_inst = manager.LoadAssetsFile(str(work / "sharedassets0.assets"), False)
-    mod_inst = manager.LoadAssetsFile(str(MOD_PAIRED / "sharedassets0.assets"), False)
-    manager.LoadClassDatabaseFromPackage(base_inst.file.Metadata.UnityVersion)
-
-    mod_infos = {
-        info.PathId: info
-        for info in mod_inst.file.Metadata.AssetInfos
-        if info.TypeId == int(AssetClassID.Texture2D)
-    }
+    base_env = UnityPy.load(str(BASE_DIR))
+    mod_env = UnityPy.load(str(MOD_PAIRED))
+    mod_by_id = {obj.path_id: obj for obj in mod_env.objects}
 
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "tool": "AssetsTools.NET",
-        "applied": [],
         "skipped_same": [],
         "skipped_filtered": [],
         "skipped_no_mod": [],
         "skipped_unreadable": [],
-        "errors": [],
+        "export_errors": [],
     }
+    changes: list[dict] = []
 
-    replacers = List[AssetsReplacer]()
-
-    for info in base_inst.file.Metadata.AssetInfos:
-        if info.TypeId != int(AssetClassID.Texture2D):
+    for b_obj in base_env.objects:
+        if b_obj.type.name != "Texture2D":
             continue
 
-        mod_info = mod_infos.get(info.PathId)
-        if mod_info is None:
-            report["skipped_no_mod"].append({"path_id": info.PathId})
-            continue
-
-        base_field = manager.GetBaseField(base_inst, info)
-        mod_field = manager.GetBaseField(mod_inst, mod_info)
-        name = base_field["m_Name"].AsString
-
-        if base_field.WriteToByteArray() == mod_field.WriteToByteArray():
-            report["skipped_same"].append({"path_id": info.PathId, "name": name})
-            continue
-
-        if not PORT_NAME.match(name):
-            report["skipped_filtered"].append({"path_id": info.PathId, "name": name})
+        path_id = b_obj.path_id
+        name = f"pathid_{path_id}"
+        m_obj = mod_by_id.get(path_id)
+        if m_obj is None:
+            report["skipped_no_mod"].append({"path_id": path_id, "name": name})
             continue
 
         try:
-            mod_tex = TextureFile.ReadTextureFile(mod_field)
-            mod_bgra = mod_tex.GetTextureData(mod_inst)
-            if mod_bgra is None or len(mod_bgra) == 0:
-                report["skipped_unreadable"].append(
-                    {"path_id": info.PathId, "name": name, "error": "empty mod texture data"}
-                )
+            if b_obj.get_raw_data() == m_obj.get_raw_data():
+                try:
+                    name = b_obj.read().m_Name or name
+                except Exception:
+                    pass
+                report["skipped_same"].append({"path_id": path_id, "name": name})
                 continue
 
+            b_data = b_obj.read()
+            m_data = m_obj.read()
+            name = b_data.m_Name or name
+            m_img = m_data.image
+        except Exception as exc:  # noqa: BLE001
+            report["skipped_unreadable"].append({"path_id": path_id, "name": name, "error": str(exc)})
+            continue
+
+        if not should_port(name):
+            report["skipped_filtered"].append({"path_id": path_id, "name": name})
+            continue
+
+        if m_img is None:
+            report["skipped_unreadable"].append(
+                {"path_id": path_id, "name": name, "error": "mod image None"}
+            )
+            continue
+
+        try:
+            m_img = prepare_image(m_img)
             safe = "".join(ch if ch.isalnum() or ch in "._-" else "_" for ch in name)
             png_path = EXPORTED / f"{safe}.png"
-            bgra_to_png(mod_bgra, mod_tex.m_Width, mod_tex.m_Height, png_path)
-            import_png_into_base(base_field, png_path)
-            info.SetNewData(base_field)
-            report["applied"].append(
+            m_img.save(png_path)
+            changes.append(
                 {
-                    "path_id": info.PathId,
+                    "path_id": path_id,
                     "name": name,
                     "png": str(png_path),
-                    "base_size": [base_field["m_Width"].AsInt, base_field["m_Height"].AsInt],
+                    "base_size": [b_data.m_Width, b_data.m_Height],
+                    "mod_size": [m_data.m_Width, m_data.m_Height],
                 }
             )
         except Exception as exc:  # noqa: BLE001
-            report["errors"].append({"path_id": info.PathId, "name": name, "error": str(exc)})
+            report["export_errors"].append({"path_id": path_id, "name": name, "error": str(exc)})
+
+    return changes, report
+
+
+def apply_changes(changes: list[dict]) -> dict:
+    work = ROOT / "work-atnet"
+    if work.exists():
+        shutil.rmtree(work)
+    shutil.copytree(BASE_DIR, work)
+    if OUTPUT.exists():
+        shutil.rmtree(OUTPUT)
+    OUTPUT.mkdir(parents=True)
+
+    manager = AssetsManager()
+    manager.LoadClassPackage(str(TPK))
+    base_inst = manager.LoadAssetsFile(str(work / "sharedassets0.assets"), False)
+    manager.LoadClassDatabaseFromPackage(base_inst.file.Metadata.UnityVersion)
+
+    by_path = {info.PathId: info for info in base_inst.file.Metadata.AssetInfos}
+    applied: list[dict] = []
+    errors: list[dict] = []
+
+    for change in changes:
+        info = by_path.get(change["path_id"])
+        if info is None:
+            errors.append({"name": change["name"], "error": "path_id missing in base"})
+            continue
+        try:
+            base_field = manager.GetBaseField(base_inst, info)
+            import_png_into_base(base_field, Path(change["png"]))
+            info.SetNewData(base_field)
+            applied.append(change)
+        except Exception as exc:  # noqa: BLE001
+            errors.append({"path_id": change["path_id"], "name": change["name"], "error": str(exc)})
 
     out_assets = OUTPUT / "sharedassets0.assets"
-    OUTPUT.mkdir(parents=True, exist_ok=True)
     writer = AssetsFileWriter(str(out_assets))
-    base_inst.file.Write(writer, 0, replacers, None)
+    base_inst.file.Write(writer, 0)
     writer.Close()
 
     shutil.copy2(work / "sharedassets0.assets.resS", OUTPUT / "sharedassets0.assets.resS")
     shutil.copy2(work / "sharedassets0.resource", OUTPUT / "sharedassets0.resource")
-
     manager.UnloadAllAssetsFiles(True)
 
-    report["counts"] = {k: len(v) for k, v in report.items() if isinstance(v, list)}
-    report["output_size"] = out_assets.stat().st_size
-    REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    (ROOT / "texture_checklist.txt").write_text(
-        "\n".join(sorted(x["name"] for x in report["applied"])), encoding="utf-8"
-    )
-    return report
+    return {
+        "applied": applied,
+        "errors": errors,
+        "output_size": out_assets.stat().st_size,
+        "input_size": (BASE_DIR / "sharedassets0.assets").stat().st_size,
+    }
 
 
 def main() -> None:
-    report = port_textures()
-    print(json.dumps({"counts": report["counts"], "output_size": report["output_size"]}, indent=2))
+    changes, export_report = export_changes()
+    result = apply_changes(changes)
+    report = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "tool": "UnityPy export + AssetsTools.NET write",
+        "method": "card frame textures only; foil/outline/font atlases stay vanilla 0.71",
+        **export_report,
+        **result,
+    }
+    report["counts"] = {
+        "export_candidates": len(changes),
+        "applied": len(result["applied"]),
+        "errors": len(result["errors"]),
+        "skipped_same": len(export_report["skipped_same"]),
+        "skipped_filtered": len(export_report["skipped_filtered"]),
+        "skipped_no_mod": len(export_report["skipped_no_mod"]),
+        "skipped_unreadable": len(export_report["skipped_unreadable"]),
+        "export_errors": len(export_report["export_errors"]),
+    }
+    REPORT.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    (ROOT / "texture_checklist.txt").write_text(
+        "\n".join(sorted(x["name"] for x in result["applied"])), encoding="utf-8"
+    )
+    print(json.dumps(report["counts"], indent=2))
+    print(f"input {report['input_size']} output {report['output_size']}")
+    for item in result["applied"]:
+        print(f"  {item['name']}")
 
 
 if __name__ == "__main__":

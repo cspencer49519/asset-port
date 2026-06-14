@@ -1,5 +1,16 @@
+BatC
+BatD
 CardBG_Air
 CardBack
+CardBorderMask
 CardBorder_EX
+CardCenterFrameFullArtMask
+CardDarkFadeBar
+CardFrontFullArt_Air
+CardFrontIconOnly
+CardFullMask
 CardIcon_Legend
 Ghost_PiggyD
+GradeCardScratch10
+GradedCardCase
+GradedCardCaseBack

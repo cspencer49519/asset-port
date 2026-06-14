@@ -121,6 +121,18 @@ check_file_exists "$(read_manifest paths.newCardsModDll)" 1 || true
 check_file_exists "$(read_manifest paths.cardArtAssets)" 0 || true
 check_file_exists "$(read_manifest paths.sharedAssets)" 0 || true
 
+SHARED_PATH="${GAME_ROOT}/$(read_manifest paths.sharedAssets)"
+if [[ -f "${SHARED_PATH}" ]]; then
+    SIZE="$(wc -c < "${SHARED_PATH}" | tr -d ' ')"
+    VANILLA="$(read_manifest sharedAssets.vanillaBytes)"
+    PORTED="$(read_manifest sharedAssets.portedMinBytes)"
+    if [[ "${SIZE}" -le "${VANILLA}" ]]; then
+        write_warn "sharedassets0.assets is vanilla size (${SIZE} bytes) — re-run install without --skip-assets"
+    elif [[ "${SIZE}" -ge "${PORTED}" ]]; then
+        write_pass "sharedassets0.assets looks ported (${SIZE} bytes)"
+    fi
+fi
+
 LOG_FILE="$(read_manifest paths.logFile)"
 LOG_PATH="${GAME_ROOT}/${LOG_FILE}"
 

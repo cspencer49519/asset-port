@@ -1,37 +1,40 @@
-Genobear Real TCG Overhaul - install checklist (your game)
-==========================================================
+# Genobear Real TCG Overhaul on game 0.71 — quick reference
 
-Required by Genobear README
----------------------------
+**Players:** use the full guide → **[docs/INSTALL-071.md](docs/INSTALL-071.md)**
 
-| Requirement | Status | Notes |
-|-------------|--------|-------|
-| BepInEx Pack | OK | BepInEx 5.4.x in game root |
-| TextureReplacer | OK | v1.6.1 in BepInEx/plugins |
-| Add New Cards Mod | OK | TCGShopNewCardsMod 1.6.0.0 |
-| More Card Expansions | **PATCHED for 0.71** | v1.8.7 + `TCGShopExpansionMod071Patch` (skips removed `m_CardBorderList` path). See `asset-port/SHELF_ERROR_FIX.md`. |
-| ArtExpander (bundled) | OK | ArtExpander.dll + cardart.assets (~15 GB) |
-| HD card art (MEGA) | OK | cardart.assets present |
-| sharedassets0.assets (Genobear) | PORTED | Use ported file in Genobear pack / asset-port/output |
+This file is a maintainer checklist mirroring a working install.
 
-Also installed (not in Genobear readme but present)
--------------------------------------------------
-- Enhanced Prefab Loader 6.0.1
-- Holographic Overhaul 3.2.0
-- Configuration Manager
-- CustomExpansionPackImages configs/images (data only; normally loaded by TCGShopExpansionMod)
+## Required components
 
-Known log warnings (non-fatal)
-------------------------------
-- ArtExpander GhostCardPatch Harmony error (version mismatch with current game)
-- animated.assets not found (optional ArtExpander file)
+| Component | Version / source |
+|-----------|------------------|
+| Game | **0.71** (Steam) |
+| BepInEx Pack | Nexus mod 27 |
+| Add New Cards Mod | Nexus mod 3 |
+| More Card Expansions | **1.8.7** + **TCGShopExpansionMod071Patch 1.0.49** |
+| TextureReplacer | Nexus mod 26 |
+| ArtExpander + `cardart.assets` | Genobear pack (~15 GB) |
+| **Ported sharedassets0 trio** | Release `assets/` via install script — **not** raw Genobear 0.62 file |
 
-Recommended next step
----------------------
-Install More Card Expansions (TCGShopExpansionMod) from Nexus mod 48, then in-game
-press F1 and confirm com.DarkDragoon.TCGShopExpansionMod settings match Genobear
-README (enable expansion options except where noted).
+## Install flow (player)
 
-After installing TCGShopExpansionMod, enable in its config:
-- Access other card expansions = true
-- Enable custom card images/configs for new and original expansions = true
+1. Nexus mods + Genobear (manual)
+2. Extract **TCG-071-Genobear** release zip
+3. Run `Install-TCG071Mods` script (patch + sharedassets)
+4. Run `Verify-TCG071Install` script
+5. F1 → ExpansionMod settings per [VERSION_MATRIX.md](docs/VERSION_MATRIX.md)
+
+## Optional but common
+
+- Configuration Manager (F1 menu)
+- Holographic Overhaul (foils)
+- Enhanced Prefab Loader
+
+## Known non-fatal log messages
+
+- ArtExpander GhostCardPatch Harmony error (Genobear DLL vs 0.71)
+- `animated.assets not found`
+
+## Shelf crash without patch
+
+See [SHELF_ERROR_FIX.md](SHELF_ERROR_FIX.md).

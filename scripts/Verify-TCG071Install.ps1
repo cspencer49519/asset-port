@@ -82,6 +82,20 @@ Test-FileExists $manifest.paths.newCardsModDll | Out-Null
 Test-FileExists $manifest.paths.cardArtAssets $false | Out-Null
 Test-FileExists $manifest.paths.sharedAssets $false | Out-Null
 
+$sharedPath = Join-Path $gameRoot $manifest.paths.sharedAssets
+if (Test-Path -LiteralPath $sharedPath) {
+    $size = (Get-Item -LiteralPath $sharedPath).Length
+    if ($manifest.sharedAssets) {
+        if ($size -le $manifest.sharedAssets.vanillaBytes) {
+            Write-Skip "sharedassets0.assets is vanilla size ($size bytes) — re-run install without -SkipAssets"
+            $warnCount++
+        }
+        elseif ($size -ge $manifest.sharedAssets.portedMinBytes) {
+            Write-Pass "sharedassets0.assets looks ported ($size bytes)"
+        }
+    }
+}
+
 $logPath = Join-Path $gameRoot $manifest.paths.logFile
 if (Test-Path -LiteralPath $logPath) {
     Write-Pass $manifest.paths.logFile

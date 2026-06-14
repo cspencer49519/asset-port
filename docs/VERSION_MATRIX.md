@@ -11,7 +11,8 @@ Pin these versions when reporting bugs or helping others install.
 | **TCGShopExpansionMod071Patch** | **1.0.49** | This repo |
 | **TextureReplacer** | 1.6.1+ | Required by Genobear |
 | **ArtExpander** | Genobear bundle | + `cardart.assets` (~15 GB) |
-| **sharedassets0 trio** | Ported for 0.71 | From release `assets/` or local port output |
+| **sharedassets0 trio** | **Ported** (release `assets/`) | **Required** for Genobear card frames — install script copies these |
+| **Configuration Manager** | Nexus mod 31 | Recommended — **F1** in-game config |
 
 ## ExpansionMod in-game settings (F1)
 

@@ -217,7 +217,7 @@ else
 fi
 
 if [[ "${SKIP_ASSETS}" -eq 0 ]]; then
-    write_step "Optional sharedassets trio"
+    write_step "Ported sharedassets trio (Genobear card frames)"
     ASSETS_SOURCE="${RELEASE_ROOT}/assets"
     if [[ ! -d "${ASSETS_SOURCE}" ]]; then
         ASSETS_SOURCE="${RELEASE_ROOT}/output"
@@ -225,7 +225,7 @@ if [[ "${SKIP_ASSETS}" -eq 0 ]]; then
 
     if [[ ! -d "${ASSETS_SOURCE}" ]]; then
         write_warn "No assets/ or output/ folder in release — skipping sharedassets install."
-        write_warn "Port sharedassets locally or download the assets zip from GitLab Releases."
+        write_warn "Card frames will stay vanilla until you get a full release zip with assets/."
     else
         TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
         DATA_DIR="${GAME_ROOT}/${DATA_FOLDER}"
@@ -251,9 +251,9 @@ fi
 
 echo
 write_step "Manual steps still required"
-echo "  1. Install Nexus mods listed in docs/INSTALL-071.md"
-echo "  2. Install Genobear pack + cardart.assets (~15 GB)"
-echo "  3. Run: ./scripts/Verify-TCG071Install.sh --game-path \"${GAME_ROOT}\""
-echo "  4. Launch game, press F1, configure ExpansionMod (see docs/VERSION_MATRIX.md)"
+echo "  1. Install Nexus mods + Genobear (phases 1-3 in docs/INSTALL-071.md) if not done yet"
+echo "  2. Run: ./scripts/Verify-TCG071Install.sh --game-path \"${GAME_ROOT}\""
+echo "  3. Launch game, press F1, configure ExpansionMod (see docs/VERSION_MATRIX.md)"
+echo "  4. Do not use --skip-assets on a normal install — card frames need the ported trio"
 echo
 write_ok "Install complete."

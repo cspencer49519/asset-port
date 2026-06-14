@@ -1,9 +1,8 @@
 {
-  "generated_at": "2026-06-12T17:34:12.695122+00:00",
-  "tool": "AssetsTools.NET",
-  "applied": [],
-  "skipped_same": [],
-  "skipped_filtered": [
+  "generated_at": "2026-06-14T05:30:03.714526+00:00",
+  "tool": "UnityPy export + AssetsTools.NET write",
+  "method": "card frame textures only; foil/outline/font atlases stay vanilla 0.71",
+  "skipped_same": [
     {
       "path_id": 54,
       "name": "JapanOutline06 Atlas"
@@ -79,7 +78,9 @@
     {
       "path_id": 72,
       "name": "LDR_LLL1_28"
-    },
+    }
+  ],
+  "skipped_filtered": [
     {
       "path_id": 73,
       "name": "T_MoneyCoinEuro"
@@ -153,6 +154,10 @@
       "name": "LDR_LLL1_44"
     },
     {
+      "path_id": 91,
+      "name": "EvoBasicIcon"
+    },
+    {
       "path_id": 92,
       "name": "CenterDot_CrossOutline"
     },
@@ -181,6 +186,10 @@
       "name": "LDR_LLL1_37"
     },
     {
+      "path_id": 99,
+      "name": "EvoBorder"
+    },
+    {
       "path_id": 101,
       "name": "PS5_Right_Stick_Click_Flat"
     },
@@ -197,10 +206,6 @@
       "name": "chevron"
     },
     {
-      "path_id": 105,
-      "name": "PS5_Options_Flat"
-    },
-    {
       "path_id": 107,
       "name": "Icon_QuestionMark"
     },
@@ -211,6 +216,10 @@
     {
       "path_id": 109,
       "name": "LDR_LLL1_15"
+    },
+    {
+      "path_id": 110,
+      "name": "T_CardLegendGlowAlpha2"
     },
     {
       "path_id": 111,
@@ -243,6 +252,10 @@
     {
       "path_id": 119,
       "name": "LDR_LLL1_1"
+    },
+    {
+      "path_id": 120,
+      "name": "RainbowFoil"
     },
     {
       "path_id": 121,
@@ -351,6 +364,10 @@
     {
       "path_id": 148,
       "name": "LDR_LLL1_13"
+    },
+    {
+      "path_id": 149,
+      "name": "T_CardLegendGlow"
     },
     {
       "path_id": 150,
@@ -483,10 +500,6 @@
     {
       "path_id": 187,
       "name": "PS5_Dpad_Right_Flat"
-    },
-    {
-      "path_id": 188,
-      "name": "LDR_LLL1_54"
     },
     {
       "path_id": 189,
@@ -805,246 +818,394 @@
       "name": "PS5_Left_Stick_Left_Flat"
     },
     {
-      "path_id": 275,
-      "name": "Generic_Right_Stick_Left_Flat"
-    },
-    {
-      "path_id": 276,
-      "name": "White_Pixel_1x1"
-    },
-    {
-      "path_id": 277,
-      "name": "PS5_Cross_Flat"
-    },
-    {
-      "path_id": 278,
-      "name": "WhiteTile"
-    },
-    {
-      "path_id": 279,
-      "name": "XBox_X_Fontstyle"
-    },
-    {
-      "path_id": 280,
-      "name": "XBox_Left_Stick_Click_Fontstyle"
-    },
-    {
-      "path_id": 281,
-      "name": "LDR_LLL1_25"
-    },
-    {
-      "path_id": 282,
-      "name": "Generic_Right_Stick_Click_Flat"
-    },
-    {
-      "path_id": 283,
-      "name": "panel-inside_white"
-    },
-    {
-      "path_id": 284,
-      "name": "LDR_LLL1_14"
-    },
-    {
-      "path_id": 285,
-      "name": "XBox_Right_Stick_Down_Fontstyle"
-    },
-    {
-      "path_id": 286,
-      "name": "LiberationSans SDF Atlas"
-    },
-    {
-      "path_id": 287,
-      "name": "LiberationSans SDF Atlas"
-    },
-    {
-      "path_id": 288,
-      "name": "FredokaOne-Regular SDF border Atlas"
-    },
-    {
-      "path_id": 289,
-      "name": "FredokaOne-Regular SDF Atlas"
-    },
-    {
-      "path_id": 290,
-      "name": "JapanOutline04 Atlas"
-    },
-    {
-      "path_id": 291,
-      "name": "RussianOutline Atlas"
-    },
-    {
-      "path_id": 292,
-      "name": "ChineseOutline02 Atlas"
-    },
-    {
-      "path_id": 293,
-      "name": "ThaiOutline Atlas"
-    },
-    {
-      "path_id": 294,
-      "name": "JapanOutline01 Atlas"
-    },
-    {
-      "path_id": 295,
-      "name": "ChineseOutline05 Atlas"
-    },
-    {
-      "path_id": 296,
-      "name": "ChineseOutline03 Atlas"
-    },
-    {
-      "path_id": 297,
-      "name": "KoreanOutline05 Atlas"
-    },
-    {
-      "path_id": 298,
-      "name": "HindiOutline Atlas"
-    },
-    {
-      "path_id": 299,
-      "name": "JapanOutline10 Atlas"
-    },
-    {
-      "path_id": 300,
-      "name": "JapanOutline03 Atlas"
-    },
-    {
-      "path_id": 301,
-      "name": "JapanOutline09 Atlas"
-    },
-    {
-      "path_id": 302,
-      "name": "JapanOutline08 Atlas"
-    },
-    {
       "path_id": 303,
       "name": "ChineseOutline01 Atlas"
     },
     {
       "path_id": 304,
       "name": "ArabicOutline Atlas"
-    },
-    {
-      "path_id": 305,
-      "name": "ChineseTradOutline01 Atlas"
     }
   ],
   "skipped_no_mod": [],
-  "skipped_unreadable": [],
-  "errors": [
+  "skipped_unreadable": [
     {
-      "path_id": 91,
-      "name": "EvoBasicIcon",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "path_id": 105,
+      "name": "PS5_Options_Flat",
+      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
     },
     {
-      "path_id": 99,
-      "name": "EvoBorder",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "path_id": 188,
+      "name": "LDR_LLL1_54",
+      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
     },
+    {
+      "path_id": 275,
+      "name": "Generic_Right_Stick_Left_Flat",
+      "error": "not enough image data"
+    },
+    {
+      "path_id": 276,
+      "name": "White_Pixel_1x1",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 277,
+      "name": "PS5_Cross_Flat",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 278,
+      "name": "WhiteTile",
+      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
+    },
+    {
+      "path_id": 279,
+      "name": "XBox_X_Fontstyle",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 280,
+      "name": "XBox_Left_Stick_Click_Fontstyle",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 281,
+      "name": "LDR_LLL1_25",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 282,
+      "name": "Generic_Right_Stick_Click_Flat",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 283,
+      "name": "panel-inside_white",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 284,
+      "name": "LDR_LLL1_14",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 285,
+      "name": "XBox_Right_Stick_Down_Fontstyle",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 286,
+      "name": "LiberationSans SDF Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 287,
+      "name": "LiberationSans SDF Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 288,
+      "name": "FredokaOne-Regular SDF border Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 289,
+      "name": "FredokaOne-Regular SDF Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 290,
+      "name": "JapanOutline04 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 291,
+      "name": "RussianOutline Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 292,
+      "name": "ChineseOutline02 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 293,
+      "name": "ThaiOutline Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 294,
+      "name": "JapanOutline01 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 295,
+      "name": "ChineseOutline05 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 296,
+      "name": "ChineseOutline03 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 297,
+      "name": "KoreanOutline05 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 298,
+      "name": "HindiOutline Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 299,
+      "name": "JapanOutline10 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 300,
+      "name": "JapanOutline03 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 301,
+      "name": "JapanOutline09 Atlas",
+      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
+    },
+    {
+      "path_id": 302,
+      "name": "JapanOutline08 Atlas",
+      "error": "Texture2D has no image data"
+    },
+    {
+      "path_id": 305,
+      "name": "ChineseTradOutline01 Atlas",
+      "error": "Texture2D has no image data"
+    }
+  ],
+  "export_errors": [],
+  "applied": [
     {
       "path_id": 100,
       "name": "CardFrontIconOnly",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardFrontIconOnly.png",
+      "base_size": [
+        1024,
+        1024
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 106,
       "name": "CardBack",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
-    },
-    {
-      "path_id": 110,
-      "name": "T_CardLegendGlowAlpha2",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBack.png",
+      "base_size": [
+        1024,
+        1024
+      ],
+      "mod_size": [
+        2048,
+        2048
+      ]
     },
     {
       "path_id": 115,
       "name": "CardIcon_Legend",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
-    },
-    {
-      "path_id": 120,
-      "name": "RainbowFoil",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardIcon_Legend.png",
+      "base_size": [
+        256,
+        256
+      ],
+      "mod_size": [
+        64,
+        64
+      ]
     },
     {
       "path_id": 126,
       "name": "GradedCardCase",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
-    },
-    {
-      "path_id": 149,
-      "name": "T_CardLegendGlow",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/GradedCardCase.png",
+      "base_size": [
+        1024,
+        1024
+      ],
+      "mod_size": [
+        64,
+        64
+      ]
     },
     {
       "path_id": 163,
       "name": "GradedCardCaseBack",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/GradedCardCaseBack.png",
+      "base_size": [
+        1024,
+        1024
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 170,
       "name": "CardBG_Air",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBG_Air.png",
+      "base_size": [
+        256,
+        256
+      ],
+      "mod_size": [
+        160,
+        560
+      ]
     },
     {
       "path_id": 174,
       "name": "GradeCardScratch10",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/GradeCardScratch10.png",
+      "base_size": [
+        1024,
+        1024
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 181,
       "name": "CardDarkFadeBar",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardDarkFadeBar.png",
+      "base_size": [
+        2048,
+        2048
+      ],
+      "mod_size": [
+        2048,
+        2048
+      ]
     },
     {
       "path_id": 184,
       "name": "BatD",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/BatD.png",
+      "base_size": [
+        819,
+        1024
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 191,
       "name": "CardBorderMask",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBorderMask.png",
+      "base_size": [
+        2048,
+        2048
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 215,
       "name": "CardBorder_EX",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBorder_EX.png",
+      "base_size": [
+        1024,
+        1024
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 224,
       "name": "CardCenterFrameFullArtMask",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardCenterFrameFullArtMask.png",
+      "base_size": [
+        2048,
+        2048
+      ],
+      "mod_size": [
+        1024,
+        1024
+      ]
     },
     {
       "path_id": 238,
       "name": "Ghost_PiggyD",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/Ghost_PiggyD.png",
+      "base_size": [
+        819,
+        1024
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 241,
       "name": "CardFrontFullArt_Air",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardFrontFullArt_Air.png",
+      "base_size": [
+        2048,
+        2048
+      ],
+      "mod_size": [
+        127,
+        128
+      ]
     },
     {
       "path_id": 242,
       "name": "CardFullMask",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardFullMask.png",
+      "base_size": [
+        2048,
+        2048
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     },
     {
       "path_id": 245,
       "name": "BatC",
-      "error": "Could not load type 'System.IO.Path' from assembly 'System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a'.\r\n   at AssetsTools.NET.Texture.TextureFile.GetTextureData(AssetsFileInstance inst)"
+      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/BatC.png",
+      "base_size": [
+        819,
+        1024
+      ],
+      "mod_size": [
+        256,
+        256
+      ]
     }
   ],
+  "errors": [],
+  "output_size": 166934640,
+  "input_size": 47282752,
   "counts": {
-    "applied": 0,
-    "skipped_same": 0,
-    "skipped_filtered": 231,
+    "export_candidates": 16,
+    "applied": 16,
+    "errors": 0,
+    "skipped_same": 19,
+    "skipped_filtered": 186,
     "skipped_no_mod": 0,
-    "skipped_unreadable": 0,
-    "errors": 21
-  },
-  "output_size": 47282752
+    "skipped_unreadable": 31,
+    "export_errors": 0
+  }
 }

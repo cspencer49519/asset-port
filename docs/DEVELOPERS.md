@@ -38,11 +38,17 @@ Zip `dist/TCG-071-Genobear-*` for GitLab release upload.
 
 ## Port sharedassets (maintainers)
 
-1. Place 0.71 base trio in `base-071/`
-2. Place 0.62 mod `sharedassets0.assets` in `mod-062/`
-3. `pip install UnityPy Pillow`
-4. `python port_sharedassets.py` or `python port_with_vanilla05.py`
-5. Copy `output/*` to release `assets/` before `Build-Release.ps1`
+Players receive a **pre-ported** trio in release `assets/`. Maintainers regenerate it when Genobear sharedassets change.
+
+1. Place vanilla 0.71 trio in `base-071/` (from `Card Shop Simulator_Data/`)
+2. Place Genobear 0.62 `sharedassets0.assets` in `mod-062/`
+3. Set up venv: `python3 -m venv .venv-port && .venv-port/bin/pip install UnityPy Pillow pythonnet`
+4. On macOS/Linux: `export DOTNET_ROOT=...` and `export PYTHONNET_RUNTIME=coreclr` (see `tools/atnet/`)
+5. Run: `.venv-port/bin/python port_assets_tools.py` (UnityPy export + AssetsTools.NET write)
+6. **Do not** use `port_sharedassets.py` UnityPy `save()` for 0.71 — it breaks `.resS` pairing (white screen)
+7. Copy `output/*` to `assets/` before `Build-Release.ps1`
+
+Expected output: ~16 card-frame textures applied, `sharedassets0.assets` ~160+ MB, object count unchanged (548).
 
 ## GitLab release
 

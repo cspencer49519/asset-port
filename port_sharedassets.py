@@ -16,7 +16,7 @@ from pathlib import Path
 import UnityPy
 from PIL import Image
 
-ROOT = Path(r"c:\TCGCardShopModWork\asset-port")
+ROOT = Path(__file__).resolve().parent
 BASE = ROOT / "base-071"
 MOD_ASSETS = ROOT / "mod-062" / "sharedassets0.assets"
 MOD_PAIRED = ROOT / "mod-paired"
