@@ -59,6 +59,25 @@ internal static class TetramonOverlay071Patches
         return true;
     }
 
+    /// <summary>
+    /// SetCardExtrasImages is skipped on 0.71; assign the Pokemon CardBack sprite ExpansionMod would have applied.
+    /// </summary>
+    public static void ApplyTetramonCardBackFromCache(CardUI cardUi)
+    {
+        if (cardUi.m_CardBackImage == null)
+        {
+            return;
+        }
+
+        Sprite? cardBack = CardExtrasCacheAccess.TryGetUiCardBackSprite();
+        if (cardBack == null)
+        {
+            return;
+        }
+
+        cardUi.m_CardBackImage.sprite = cardBack;
+    }
+
     public static void SetCardUI_ApplyTetramonOverlay(CardUI __instance, CardData cardData, bool forceFrontOverlay = false)
     {
         if (__instance == null || cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
@@ -81,17 +100,23 @@ internal static class TetramonOverlay071Patches
             return;
         }
 
+        ApplyTetramonCardBackFromCache(__instance);
         ApplyTetramonFrontOverlay(__instance, cardData);
     }
 
-    /// <summary>Route each pack card to stack-top back, flip front, or hidden-in-stack.</summary>
+    /// <summary>
+    /// Vanilla flip: the only Pokemon back shown is the first card sitting after the pack splits
+    /// (states 0-3) and that same card while it flips to its face. Every other card — the active card
+    /// being revealed and all cards stacked behind it — is face up, so pulling the top card off reveals
+    /// the next card's face, never a back.
+    /// </summary>
     public static void ConfigurePackOpeningCardPresentation(CardUI cardUi, Card3dUIGroup? card3d = null)
     {
         card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
 
-        if (card3d != null && PackOpeningState.ShouldShowFrontDuringPackFlip(card3d))
+        if (card3d != null && PackOpeningState.ShouldShowPackBackFace(card3d))
         {
-            ApplyPackOpeningFlipFrontPresentation(cardUi, card3d);
+            ApplyPackOpeningStackTopBack(cardUi, card3d);
             return;
         }
 
@@ -101,51 +126,88 @@ internal static class TetramonOverlay071Patches
             return;
         }
 
-        if (card3d != null && PackOpeningState.ShouldShowPackBackFace(card3d))
-        {
-            ApplyPackOpeningStackTopBack(cardUi, card3d);
-            return;
-        }
-
-        if (PackOpeningState.IsPackFlipState())
-        {
-            ApplyPackOpeningHiddenInStack(cardUi, card3d);
-            return;
-        }
-
-        ApplyPackOpeningHiddenInStack(cardUi, card3d);
+        ApplyPackOpeningFlipFrontPresentation(cardUi, card3d);
     }
 
-    /// <summary>Pack rip: stacked Pokemon back on the top-of-deck card (ExpansionMod last slot).</summary>
+    private static void HidePackOpeningFrontFace(CardUI cardUi)
+    {
+        DisableOverlayImage(cardUi);
+        HideCenterFrameArt(cardUi);
+        HideVanillaChromeWhenOverlayShown(cardUi);
+        HideDuplicateTextWhenOverlayShown(cardUi);
+        SuppressFrontOverlayDuringPackBack(cardUi);
+        SuppressPackOpeningFoilMask(cardUi);
+    }
+
+    /// <summary>Post-rip deck stack: show the Pokemon back via the UI back canvas (the card is face-down).</summary>
     private static void ApplyPackOpeningStackTopBack(CardUI cardUi, Card3dUIGroup? card3d = null)
     {
-        DisableOverlayImage(cardUi);
-        HideCenterFrameArt(cardUi);
-        HideVanillaChromeWhenOverlayShown(cardUi);
-        HideDuplicateTextWhenOverlayShown(cardUi);
+        ApplyPokemonBackFaceUi(cardUi, card3d);
+    }
+
+    private static void ApplyPackOpeningActiveFlipBack(CardUI cardUi, Card3dUIGroup? card3d = null)
+    {
+        ApplyPokemonBackFaceUi(cardUi, card3d);
+    }
+
+    /// <summary>
+    /// Show the Pokemon card back on a face-down pack card using the UI back canvas only.
+    /// The 3D back mesh is intentionally hidden: with a transparent/atlas texture it renders in front of the
+    /// back canvas and occludes it, leaving the deck back blank (see deck-back regression).
+    /// </summary>
+    private static void ApplyPokemonBackFaceUi(CardUI cardUi, Card3dUIGroup? card3d = null)
+    {
+        HidePackOpeningFrontFace(cardUi);
 
         card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
         SetPackCardUiAnimGroupVisible(card3d, visible: true);
         SetCardFrontCanvasActive(cardUi, active: false);
-        SuppressFrontOverlayDuringPackBack(cardUi);
-        EnsurePackUiCardBackCover(cardUi);
-        ApplyPackStackBackMeshSync(cardUi, card3d);
+        PreparePackSingleCardBackImage(cardUi);
+        HidePackOpeningBackMesh(card3d);
     }
 
-    /// <summary>Active card at the start of its flip: single Pokemon back before the front reveal.</summary>
-    private static void ApplyPackOpeningActiveFlipBack(CardUI cardUi, Card3dUIGroup? card3d = null)
+    public static void ApplyPackOpeningFlipFrontPresentation(CardUI cardUi, Card3dUIGroup? card3d = null)
+    {
+        card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        SetPackCardUiAnimGroupVisible(card3d, visible: true);
+        SetCardFrontCanvasActive(cardUi, active: true);
+        DisableUiCardBackCover(cardUi);
+        SetCardBackCanvasActive(cardUi, active: false);
+        SuppressPackOpeningFoilMask(cardUi);
+        HidePackOpeningBackMesh(card3d);
+    }
+
+    /// <summary>Buried stack cards: hide faces but keep anim grp alive for vanilla motion / fan row.</summary>
+    private static void ApplyPackOpeningHiddenInStack(CardUI cardUi, Card3dUIGroup? card3d = null)
     {
         DisableOverlayImage(cardUi);
         HideCenterFrameArt(cardUi);
-        HideVanillaChromeWhenOverlayShown(cardUi);
-        HideDuplicateTextWhenOverlayShown(cardUi);
 
         card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
         SetPackCardUiAnimGroupVisible(card3d, visible: true);
         SetCardFrontCanvasActive(cardUi, active: false);
+        DisableUiCardBackCover(cardUi);
+        SetCardBackCanvasActive(cardUi, active: false);
         SuppressFrontOverlayDuringPackBack(cardUi);
-        PreparePackSingleCardBackImage(cardUi);
-        ApplyPackSingleCardBackMeshSync(cardUi, card3d);
+        SuppressPackOpeningFoilMask(cardUi);
+        HidePackOpeningBackMesh(card3d);
+    }
+
+    /// <summary>Restore card UI shell before applying front overlays in the fan row (state 7+).</summary>
+    public static void ApplyPackOpeningFanRowPresentation(CardUI cardUi, Card3dUIGroup? card3d = null)
+    {
+        card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d != null)
+        {
+            card3d.m_IgnoreCulling = true;
+        }
+
+        SetPackCardUiAnimGroupVisible(card3d, visible: true);
+        SetCardFrontCanvasActive(cardUi, active: true);
+        SetCardBackCanvasActive(cardUi, active: false);
+        DisableUiCardBackCover(cardUi);
+        HidePackOpeningBackMesh(card3d);
+        ApplyFlatScreenCardPresentation(cardUi, card3d);
     }
 
     private static void PreparePackSingleCardBackImage(CardUI cardUi)
@@ -155,7 +217,8 @@ internal static class TetramonOverlay071Patches
             return;
         }
 
-        Sprite? backSprite = cardUi.m_CardBackImage.sprite;
+        Sprite? backSprite = CardExtrasCacheAccess.TryGetUiCardBackSprite()
+            ?? cardUi.m_CardBackImage.sprite;
         if (backSprite == null && cardUi.GetCardData() is CardData cardData)
         {
             backSprite = CSingleton<InventoryBase>.Instance.m_MonsterData_SO.GetCardBackSprite(cardData.expansionType);
@@ -175,44 +238,6 @@ internal static class TetramonOverlay071Patches
         StretchImageToFill(cardUi.m_CardBackImage.rectTransform);
     }
 
-    /// <summary>Card currently flipping: front canvas only, no back mesh or UI back cover.</summary>
-    public static void ApplyPackOpeningFlipFrontPresentation(CardUI cardUi, Card3dUIGroup? card3d = null)
-    {
-        card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
-        SetPackCardUiAnimGroupVisible(card3d, visible: true);
-        SetCardFrontCanvasActive(cardUi, active: true);
-        DisableUiCardBackCover(cardUi);
-        SetCardBackCanvasActive(cardUi, active: false);
-        HidePackOpeningBackMesh(card3d);
-    }
-
-    /// <summary>Buried stack cards: hide faces but keep anim grp alive for vanilla motion / fan row.</summary>
-    private static void ApplyPackOpeningHiddenInStack(CardUI cardUi, Card3dUIGroup? card3d = null)
-    {
-        DisableOverlayImage(cardUi);
-        HideCenterFrameArt(cardUi);
-
-        card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
-        SetPackCardUiAnimGroupVisible(card3d, visible: true);
-        SetCardFrontCanvasActive(cardUi, active: false);
-        DisableUiCardBackCover(cardUi);
-        SetCardBackCanvasActive(cardUi, active: false);
-        SuppressFrontOverlayDuringPackBack(cardUi);
-        HidePackOpeningBackMesh(card3d);
-    }
-
-    /// <summary>Restore card UI shell before applying front overlays in the fan row (state 7+).</summary>
-    public static void ApplyPackOpeningFanRowPresentation(CardUI cardUi, Card3dUIGroup? card3d = null)
-    {
-        card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
-        SetPackCardUiAnimGroupVisible(card3d, visible: true);
-        SetCardFrontCanvasActive(cardUi, active: true);
-        SetCardBackCanvasActive(cardUi, active: false);
-        DisableUiCardBackCover(cardUi);
-        HidePackOpeningBackMesh(card3d);
-        ApplyFlatScreenCardPresentation(cardUi, card3d);
-    }
-
     private static void SetCardBackCanvasActive(CardUI cardUi, bool active)
     {
         if (cardUi.m_CardBack != null)
@@ -229,6 +254,47 @@ internal static class TetramonOverlay071Patches
         }
     }
 
+    /// <summary>Clear vanilla GetCardBackSprite on all pack cards before routing one Pokemon back.</summary>
+    public static void ForceDisableAllPackOpeningBackUi(CardOpeningSequence sequence)
+    {
+        if (sequence.m_Card3dUIList == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < sequence.m_Card3dUIList.Count; i++)
+        {
+            CardUI? cardUi = sequence.m_Card3dUIList[i]?.m_CardUI;
+            if (cardUi == null)
+            {
+                continue;
+            }
+
+            DisableUiCardBackCover(cardUi);
+            SetCardBackCanvasActive(cardUi, active: false);
+        }
+    }
+
+    /// <summary>Force all pack card back meshes off before vanilla/ExpansionMod re-enable them.</summary>
+    public static void ForceHideAllPackOpeningBackMeshes(CardOpeningSequence sequence)
+    {
+        if (sequence.m_Card3dUIList == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < sequence.m_Card3dUIList.Count; i++)
+        {
+            Card3dUIGroup? card3d = sequence.m_Card3dUIList[i];
+            if (card3d == null)
+            {
+                continue;
+            }
+
+            HidePackOpeningBackMesh(card3d);
+        }
+    }
+
     private static void HidePackOpeningBackMesh(Card3dUIGroup? card3d)
     {
         if (card3d?.m_CardBackMesh == null)
@@ -238,6 +304,7 @@ internal static class TetramonOverlay071Patches
 
         SetCard3dBackMeshVisible(card3d, visible: false);
         card3d.m_CardBackMesh.SetActive(false);
+        card3d.m_CardBackMesh.transform.localScale = Vector3.zero;
     }
 
     /// <summary>Legacy entry point — delegates to ConfigurePackOpeningCardPresentation.</summary>
@@ -262,6 +329,7 @@ internal static class TetramonOverlay071Patches
 
         card3d.m_CardBackMesh.SetActive(true);
         SetCard3dBackMeshVisible(card3d, visible: true);
+        card3d.m_CardBackMesh.transform.localScale = Vector3.one;
         SyncCard3dBackMeshFromUiBack(cardUi, card3d, overscan: PackBackMeshOverscan, usePackStackBack: true);
     }
 
@@ -275,6 +343,7 @@ internal static class TetramonOverlay071Patches
 
         card3d.m_CardBackMesh.SetActive(true);
         SetCard3dBackMeshVisible(card3d, visible: true);
+        card3d.m_CardBackMesh.transform.localScale = Vector3.one;
         SyncCard3dBackMeshFromUiBack(cardUi, card3d, overscan: 1f, usePackStackBack: false);
     }
 
@@ -320,10 +389,7 @@ internal static class TetramonOverlay071Patches
         FinalizeCard3dPresentation(__instance);
     }
 
-    /// <summary>
-    /// Pack opening: keep the 3D back mesh alive with correct Pokemon sprite UVs.
-    /// Stack cards waiting to flip also get an opaque UI back cover so the previous card front cannot bleed through.
-    /// </summary>
+    /// <summary>Pack opening: Pokemon UI backs only — never touch T_CardBackMesh.</summary>
     public static void SyncPackOpeningBackMesh(CardUI cardUi, Card3dUIGroup? card3d = null)
     {
         card3d ??= CardUiFieldAccess.GetValue(cardUi, "m_Card3dUIGroup") as Card3dUIGroup;
@@ -332,25 +398,7 @@ internal static class TetramonOverlay071Patches
             return;
         }
 
-        ApplyPackFlipBackMeshSync(cardUi, card3d);
-
-        if (PackOpeningState.ShouldShowPackBackFace(card3d))
-        {
-            SuppressFrontOverlayDuringPackBack(cardUi);
-        }
-        else if (PackOpeningState.ShouldShowActiveCardFlipBack(card3d))
-        {
-            ApplyPackOpeningActiveFlipBack(cardUi, card3d);
-        }
-        else if (PackOpeningState.ShouldShowFrontDuringPackFlip(card3d))
-        {
-            ApplyPackOpeningFlipFrontPresentation(cardUi, card3d);
-        }
-        else
-        {
-            DisableUiCardBackCover(cardUi);
-            HidePackOpeningBackMesh(card3d);
-        }
+        ConfigurePackOpeningCardPresentation(cardUi, card3d);
     }
 
     private static void FinalizeCard3dPresentation(CardUI cardUi)
@@ -527,10 +575,9 @@ internal static class TetramonOverlay071Patches
         ConfigurePackOpeningCardPresentation(cardUi, card3d);
     }
 
-    /// <summary>Pack opening: opaque UI back cover using the stack-back sprite.</summary>
     private static void EnsurePackUiCardBackCover(CardUI cardUi)
     {
-        Sprite? backSprite = CardExtrasCacheAccess.TryGetCachedSprite("T_CardBackMesh")
+        Sprite? backSprite = CardExtrasCacheAccess.TryGetUiCardBackSprite()
             ?? cardUi.m_CardBackImage?.sprite;
         if (backSprite == null)
         {
@@ -553,6 +600,14 @@ internal static class TetramonOverlay071Patches
         cardUi.m_CardBackImage.preserveAspect = false;
         cardUi.m_CardBackImage.color = Color.white;
         StretchImageToFill(cardUi.m_CardBackImage.rectTransform);
+    }
+
+    private static void SuppressPackOpeningFoilMask(CardUI cardUi)
+    {
+        if (CardUiFieldAccess.GetValue(cardUi, "m_CardFoilMaskImage") is Image foilMask)
+        {
+            foilMask.enabled = false;
+        }
     }
 
     private static void SuppressFrontOverlayDuringPackBack(CardUI cardUi)
@@ -586,18 +641,24 @@ internal static class TetramonOverlay071Patches
         }
     }
 
-    /// <summary>
-    /// Pack opening only: apply Pokemon back UVs to the 3D back mesh. Does not touch UI back image.
-    /// </summary>
     private static void SyncCard3dBackMeshFromUiBack(
         CardUI cardUi,
         Card3dUIGroup card3d,
         float overscan = 1f,
         bool usePackStackBack = true)
     {
-        Sprite? backSprite = usePackStackBack
-            ? CardExtrasCacheAccess.TryGetCachedSprite("T_CardBackMesh") ?? cardUi.m_CardBackImage?.sprite
-            : cardUi.m_CardBackImage?.sprite;
+        Sprite? backSprite;
+        if (usePackStackBack)
+        {
+            backSprite = CardExtrasCacheAccess.TryGetStackBackMeshSprite()
+                ?? cardUi.m_CardBackImage?.sprite;
+        }
+        else
+        {
+            backSprite = CardExtrasCacheAccess.TryGetUiCardBackSprite()
+                ?? cardUi.m_CardBackImage?.sprite;
+        }
+
         if (backSprite == null || card3d.m_CardBackMesh == null)
         {
             return;

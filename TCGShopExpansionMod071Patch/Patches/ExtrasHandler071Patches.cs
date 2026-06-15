@@ -4,7 +4,7 @@ namespace TCGShopExpansionMod071Patch.Patches;
 
 /// <summary>
 /// ExpansionMod SetCardBacks applies the full texture atlas without sprite UVs.
-/// Re-route Tetramon back mesh updates so front faces hide the mesh entirely.
+/// Re-route Tetramon back mesh updates so pack cards get correct sprite UVs.
 /// </summary>
 internal static class ExtrasHandler071Patches
 {

@@ -32,7 +32,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     public const string PluginName = "TCGShopExpansionMod 0.71 Patch";
 
-    public const string PluginVersion = "1.0.49";
+    public const string PluginVersion = "1.0.86";
 
 
 
@@ -75,6 +75,8 @@ public sealed class Plugin : BaseUnityPlugin
         harmony.PatchAll(typeof(CardUI071Patches));
 
         harmony.PatchAll(typeof(PackOpening071Patches));
+
+        harmony.PatchAll(typeof(MonsterData071Patches));
 
         harmony.PatchAll(typeof(InteractableCard3d071Patches));
 
@@ -144,6 +146,21 @@ public sealed class Plugin : BaseUnityPlugin
 
 
 
+        MethodInfo? initOpenSequence = AccessTools.Method(playerPatches, "InitOpenSequence_Postfix");
+
+        if (initOpenSequence != null)
+        {
+            harmony.Patch(
+                initOpenSequence,
+                prefix: new HarmonyMethod(typeof(PlayerPatches071Patches), nameof(PlayerPatches071Patches.InitOpenSequence_BlockExpansionPackBack_Prefix)));
+        }
+        else
+        {
+            Log.LogWarning("Could not patch InitOpenSequence_Postfix pack-back paint.");
+        }
+
+
+
         MethodInfo? mainPostfix = AccessTools.Method(playerPatches, "CardUI_SetCardUI_Main_Postfix");
 
 
@@ -172,13 +189,11 @@ public sealed class Plugin : BaseUnityPlugin
 
         TryPatchExtrasHandlerCardBacks(harmony);
 
-
+        gameObject.AddComponent<PackOpeningLateSyncBehaviour>();
 
         ArtExpanderBridge.TryInitialize();
 
-
-
-        Log.LogInfo("Patched ExpansionMod for game 0.71 (Tetramon overlay + safe card UI hooks).");
+        Log.LogInfo($"Patched ExpansionMod for game 0.71 (Tetramon overlay + safe card UI hooks). v{PluginVersion}");
 
     }
 
@@ -203,63 +218,45 @@ public sealed class Plugin : BaseUnityPlugin
 
 
         TryPatchMethod(
-
             harmony,
-
             AccessTools.Method(extrasHandler, "SetCardBacks"),
-
             nameof(ExtrasHandler071Patches.SetCardBacks_Postfix));
 
-
-
         TryPatchMethod(
-
             harmony,
-
             AccessTools.Method(extrasHandler, "SetCardBackPackOpening"),
-
             nameof(ExtrasHandler071Patches.SetCardBackPackOpening_Postfix));
 
     }
 
 
 
-    private static void TryPatchMethod(Harmony harmony, MethodInfo? original, string postfixName)
-
+    private static void TryPatchMethod(
+        Harmony harmony,
+        MethodInfo? original,
+        string postfixName,
+        string? prefixName = null)
     {
-
         if (original == null)
-
         {
-
-            Log.LogWarning($"Could not find ExtrasHandler method for postfix {postfixName}.");
-
+            Log.LogWarning($"Could not find ExtrasHandler method for patch {postfixName}.");
             return;
-
         }
-
-
 
         try
-
         {
-
+            HarmonyMethod? prefix = prefixName != null
+                ? new HarmonyMethod(typeof(ExtrasHandler071Patches), prefixName)
+                : null;
             harmony.Patch(
-
                 original,
-
+                prefix: prefix,
                 postfix: new HarmonyMethod(typeof(ExtrasHandler071Patches), postfixName));
-
         }
-
         catch (Exception ex)
-
         {
-
             Log.LogError($"Failed to patch {original.DeclaringType?.Name}.{original.Name}: {ex.Message}");
-
         }
-
     }
 
 }

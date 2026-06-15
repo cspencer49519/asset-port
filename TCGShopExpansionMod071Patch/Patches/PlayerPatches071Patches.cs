@@ -20,6 +20,15 @@ internal static class PlayerPatches071Patches
         return false;
     }
 
+    /// <summary>
+    /// ExpansionMod InitOpenSequence_Postfix calls Count() on m_Card3dUIList before cards exist — freezes pack open on 0.71.
+    /// Pack backs are handled by ExtrasHandler071Patches + TetramonOverlay071Patches instead.
+    /// </summary>
+    public static bool InitOpenSequence_BlockExpansionPackBack_Prefix()
+    {
+        return false;
+    }
+
     public static bool LightManager_Awake_Prefix_Prefix()
     {
         EnsureMaterialFields();

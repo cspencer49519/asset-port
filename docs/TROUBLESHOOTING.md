@@ -98,12 +98,13 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 ## Pack opening / display case visual bugs
 
-Ensure patch version **1.0.49** or newer in log.
+Ensure patch version **1.0.51** or newer in log.
 
 | Issue | Check |
 |-------|--------|
 | Wide stretched cards | Update to latest 071 patch |
-| No pack backs | ExpansionMod + patch both loaded |
+| No pack backs / blank white stack during rip | Patch **1.0.50+** resolves Tetramon back sprite via `GetCardBackSprite`; log should show `Pack back sprite resolved from:` |
+| Cards invisible mid-flip, shadows over cards | Patch **1.0.50+** keeps already-revealed cards face-up during flip states |
 | Display case wrong faces | Load save after patch install; check F1 ExpansionMod settings |
 
 ---

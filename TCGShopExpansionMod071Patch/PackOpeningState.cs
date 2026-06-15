@@ -27,17 +27,34 @@ internal static class PackOpeningState
         _cachedSlider = ReadSlider(sequence);
     }
 
-    /// <summary>True only while the pack opening UI is active (states 0-6).</summary>
+    /// <summary>
+    /// True during flip states 0-6 after InitOpenSequence (not pack-in-hand readying — UI group stays off until then).
+    /// </summary>
     public static bool IsPackOpeningInProgress()
     {
         CardOpeningSequence? sequence = CSingleton<CardOpeningSequence>.Instance;
+        if (!ShouldSyncPackPresentation(sequence))
+        {
+            return false;
+        }
+
+        return sequence!.m_StateIndex is >= 0 and < 7;
+    }
+
+    /// <summary>Skip readying/cancel lerp where m_IsScreenActive is true but the open UI is not up yet.</summary>
+    public static bool ShouldSyncPackPresentation(CardOpeningSequence? sequence)
+    {
         if (sequence == null || !sequence.IsActive())
         {
             return false;
         }
 
-        int state = sequence.m_StateIndex;
-        return state >= 0 && state < 7;
+        if (sequence.m_CardOpeningUIGroup != null && !sequence.m_CardOpeningUIGroup.activeSelf)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>True while the current card flip/reveal animation runs (states 4-6).</summary>
@@ -76,6 +93,11 @@ internal static class PackOpeningState
             return -1;
         }
 
+        if (_cachedStateIndex is >= 0 and < 4)
+        {
+            return GetPackStackTopCardIndex();
+        }
+
         int lastIndex = sequence.m_Card3dUIList.Count - 1;
         Card3dUIGroup? lastCard = sequence.m_Card3dUIList[lastIndex];
         if (lastCard != null && lastCard.gameObject.activeSelf)
@@ -86,7 +108,10 @@ internal static class PackOpeningState
         return GetPackStackTopCardIndex();
     }
 
-    /// <summary>Stacked pack back during rip / wait (states 0-3), not during per-card flips.</summary>
+    /// <summary>
+    /// The single face-down deck back shown once during rip / wait (states 0-3), before the group rotates
+    /// to front. Vanilla shows exactly one back here, then every card is face up for the rest of the open.
+    /// </summary>
     public static bool ShouldShowPackBackFace(Card3dUIGroup card3d)
     {
         if (!IsPackOpeningInProgress() || card3d == null || IsPackFlipState())
@@ -100,14 +125,40 @@ internal static class PackOpeningState
             return false;
         }
 
-        int stackBackIndex = GetPackStackBackCardIndex();
-        return stackBackIndex >= 0 && cardIndex == stackBackIndex;
+        // The frontmost card in the depth-ordered deck (the one the player sees on top) shows the lone back.
+        return cardIndex == GetCurrentOpenedCardIndex();
     }
 
-    /// <summary>Single-card Pokemon back on the active card before its front is revealed.</summary>
+    /// <summary>
+    /// Cards still in the stack behind the active card during per-card flips (states 4-6). The group has
+    /// already rotated to front, so these stay face up (front overlay) and visible behind the card that is
+    /// currently sliding off — matching vanilla, where the next card is already showing as the top slides away.
+    /// </summary>
+    public static bool ShouldShowStackedFrontFace(Card3dUIGroup card3d)
+    {
+        if (!IsPackFlipState() || card3d == null)
+        {
+            return false;
+        }
+
+        int cardIndex = GetPackCardIndex(card3d);
+        return cardIndex >= 0 && cardIndex > GetCurrentOpenedCardIndex();
+    }
+
+    /// <summary>
+    /// Single Pokemon back shown on the very first card while it flips over to its face. Vanilla only
+    /// shows a back here (and during states 0-3); every later card is already face up in the stack, so it
+    /// must never flash a back as it becomes the active card.
+    /// </summary>
     public static bool ShouldShowActiveCardFlipBack(Card3dUIGroup card3d)
     {
         if (!IsPackFlipState() || card3d == null)
+        {
+            return false;
+        }
+
+        // Only the first card (index 0) flips from the Pokemon back; all others are already face up.
+        if (GetCurrentOpenedCardIndex() != 0)
         {
             return false;
         }
