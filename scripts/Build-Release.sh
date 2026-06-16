@@ -5,16 +5,21 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CONFIGURATION="${CONFIGURATION:-Release}"
 SKIP_BUILD=0
+PATCH_ONLY=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-build) SKIP_BUILD=1; shift ;;
+    --patch-only) PATCH_ONLY=1; shift ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
 
 VERSION="$(python3 -c "import json; print(json.load(open('$REPO_ROOT/manifest.json'))['patchVersion'])")"
 DIST_NAME="TCG-071-Genobear-$VERSION"
+if [[ "$PATCH_ONLY" -eq 1 ]]; then
+  DIST_NAME="${DIST_NAME}-patch-only"
+fi
 DIST_ROOT="$REPO_ROOT/dist/$DIST_NAME"
 ZIP_PATH="$REPO_ROOT/dist/$DIST_NAME.zip"
 CSPROJ="$REPO_ROOT/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.csproj"
@@ -45,16 +50,18 @@ for script in Install-TCG071Mods.ps1 Verify-TCG071Install.ps1 Install-TCG071Mods
 done
 
 COPIED_ASSETS=0
-for src in "$REPO_ROOT/assets" "$REPO_ROOT/output"; do
-  [[ -d "$src" ]] || continue
-  for f in sharedassets0.assets sharedassets0.assets.resS sharedassets0.resource; do
-    if [[ -f "$src/$f" ]]; then
-      cp "$src/$f" "$DIST_ROOT/assets/"
-      COPIED_ASSETS=1
-    fi
+if [[ "$PATCH_ONLY" -eq 0 ]]; then
+  for src in "$REPO_ROOT/assets" "$REPO_ROOT/output"; do
+    [[ -d "$src" ]] || continue
+    for f in sharedassets0.assets sharedassets0.assets.resS sharedassets0.resource; do
+      if [[ -f "$src/$f" ]]; then
+        cp "$src/$f" "$DIST_ROOT/assets/"
+        COPIED_ASSETS=1
+      fi
+    done
+    [[ "$COPIED_ASSETS" -eq 1 ]] && break
   done
-  [[ "$COPIED_ASSETS" -eq 1 ]] && break
-done
+fi
 
 rm -f "$ZIP_PATH"
 (cd "$REPO_ROOT/dist" && zip -rq "$(basename "$ZIP_PATH")" "$DIST_NAME")

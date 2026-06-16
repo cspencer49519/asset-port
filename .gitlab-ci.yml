@@ -51,7 +51,7 @@ package-release:
         exit 1
       fi
     - chmod +x scripts/Build-Release.sh
-    - ./scripts/Build-Release.sh --skip-build
+    - ./scripts/Build-Release.sh --skip-build --patch-only
     - ls -lh dist/*.zip
   artifacts:
     when: on_success
@@ -73,7 +73,7 @@ upload_release_asset:
   script:
     - |
       VERSION="${CI_COMMIT_TAG#v}"
-      ZIP="dist/TCG-071-Genobear-${VERSION}.zip"
+      ZIP="dist/TCG-071-Genobear-${VERSION}-patch-only.zip"
       if [ ! -f "$ZIP" ]; then
         echo "Release zip missing: $ZIP"
         exit 1
