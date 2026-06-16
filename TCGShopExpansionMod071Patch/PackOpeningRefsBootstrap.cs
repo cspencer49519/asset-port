@@ -241,29 +241,40 @@ internal static class PackOpeningRefsBootstrap
             $"enableTooltip={CSingleton<CGameManager>.Instance?.m_EnableTooltip}");
     }
 
-    private static bool _loggedCardStackDiagnostics;
+    private static readonly System.Collections.Generic.HashSet<int> _dumpedStackStates = new();
     private static bool _loggedFanDiagnostics;
+
+    /// <summary>Re-arm the per-open diagnostics so each new pack open dumps a fresh stack/fan snapshot.</summary>
+    public static void ResetOpenDiagnostics()
+    {
+        _dumpedStackStates.Clear();
+        _loggedFanDiagnostics = false;
+    }
 
     /// <summary>One-time dump of the reconstructed card order vs physical stack so ordering bugs are visible.</summary>
     public static void DumpCardStackDiagnostics(CardOpeningSequence sequence)
     {
-        if (_loggedCardStackDiagnostics || sequence.m_StateIndex < 2)
-        {
-            return;
-        }
-
         if (sequence.m_Card3dUIList == null || sequence.m_Card3dUIList.Count == 0)
         {
             return;
         }
 
-        _loggedCardStackDiagnostics = true;
+        // Dump one snapshot per distinct state index (2..6) so we capture every phase of the open with the
+        // full set of cards as they spawn — earlier snapshots only had the first couple of cards instantiated.
+        int currentState = sequence.m_StateIndex;
+        if (currentState < 2 || currentState > 6 || _dumpedStackStates.Contains(currentState))
+        {
+            return;
+        }
+
+        _dumpedStackStates.Add(currentState);
 
         Camera? cam = CSingleton<InteractionPlayerController>.Instance?.m_Cam;
         Vector3 camPos = cam != null ? cam.transform.position : Vector3.zero;
         Vector3 camForward = cam != null ? cam.transform.forward : Vector3.forward;
 
-        Plugin.Log.LogWarning($"CardStack dump at state={sequence.m_StateIndex}");
+        int openedIndex = PackOpeningState.GetCurrentOpenedCardIndex();
+        Plugin.Log.LogWarning($"CardStack dump at state={sequence.m_StateIndex} openedIndex={openedIndex} count={sequence.m_Card3dUIList.Count}");
 
         for (int i = 0; i < sequence.m_Card3dUIList.Count; i++)
         {
@@ -282,14 +293,51 @@ internal static class PackOpeningRefsBootstrap
             CardUI? cardUi = card3d.m_CardUI;
             bool frontActive = cardUi?.m_CardFront != null && cardUi.m_CardFront.activeSelf;
             bool backActive = cardUi?.m_CardBack != null && cardUi.m_CardBack.activeSelf;
-            bool backImgEnabled = cardUi?.m_CardBackImage != null && cardUi.m_CardBackImage.enabled;
             string backSprite = cardUi?.m_CardBackImage?.sprite != null ? cardUi.m_CardBackImage.sprite.name : "null";
             bool backMeshActive = card3d.m_CardBackMesh != null && card3d.m_CardBackMesh.activeSelf;
 
+            // Ground truth for the back fix: the card's expansion and the texture TextureReplacer put on the
+            // back mesh material (this is the natural per-expansion back that rendered before the patch forced
+            // the orange UI "CardBack").
+            CardData? cardData = cardUi != null ? cardUi.GetCardData() : null;
+            string expansion = cardData != null ? cardData.expansionType.ToString() : "null";
+            string meshTex = "null";
+            if (card3d.m_CardBackMesh != null
+                && card3d.m_CardBackMesh.GetComponent<Renderer>() is Renderer backRenderer
+                && backRenderer.sharedMaterial != null
+                && backRenderer.sharedMaterial.mainTexture != null)
+            {
+                meshTex = backRenderer.sharedMaterial.mainTexture.name;
+            }
+
+            Vector3 cardLossyScale = t.lossyScale;
+
+            // The visible card is the UI canvas (m_CardFront/m_CardBack), a separate world-space hierarchy from
+            // the zero-scaled card3d. Log its real world scale/position/facing so we can see why the back canvas
+            // is hidden at the rip but the faces show during the flip.
+            string frontInfo = "front=null";
+            if (cardUi?.m_CardFront != null)
+            {
+                Transform ft = cardUi.m_CardFront.transform;
+                float fFacing = cam != null ? Vector3.Dot(ft.forward, camForward) : 0f;
+                float fDist = cam != null ? Vector3.Distance(ft.position, camPos) : -1f;
+                frontInfo = $"frontLossy={ft.lossyScale.x:F2} frontFacing={fFacing:F2} frontDist={fDist:F1} frontActiveHier={cardUi.m_CardFront.activeInHierarchy}";
+            }
+
+            string backInfo = "back=null";
+            if (cardUi?.m_CardBack != null)
+            {
+                Transform bt = cardUi.m_CardBack.transform;
+                float bFacing = cam != null ? Vector3.Dot(bt.forward, camForward) : 0f;
+                float bDist = cam != null ? Vector3.Distance(bt.position, camPos) : -1f;
+                backInfo = $"backLossy={bt.lossyScale.x:F2} backFacing={bFacing:F2} backDist={bDist:F1} backActiveHier={cardUi.m_CardBack.activeInHierarchy}";
+            }
+
             Plugin.Log.LogWarning(
                 $"CardStack[{i}] name={t.name} sib={t.GetSiblingIndex()} active={card3d.gameObject.activeSelf} " +
-                $"camDist={camDist:F3} facing={facing:F2} frontActive={frontActive} backActive={backActive} " +
-                $"backImgEnabled={backImgEnabled} backSprite={backSprite} backMeshActive={backMeshActive}");
+                $"openIdx={openedIndex} expansion={expansion} facing={facing:F2} frontActive={frontActive} backActive={backActive} " +
+                $"cardLossy={cardLossyScale.x:F2} camDist={camDist:F1} {frontInfo} {backInfo} " +
+                $"backSprite={backSprite} backMeshActive={backMeshActive}");
         }
     }
 

@@ -38,6 +38,8 @@ internal static class PackOpening071Patches
         PackOpeningRefsBootstrap.TryBootstrap(__instance);
         PackOpeningRefsBootstrap.TryEnsureCardDataPools(__instance);
         PackOpeningRefsBootstrap.LogPackOpenReadiness(__instance);
+        PackOpeningRefsBootstrap.ResetOpenDiagnostics();
+        TetramonOverlay071Patches.ResetBackMeshDiagnostics();
         // The previous open's fan row disabled the pack wrapper renderers; restore them for this pack.
         RestorePackVisuals(__instance);
 
@@ -65,6 +67,7 @@ internal static class PackOpening071Patches
         PackOpeningRefsBootstrap.TryEnsureCardDataPools(__instance);
         PackOpeningRefsBootstrap.TryRecoverStart(__instance);
         PackOpeningRefsBootstrap.EnsurePackOpenFeedbackIcons(__instance);
+        ArtExpanderBridge.DumpBackAssetNames();
 
         if (PackOpeningRefsBootstrap.TryRunInitOpenSequence(__instance))
         {
@@ -244,11 +247,9 @@ internal static class PackOpening071Patches
 
             TetramonOverlay071Patches.ConfigurePackOpeningCardPresentation(cardUi, card3d);
 
-            // Paint the Pokemon face art on every card showing its face: the active card being revealed
-            // and every card stacked behind it. Only the first card (back, or mid-flip back) is skipped.
-            bool showingBack = PackOpeningState.ShouldShowPackBackFace(card3d)
-                || PackOpeningState.ShouldShowActiveCardFlipBack(card3d);
-            if (!showingBack)
+            // Paint the Pokemon face art only on cards rotated face-up toward the camera; face-down cards show
+            // the blue back instead.
+            if (PackOpeningState.IsCardFrontTowardCamera(card3d))
             {
                 TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(cardUi, cardData, forceFrontOverlay: true);
             }

@@ -105,24 +105,18 @@ internal static class TetramonOverlay071Patches
     }
 
     /// <summary>
-    /// Vanilla flip: the only Pokemon back shown is the first card sitting after the pack splits
-    /// (states 0-3) and that same card while it flips to its face. Every other card — the active card
-    /// being revealed and all cards stacked behind it — is face up, so pulling the top card off reveals
-    /// the next card's face, never a back.
+    /// Vanilla rip, driven by the card's real orientation: the deck spawns face-down (back toward camera) so
+    /// every card shows the blue Pokemon back; around state 5 the stack rotates face-up and each card shows its
+    /// face. We always render the camera-facing side, so no mirroring is needed — the blue back is on the back
+    /// canvas (camera-facing while face-down) and the face is on the front canvas (camera-facing once flipped).
     /// </summary>
     public static void ConfigurePackOpeningCardPresentation(CardUI cardUi, Card3dUIGroup? card3d = null)
     {
         card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
 
-        if (card3d != null && PackOpeningState.ShouldShowPackBackFace(card3d))
+        if (card3d != null && !PackOpeningState.IsCardFrontTowardCamera(card3d))
         {
             ApplyPackOpeningStackTopBack(cardUi, card3d);
-            return;
-        }
-
-        if (card3d != null && PackOpeningState.ShouldShowActiveCardFlipBack(card3d))
-        {
-            ApplyPackOpeningActiveFlipBack(cardUi, card3d);
             return;
         }
 
@@ -139,10 +133,73 @@ internal static class TetramonOverlay071Patches
         SuppressPackOpeningFoilMask(cardUi);
     }
 
-    /// <summary>Post-rip deck stack: show the Pokemon back via the UI back canvas (the card is face-down).</summary>
+    /// <summary>
+    /// Post-rip deck stack (card face-down, facing=-1): show the blue Pokemon back via the UI back canvas.
+    /// Diagnostics proved the 3D back mesh is unusable here — it is a child of the disabled, zero-scaled
+    /// Card3dUIGroup (the animation owns that group), so the MeshRenderer collapses to an invisible point and
+    /// activating its parent breaks the open. The UI canvas renders fine at scale 0, but this game's UI is
+    /// single-sided (backface-culled), so a face-down back canvas faces away and shows nothing. Mirroring the
+    /// back canvas (negative X scale) flips its normal toward the camera so the near-symmetric blue back renders
+    /// at the rip. Confined to this rip branch so the working face-up flip presentation is untouched.
+    /// </summary>
     private static void ApplyPackOpeningStackTopBack(CardUI cardUi, Card3dUIGroup? card3d = null)
     {
-        ApplyPokemonBackFaceUi(cardUi, card3d);
+        HidePackOpeningFrontFace(cardUi);
+
+        card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        SetPackCardUiAnimGroupVisible(card3d, visible: true);
+        SetCardFrontCanvasActive(cardUi, active: false);
+        PreparePackSingleCardBackImage(cardUi, faceCamera: true);
+        HidePackOpeningBackMesh(card3d);
+    }
+
+    private static bool _loggedBackMeshShow;
+
+    /// <summary>Re-arm the back-mesh diagnostic so each pack open logs the mesh render state once.</summary>
+    public static void ResetBackMeshDiagnostics()
+    {
+        _loggedBackMeshShow = false;
+    }
+
+    /// <summary>Enable the 3D back mesh with its natural Pokemon texture (no UV/material override).</summary>
+    private static void ShowPackOpeningBackMesh(Card3dUIGroup? card3d)
+    {
+        if (card3d?.m_CardBackMesh == null)
+        {
+            return;
+        }
+
+        card3d.m_CardBackMesh.SetActive(true);
+        card3d.m_CardBackMesh.transform.localScale = Vector3.one;
+        SetCard3dBackMeshVisible(card3d, visible: true);
+
+        if (!_loggedBackMeshShow)
+        {
+            _loggedBackMeshShow = true;
+            Renderer? renderer = card3d.m_CardBackMesh.GetComponent<Renderer>();
+            string layer = LayerMask.LayerToName(card3d.m_CardBackMesh.layer);
+            string mat = renderer?.material != null ? renderer.material.name : "null";
+            float alpha = renderer?.material != null && renderer.material.HasProperty("_Color")
+                ? renderer.material.color.a
+                : -1f;
+            Plugin.Log.LogWarning(
+                $"BackMesh show: active={card3d.m_CardBackMesh.activeInHierarchy} rendererEnabled={renderer?.enabled} " +
+                $"isVisible={renderer?.isVisible} layer={layer} mat={mat} alpha={alpha:F2} " +
+                $"scale={card3d.m_CardBackMesh.transform.lossyScale}");
+
+            // Walk the ancestor chain so we can see exactly which parent is inactive / zero-scaled (the disabled
+            // 3D card model that hides the back mesh during the UI-driven open).
+            Transform? walk = card3d.m_CardBackMesh.transform.parent;
+            int depth = 0;
+            while (walk != null && depth < 8)
+            {
+                Plugin.Log.LogWarning(
+                    $"BackMesh ancestor[{depth}] name={walk.name} activeSelf={walk.gameObject.activeSelf} " +
+                    $"localScale={walk.localScale} localPos={walk.localPosition}");
+                walk = walk.parent;
+                depth++;
+            }
+        }
     }
 
     private static void ApplyPackOpeningActiveFlipBack(CardUI cardUi, Card3dUIGroup? card3d = null)
@@ -171,8 +228,10 @@ internal static class TetramonOverlay071Patches
         card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
         SetPackCardUiAnimGroupVisible(card3d, visible: true);
         SetCardFrontCanvasActive(cardUi, active: true);
+        SetCardFrontMirrored(cardUi, mirrored: false);
         DisableUiCardBackCover(cardUi);
         SetCardBackCanvasActive(cardUi, active: false);
+        SetCardBackFlipped(cardUi, flipped: false);
         SuppressPackOpeningFoilMask(cardUi);
         HidePackOpeningBackMesh(card3d);
     }
@@ -210,14 +269,15 @@ internal static class TetramonOverlay071Patches
         ApplyFlatScreenCardPresentation(cardUi, card3d);
     }
 
-    private static void PreparePackSingleCardBackImage(CardUI cardUi)
+    private static void PreparePackSingleCardBackImage(CardUI cardUi, bool faceCamera = false)
     {
         if (cardUi.m_CardBackImage == null)
         {
             return;
         }
 
-        Sprite? backSprite = CardExtrasCacheAccess.TryGetUiCardBackSprite()
+        Sprite? backSprite = CardExtrasCacheAccess.TryGetPokemonUiBackSprite()
+            ?? CardExtrasCacheAccess.TryGetUiCardBackSprite()
             ?? cardUi.m_CardBackImage.sprite;
         if (backSprite == null && cardUi.GetCardData() is CardData cardData)
         {
@@ -230,6 +290,11 @@ internal static class TetramonOverlay071Patches
         }
 
         SetCardBackCanvasActive(cardUi, active: true);
+        SetCardBackMirrored(cardUi, mirrored: false);
+        // At the rip the card is face-down (back canvas forward points away from camera, so it is backface-culled
+        // exactly like the front). A 180 deg Y rotation negates the canvas forward so it faces the camera and
+        // renders; negating scale alone leaves forward unchanged and never shows it (proven in the v1.0.98 log).
+        SetCardBackFlipped(cardUi, flipped: faceCamera);
         cardUi.m_CardBackImage.enabled = true;
         cardUi.m_CardBackImage.sprite = backSprite;
         cardUi.m_CardBackImage.type = Image.Type.Simple;
@@ -465,6 +530,7 @@ internal static class TetramonOverlay071Patches
         }
 
         SetCardFrontCanvasActive(cardUi, active: true);
+        SetCardFrontMirrored(cardUi, mirrored: false);
         PrepareShopDisplayCardBack(cardUi);
         ApplyShopDisplayBackMesh(cardUi, card3d);
     }
@@ -505,6 +571,8 @@ internal static class TetramonOverlay071Patches
             cardUi.m_CardBack.SetActive(true);
         }
 
+        SetCardBackMirrored(cardUi, mirrored: false);
+        SetCardBackFlipped(cardUi, flipped: false);
         cardUi.m_CardBackImage.enabled = true;
         cardUi.m_CardBackImage.sprite = backSprite;
         cardUi.m_CardBackImage.type = Image.Type.Simple;
@@ -529,6 +597,7 @@ internal static class TetramonOverlay071Patches
     public static void SyncTetramonCardBackAfterExpansionMod(CardUI cardUi, Card3dUIGroup card3d)
     {
         SetCardFrontCanvasActive(cardUi, active: true);
+        SetCardFrontMirrored(cardUi, mirrored: false);
         PrepareShopDisplayCardBack(cardUi);
         ApplyShopDisplayBackMesh(cardUi, card3d);
     }
@@ -547,6 +616,7 @@ internal static class TetramonOverlay071Patches
     {
         SuppressFlatUiCardBack(cardUi);
         SetCardFrontCanvasActive(cardUi, active: true);
+        SetCardFrontMirrored(cardUi, mirrored: false);
 
         card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
         if (card3d?.m_CardBackMesh != null)
@@ -560,6 +630,62 @@ internal static class TetramonOverlay071Patches
         if (cardUi.m_CardFront != null)
         {
             cardUi.m_CardFront.SetActive(active);
+        }
+    }
+
+    /// <summary>
+    /// During the pack flip the card never physically rotates to face the camera (facing stays back-to-camera
+    /// in this port), so its front canvas renders horizontally mirrored. Negating the front canvas X scale
+    /// cancels that mirror; every other context (fan row, shop, held) views the front normally and resets it.
+    /// </summary>
+    private static void SetCardFrontMirrored(CardUI cardUi, bool mirrored)
+    {
+        SetTransformMirrored(cardUi.m_CardFront != null ? cardUi.m_CardFront.transform : null, mirrored);
+    }
+
+    /// <summary>
+    /// The UI back canvas sits on the same card and views the same way as the front, so during the open it
+    /// renders horizontally reversed exactly like the front does. Mirror it the same way so the blue Pokemon
+    /// back reads correctly; reset it for shop/held contexts.
+    /// </summary>
+    private static void SetCardBackMirrored(CardUI cardUi, bool mirrored)
+    {
+        SetTransformMirrored(cardUi.m_CardBack != null ? cardUi.m_CardBack.transform : null, mirrored);
+    }
+
+    /// <summary>
+    /// Rotate the UI back canvas 180 deg about Y so it faces the camera while the card is face-down at the rip.
+    /// Unlike a scale flip, rotating actually changes transform.forward, which is what backface culling keys on.
+    /// Reset to identity for every other context so the canvas tracks the card normally.
+    /// </summary>
+    private static void SetCardBackFlipped(CardUI cardUi, bool flipped)
+    {
+        if (cardUi.m_CardBack == null)
+        {
+            return;
+        }
+
+        Transform t = cardUi.m_CardBack.transform;
+        Quaternion target = flipped ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
+        if (Quaternion.Angle(t.localRotation, target) > 0.1f)
+        {
+            t.localRotation = target;
+        }
+    }
+
+    private static void SetTransformMirrored(Transform? target, bool mirrored)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        Vector3 scale = target.localScale;
+        float magnitudeX = Mathf.Abs(scale.x);
+        float targetX = mirrored ? -magnitudeX : magnitudeX;
+        if (!Mathf.Approximately(scale.x, targetX))
+        {
+            target.localScale = new Vector3(targetX, scale.y, scale.z);
         }
     }
 

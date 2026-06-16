@@ -19,10 +19,94 @@ internal static class ArtExpanderBridge
     private static readonly List<object> ArtCaches = new();
     private static MethodInfo? _resolveArtPath;
     private static MethodInfo? _loadSprite;
+    private static bool _loggedAssetNameDump;
 
     public static void TryInitialize()
     {
         EnsureInitialized();
+    }
+
+    /// <summary>
+    /// One-time diagnostic: enumerate every asset name in the ArtExpander bundle(s) and log the ones that
+    /// look like a card back. cardart.assets is ~15GB so it can only be inspected via the already-loaded
+    /// bundle in-process; this reflects into ArtCache._bundleLoader.GetAllAssetNames().
+    /// </summary>
+    public static void DumpBackAssetNames()
+    {
+        if (_loggedAssetNameDump || !EnsureInitialized())
+        {
+            return;
+        }
+
+        _loggedAssetNameDump = true;
+
+        try
+        {
+            int caches = 0;
+            foreach (object cache in ArtCaches)
+            {
+                string[]? names = GetAllAssetNames(cache);
+                if (names == null)
+                {
+                    continue;
+                }
+
+                caches++;
+                int matches = 0;
+                for (int i = 0; i < names.Length; i++)
+                {
+                    string lower = names[i].ToLowerInvariant();
+                    if (lower.Contains("back") || lower.Contains("pokemon") || lower.Contains("sleeve") || lower.Contains("reverse"))
+                    {
+                        Plugin.Log.LogWarning($"BundleBackAsset[{caches}]: {names[i]}");
+                        matches++;
+                    }
+                }
+
+                Plugin.Log.LogWarning($"ArtExpander bundle cache #{caches}: {names.Length} assets, {matches} back-like names.");
+            }
+
+            if (caches == 0)
+            {
+                Plugin.Log.LogWarning("DumpBackAssetNames: no enumerable bundle caches found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.LogWarning($"DumpBackAssetNames failed: {ex.Message}");
+        }
+    }
+
+    /// <summary>Load any sprite from the ArtExpander bundle(s) by its exact asset path/name.</summary>
+    public static Sprite? LoadSpriteByBundlePath(string assetPath)
+    {
+        if (string.IsNullOrEmpty(assetPath) || !EnsureInitialized() || _loadSprite == null)
+        {
+            return null;
+        }
+
+        for (int i = 0; i < ArtCaches.Count; i++)
+        {
+            if (_loadSprite.Invoke(ArtCaches[i], new object[] { assetPath }) is Sprite sprite && sprite != null)
+            {
+                return sprite;
+            }
+        }
+
+        return null;
+    }
+
+    private static string[]? GetAllAssetNames(object cache)
+    {
+        FieldInfo? loaderField = cache.GetType().GetField("_bundleLoader", InstanceAny);
+        object? loader = loaderField?.GetValue(cache);
+        if (loader == null)
+        {
+            return null;
+        }
+
+        MethodInfo? getNames = loader.GetType().GetMethod("GetAllAssetNames", InstanceAny);
+        return getNames?.Invoke(loader, Array.Empty<object>()) as string[];
     }
 
     private static readonly ECardBorderType[] BorderFallbackOrder =

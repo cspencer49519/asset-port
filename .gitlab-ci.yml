@@ -17,9 +17,15 @@ build-patch:
     - |
       if [ ! -f lib/game/Assembly-CSharp.dll ]; then
         echo "Skipping build: copy game DLLs to lib/game/ for CI (see lib/game/README.md)."
-        echo "Use scripts/Build-Release.ps1 locally instead."
+        echo "Use scripts/Build-Release.sh locally instead."
         exit 0
       fi
+    - |
+      # Point csproj HintPaths at lib/game for headless CI builds.
+      sed -i.bak \
+        -e 's|\.\./\.\./TCG Card Shop Simulator/Card Shop Simulator_Data/Managed|lib/game|g' \
+        -e 's|\.\./\.\./TCG Card Shop Simulator/BepInEx/plugins/TCGShopExpansionMod/TCGShopExpansionMod.dll|lib/game/TCGShopExpansionMod.dll|g' \
+        TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.csproj
     - dotnet build TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.csproj -c Release
   artifacts:
     when: on_success
@@ -27,26 +33,90 @@ build-patch:
     paths:
       - TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
 
-# Creates a GitLab Release page when a version tag is pushed (e.g. v1.0.49).
-# Attach the full player zip via scripts/Publish-GitLabRelease.ps1 (requires GITLAB_TOKEN).
+# Assemble player zip from build artifact on version tags.
+package-release:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:8.0
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+  needs:
+    - job: build-patch
+      artifacts: true
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq zip python3 >/dev/null
+  script:
+    - |
+      if [ ! -f TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll ]; then
+        echo "No patch DLL artifact — populate lib/game/ on the runner for tagged releases."
+        exit 1
+      fi
+    - chmod +x scripts/Build-Release.sh
+    - ./scripts/Build-Release.sh --skip-build
+    - ls -lh dist/*.zip
+  artifacts:
+    when: on_success
+    expire_in: 90 days
+    paths:
+      - dist/*.zip
+
+# Upload zip to GitLab project uploads; exports ASSET_URL + ZIP_NAME for create_release.
+upload_release_asset:
+  stage: release
+  image: alpine:3.20
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+  needs:
+    - job: package-release
+      artifacts: true
+  before_script:
+    - apk add --no-cache curl python3
+  script:
+    - |
+      VERSION="${CI_COMMIT_TAG#v}"
+      ZIP="dist/TCG-071-Genobear-${VERSION}.zip"
+      if [ ! -f "$ZIP" ]; then
+        echo "Release zip missing: $ZIP"
+        exit 1
+      fi
+      echo "Uploading $(basename "$ZIP")..."
+      UPLOAD_JSON=$(curl --silent --show-error --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --form "file=@${ZIP}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads")
+      ASSET_PATH=$(echo "$UPLOAD_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['url'])")
+      echo "ASSET_URL=${CI_PROJECT_URL}${ASSET_PATH}" >> release.env
+      echo "ZIP_NAME=$(basename "$ZIP")" >> release.env
+      cat release.env
+  artifacts:
+    reports:
+      dotenv: release.env
+
+# Creates a GitLab Release page with the uploaded player zip when a version tag is pushed.
 create_release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+  needs:
+    - job: upload_release_asset
+      artifacts: true
   script:
-    - echo "Publishing release ${CI_COMMIT_TAG}"
+    - echo "Publishing release ${CI_COMMIT_TAG} with asset ${ZIP_NAME}"
   release:
     tag_name: "$CI_COMMIT_TAG"
     name: "TCGShopExpansionMod 0.71 Patch $CI_COMMIT_TAG"
     description: |
       **TCG Card Shop Simulator 0.71** compatibility patch for Genobear Real TCG Overhaul.
 
-      Download **TCG-071-Genobear-*.zip** from release assets (upload via `scripts/Publish-GitLabRelease.ps1`).
+      Download **TCG-071-Genobear-*.zip** from release assets below.
 
       Player install: see [docs/INSTALL-071.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_TAG}/docs/INSTALL-071.md)
+
+      Release notes: [docs/release-notes/${CI_COMMIT_TAG}.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_TAG}/docs/release-notes/${CI_COMMIT_TAG}.md)
     assets:
       links:
+        - name: "$ZIP_NAME"
+          url: "$ASSET_URL"
+          link_type: "package"
         - name: "Source archive (zip)"
           url: "${CI_PROJECT_URL}/-/archive/${CI_COMMIT_TAG}/asset-port-${CI_COMMIT_TAG}.zip"
           link_type: "other"

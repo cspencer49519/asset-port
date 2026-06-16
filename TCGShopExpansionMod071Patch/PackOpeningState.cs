@@ -1,12 +1,37 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
+using UnityEngine;
 
 namespace TCGShopExpansionMod071Patch;
 
 internal static class PackOpeningState
 {
     private const float FlipFrontRevealSlider = 0.45f;
+
+    // Dot(card.forward, camera.forward) > 0 means the card's front points the same way the camera looks, i.e.
+    // the front face is toward the viewer. The deck rotates from face-down (facing < 0, states 0-4) to face-up
+    // (facing > 0, states 5-6) during the open, so the visible side is read directly from this each frame.
+    private const float FrontFacingDotThreshold = 0f;
+
+    /// <summary>True when the card's front face is currently rotated toward the camera (show the face, not the back).</summary>
+    public static bool IsCardFrontTowardCamera(Card3dUIGroup card3d)
+    {
+        if (card3d == null)
+        {
+            return false;
+        }
+
+        Camera? cam = CSingleton<InteractionPlayerController>.Instance?.m_Cam;
+        if (cam == null)
+        {
+            // Without a camera reference, fall back to the rotate-to-front state so faces still appear.
+            return _cachedStateIndex >= 5;
+        }
+
+        float facing = Vector3.Dot(card3d.transform.forward, cam.transform.forward);
+        return facing > FrontFacingDotThreshold;
+    }
 
     private static Func<CardOpeningSequence, int>? _openedCardIndexGetter;
     private static Func<CardOpeningSequence, float>? _sliderGetter;

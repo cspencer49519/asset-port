@@ -26,8 +26,43 @@ internal static class CardExtrasCacheAccess
 
     private static Sprite? _uiCardBackSprite;
     private static Sprite? _stackBackMeshSprite;
+    private static Sprite? _pokemonUiBackSprite;
     private static bool _loggedUiCardBackSource;
     private static bool _loggedStackBackSource;
+    private static bool _triedPokemonUiBack;
+
+    /// <summary>
+    /// The clean flat Pokemon card back shipped by TextureReplacer (objects_textures/CardBack.png). This is the
+    /// blue Poke Ball back that should appear on face-down pack cards — distinct from the orange ExpansionMod
+    /// "CardBack" sprite returned by <see cref="TryGetUiCardBackSprite"/>.
+    /// </summary>
+    public static Sprite? TryGetPokemonUiBackSprite()
+    {
+        if (_pokemonUiBackSprite != null)
+        {
+            return _pokemonUiBackSprite;
+        }
+
+        if (_triedPokemonUiBack)
+        {
+            return null;
+        }
+
+        _triedPokemonUiBack = true;
+
+        string path = Path.Combine(BepInEx.Paths.PluginPath, "TextureReplacer", "objects_textures", "CardBack.png");
+        _pokemonUiBackSprite = TryLoadSpriteFromPath(path, "PokemonCardBack");
+        if (_pokemonUiBackSprite != null)
+        {
+            Plugin.Log.LogInfo($"Pokemon UI card back resolved from TextureReplacer: {path}");
+        }
+        else
+        {
+            Plugin.Log.LogWarning($"Pokemon UI card back not found at {path}; falling back to ExpansionMod CardBack.");
+        }
+
+        return _pokemonUiBackSprite;
+    }
 
     public static Sprite? TryGetCachedSprite(string spriteName)
     {
@@ -104,7 +139,11 @@ internal static class CardExtrasCacheAccess
             return null;
         }
 
-        string pngPath = Path.Combine(extrasDir, spriteName + ".png");
+        return TryLoadSpriteFromPath(Path.Combine(extrasDir, spriteName + ".png"), spriteName);
+    }
+
+    private static Sprite? TryLoadSpriteFromPath(string pngPath, string spriteName)
+    {
         if (!File.Exists(pngPath))
         {
             return null;
