@@ -6,32 +6,48 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
 
-# Optional CI build when reference DLLs are present in lib/game/ (see lib/game/README.md).
+# Build patch DLL when reference assemblies exist in lib/game/ (see lib/game/README.md).
 build-patch:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:8.0
   rules:
-    - if: $CI_COMMIT_TAG
+    # Tagged releases must produce a DLL artifact.
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    # Main builds only when the runner has reference DLLs (avoids empty artifact upload).
     - if: $CI_COMMIT_BRANCH == "main"
+      exists:
+        - lib/game/Assembly-CSharp.dll
   script:
     - |
       if [ ! -f lib/game/Assembly-CSharp.dll ]; then
-        echo "Skipping build: copy game DLLs to lib/game/ for CI (see lib/game/README.md)."
-        echo "Use scripts/Build-Release.sh locally instead."
-        exit 0
+        echo "ERROR: Tagged release requires reference DLLs in lib/game/."
+        echo "On the runner: GAME_PATH=/path/to/game ./scripts/Populate-LibGame.sh"
+        echo "See lib/game/README.md"
+        exit 1
       fi
-    - |
-      # Point csproj HintPaths at lib/game for headless CI builds.
-      sed -i.bak \
-        -e 's|\.\./\.\./TCG Card Shop Simulator/Card Shop Simulator_Data/Managed|lib/game|g' \
-        -e 's|\.\./\.\./TCG Card Shop Simulator/BepInEx/plugins/TCGShopExpansionMod/TCGShopExpansionMod.dll|lib/game/TCGShopExpansionMod.dll|g' \
-        TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.csproj
     - dotnet build TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.csproj -c Release
+    - test -f TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
   artifacts:
     when: on_success
     expire_in: 30 days
     paths:
       - TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
+
+# Keeps main pipelines green when lib/game/ is not populated on the runner.
+ci-build-skipped:
+  stage: build
+  image: alpine:3.20
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      exists:
+        - lib/game/Assembly-CSharp.dll
+      when: never
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - |
+      echo "Patch build skipped — no lib/game/Assembly-CSharp.dll on this runner."
+      echo "Populate once with: GAME_PATH=/path/to/game ./scripts/Populate-LibGame.sh"
+      echo "See lib/game/README.md"
 
 # Assemble player zip from build artifact on version tags.
 package-release:
@@ -45,11 +61,7 @@ package-release:
   before_script:
     - apt-get update -qq && apt-get install -y -qq zip python3 >/dev/null
   script:
-    - |
-      if [ ! -f TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll ]; then
-        echo "No patch DLL artifact — populate lib/game/ on the runner for tagged releases."
-        exit 1
-      fi
+    - test -f TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
     - chmod +x scripts/Build-Release.sh
     - ./scripts/Build-Release.sh --skip-build --patch-only
     - ls -lh dist/*.zip
@@ -74,10 +86,7 @@ upload_release_asset:
     - |
       VERSION="${CI_COMMIT_TAG#v}"
       ZIP="dist/TCG-071-Genobear-${VERSION}-patch-only.zip"
-      if [ ! -f "$ZIP" ]; then
-        echo "Release zip missing: $ZIP"
-        exit 1
-      fi
+      test -f "$ZIP"
       echo "Uploading $(basename "$ZIP")..."
       UPLOAD_JSON=$(curl --silent --show-error --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --form "file=@${ZIP}" \

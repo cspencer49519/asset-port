@@ -10,6 +10,11 @@
       https://api.nuget.org/v3/index.json;
       https://nuget.bepinex.dev/v3/index.json
     </RestoreAdditionalProjectSources>
+    <!-- Prefer lib/game/ on CI runners; fall back to local game install for dev. -->
+    <GameManagedDir Condition="Exists('$(MSBuildThisFileDirectory)../lib/game/Assembly-CSharp.dll')">$(MSBuildThisFileDirectory)../lib/game</GameManagedDir>
+    <GameManagedDir Condition="'$(GameManagedDir)' == ''">$(MSBuildThisFileDirectory)../../TCG Card Shop Simulator/Card Shop Simulator_Data/Managed</GameManagedDir>
+    <ExpansionModDir Condition="Exists('$(MSBuildThisFileDirectory)../lib/game/TCGShopExpansionMod.dll')">$(MSBuildThisFileDirectory)../lib/game</ExpansionModDir>
+    <ExpansionModDir Condition="'$(ExpansionModDir)' == ''">$(MSBuildThisFileDirectory)../../TCG Card Shop Simulator/BepInEx/plugins/TCGShopExpansionMod</ExpansionModDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,39 +26,39 @@
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(GameManagedDir)/Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(GameManagedDir)/UnityEngine.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(GameManagedDir)/UnityEngine.CoreModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(GameManagedDir)/UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(GameManagedDir)/UnityEngine.UIModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>$(GameManagedDir)/UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AnimationModule">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <HintPath>$(GameManagedDir)/UnityEngine.AnimationModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
-      <HintPath>..\..\TCG Card Shop Simulator\Card Shop Simulator_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <HintPath>$(GameManagedDir)/UnityEngine.ParticleSystemModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="TCGShopExpansionMod">
-      <HintPath>..\..\TCG Card Shop Simulator\BepInEx\plugins\TCGShopExpansionMod\TCGShopExpansionMod.dll</HintPath>
+      <HintPath>$(ExpansionModDir)/TCGShopExpansionMod.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
