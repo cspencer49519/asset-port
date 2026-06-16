@@ -42,6 +42,20 @@ internal static class CardUI071Patches
         }
     }
 
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(CardUI), "SetBrightness", new[] { typeof(float) })]
+    public static void SetBrightness_Postfix(CardUI __instance)
+    {
+        try
+        {
+            TetramonOverlay071Patches.SuppressTetramonHoverChromeBleed(__instance);
+        }
+        catch (Exception overlayError)
+        {
+            Plugin.Log.LogWarning($"Pokemon hover chrome fix failed: {overlayError.GetType().Name}: {overlayError.Message}");
+        }
+    }
+
     private static void ApplyTetramonPresentation(CardUI __instance, CardData cardData)
     {
         if (__instance == null || cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)

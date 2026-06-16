@@ -70,4 +70,17 @@ internal static class CardUiDisplayContext
 
         return true;
     }
+
+    /// <summary>Binder page slots and 3D album interactables use flat front-only UI.</summary>
+    public static bool IsFlatAlbumOrBinderCard(CardUI cardUi)
+    {
+        if (IsBinderAlbumCard(cardUi))
+        {
+            return true;
+        }
+
+        InteractableCard3d? interactable = Card3dInteractableRegistry.FindForCardUi(cardUi);
+        return interactable != null
+            && (interactable.m_IsCardAlbumCard || interactable.m_CollectionBinderFlipAnimCtrl != null);
+    }
 }

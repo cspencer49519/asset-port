@@ -6,6 +6,20 @@ namespace TCGShopExpansionMod071Patch.Patches;
 internal static class InteractableCard3d071Patches
 {
     [HarmonyPostfix]
+    [HarmonyPatch(typeof(InteractableCardCompartment), "SetCardOnShelf")]
+    public static void SetCardOnShelf_Postfix(InteractableCard3d card)
+    {
+        if (card?.m_Card3dUI == null || !card.IsDisplayedOnShelf())
+        {
+            return;
+        }
+
+        Card3dInteractableRegistry.Register(card.m_Card3dUI, card);
+        EnableDisplayCulling(card.m_Card3dUI);
+        RefreshDisplayPresentation(card);
+    }
+
+    [HarmonyPostfix]
     [HarmonyPatch(typeof(InteractableCard3d), "SetIsDisplayedOnShelf")]
     public static void SetIsDisplayedOnShelf_Postfix(InteractableCard3d __instance, bool isDisplayedOnShelf)
     {
@@ -29,6 +43,7 @@ internal static class InteractableCard3d071Patches
             if (__instance.IsDisplayedOnShelf())
             {
                 EnableDisplayCulling(__instance.m_Card3dUI);
+                RefreshDisplayPresentation(__instance);
             }
         }
     }
@@ -92,14 +107,14 @@ internal static class InteractableCard3d071Patches
             return;
         }
 
-        AlignDisplayCardUiToSlot(interactable);
-        TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(cardUi, cardData, forceFrontOverlay: true);
+        TetramonOverlay071Patches.ConfigureCard3dForFrontDisplay(cardUi);
     }
 
     /// <summary>
-    /// Shelf slots point along transform.forward; ensure m_CardFront faces that direction so customers see the art.
+    /// Display arms mount with the card back toward +putCardLocation.forward. Flip m_CardUIAnimGrp
+    /// when that mount direction faces the shop aisle so overlay art faces customers.
     /// </summary>
-    private static void AlignDisplayCardUiToSlot(InteractableCard3d interactable)
+    public static void AlignDisplayCardUiToSlot(InteractableCard3d interactable)
     {
         Card3dUIGroup? card3d = interactable.m_Card3dUI;
         CardUI? cardUi = card3d?.m_CardUI;
@@ -108,16 +123,76 @@ internal static class InteractableCard3d071Patches
             return;
         }
 
-        Vector3 slotForward = interactable.transform.forward;
-        Vector3 frontNormal = cardUi.m_CardFront.transform.forward;
-        bool frontFacesSlot = Vector3.Dot(frontNormal, slotForward) >= 0f;
+        Vector3 toCustomer = ResolveDisplayCustomerViewDirection(interactable);
+        float targetY = ResolveDisplayAnimGroupTargetY(interactable, cardUi, toCustomer);
 
         Transform animGrp = card3d.m_CardUIAnimGrp;
         Vector3 euler = animGrp.localEulerAngles;
-        float targetY = frontFacesSlot ? 0f : 180f;
         if (Mathf.Abs(Mathf.DeltaAngle(euler.y, targetY)) > 1f)
         {
             animGrp.localRotation = Quaternion.Euler(euler.x, targetY, euler.z);
         }
+    }
+
+    private static float ResolveDisplayAnimGroupTargetY(
+        InteractableCard3d interactable,
+        CardUI cardUi,
+        Vector3 toCustomer)
+    {
+        Transform? putLocation = ResolvePutCardLocation(interactable);
+        if (putLocation != null)
+        {
+            Vector3 mountForward = putLocation.forward;
+            mountForward.y = 0f;
+            if (mountForward.sqrMagnitude > 0.0001f)
+            {
+                mountForward.Normalize();
+                bool mountBackFacesCustomer = Vector3.Dot(mountForward, toCustomer) >= 0f;
+                return mountBackFacesCustomer ? 0f : 180f;
+            }
+        }
+
+        Vector3 frontNormal = cardUi.m_CardFront.transform.forward;
+        return Vector3.Dot(frontNormal, toCustomer) >= 0f ? 180f : 0f;
+    }
+
+    private static Transform? ResolvePutCardLocation(InteractableCard3d interactable)
+    {
+        InteractableCardCompartment? compartment = interactable.GetComponentInParent<InteractableCardCompartment>();
+        if (compartment == null)
+        {
+            return null;
+        }
+
+        CardData? cardData = interactable.m_Card3dUI?.m_CardUI?.GetCardData();
+        if (compartment.m_NoneGradedCardUseAltCardLocation
+            && cardData != null
+            && cardData.cardGrade == 0
+            && compartment.m_PutCardLocationAlt != null)
+        {
+            return compartment.m_PutCardLocationAlt;
+        }
+
+        return compartment.m_PutCardLocation;
+    }
+
+    private static Vector3 ResolveDisplayCustomerViewDirection(InteractableCard3d interactable)
+    {
+        InteractableCardCompartment? compartment = interactable.GetComponentInParent<InteractableCardCompartment>();
+        Transform? customerStand = compartment?.m_CustomerStandLoc;
+        Transform? putLocation = ResolvePutCardLocation(interactable);
+        Vector3 cardPosition = putLocation != null ? putLocation.position : interactable.transform.position;
+
+        if (customerStand != null)
+        {
+            Vector3 toCustomer = customerStand.position - cardPosition;
+            toCustomer.y = 0f;
+            if (toCustomer.sqrMagnitude > 0.0001f)
+            {
+                return toCustomer.normalized;
+            }
+        }
+
+        return interactable.transform.forward;
     }
 }

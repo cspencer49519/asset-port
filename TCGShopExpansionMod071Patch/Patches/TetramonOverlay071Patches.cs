@@ -529,16 +529,36 @@ internal static class TetramonOverlay071Patches
             return;
         }
 
+        InteractableCard3d? interactable = Card3dInteractableRegistry.FindForCardUi(cardUi);
+        bool onDisplayShelf = interactable != null && interactable.IsDisplayedOnShelf();
+        if (onDisplayShelf)
+        {
+            InteractableCard3d071Patches.AlignDisplayCardUiToSlot(interactable!);
+        }
+
         SetCardFrontCanvasActive(cardUi, active: true);
         SetCardFrontMirrored(cardUi, mirrored: false);
         PrepareShopDisplayCardBack(cardUi);
-        ApplyShopDisplayBackMesh(cardUi, card3d);
+        ApplyShopDisplayBackMesh(cardUi, card3d, onDisplayShelf);
+        if (onDisplayShelf)
+        {
+            EnsureDisplayCardRenderPriority(cardUi);
+        }
     }
 
-    private static void ApplyShopDisplayBackMesh(CardUI cardUi, Card3dUIGroup card3d)
+    private static void ApplyShopDisplayBackMesh(CardUI cardUi, Card3dUIGroup card3d, bool onDisplayShelf = false)
     {
         if (card3d.m_CardBackMesh == null)
         {
+            return;
+        }
+
+        if (onDisplayShelf)
+        {
+            // m_CardBackMesh is not parented under m_CardUIAnimGrp, so it does not inherit the
+            // shelf orientation flip and paints the blue Pokemon back over the front row.
+            SetCard3dBackMeshVisible(card3d, visible: false);
+            card3d.m_CardBackMesh.SetActive(false);
             return;
         }
 
@@ -546,6 +566,9 @@ internal static class TetramonOverlay071Patches
         card3d.m_CardBackMesh.SetActive(true);
         SetCard3dBackMeshVisible(card3d, visible: true);
     }
+
+    private const float DisplayBackUiOverscanScale = 1.14f;
+    private const float DisplayBackUiBleedPixels = 14f;
 
     /// <summary>Opaque Pokemon back on m_CardBack (opposite face from the front overlay).</summary>
     private static void PrepareShopDisplayCardBack(CardUI cardUi)
@@ -555,12 +578,7 @@ internal static class TetramonOverlay071Patches
             return;
         }
 
-        Sprite? backSprite = cardUi.m_CardBackImage.sprite;
-        if (backSprite == null && cardUi.GetCardData() is CardData cardData)
-        {
-            backSprite = CSingleton<InventoryBase>.Instance.m_MonsterData_SO.GetCardBackSprite(cardData.expansionType);
-        }
-
+        Sprite? backSprite = ResolveShopDisplayBackSprite(cardUi);
         if (backSprite == null)
         {
             return;
@@ -578,7 +596,33 @@ internal static class TetramonOverlay071Patches
         cardUi.m_CardBackImage.type = Image.Type.Simple;
         cardUi.m_CardBackImage.preserveAspect = false;
         cardUi.m_CardBackImage.color = Color.white;
-        StretchImageToFill(cardUi.m_CardBackImage.rectTransform);
+        StretchShopDisplayBackImage(cardUi, cardUi.m_CardBackImage.rectTransform);
+    }
+
+    /// <summary>
+    /// ExpansionMod SetCardBacks leaves the full atlas on m_CardBackImage; always prefer the cropped Pokemon back.
+    /// </summary>
+    private static Sprite? ResolveShopDisplayBackSprite(CardUI cardUi)
+    {
+        Sprite? backSprite = CardExtrasCacheAccess.TryGetPokemonUiBackSprite()
+            ?? CardExtrasCacheAccess.TryGetUiCardBackSprite();
+        if (backSprite != null)
+        {
+            return backSprite;
+        }
+
+        Sprite? existing = cardUi.m_CardBackImage.sprite;
+        if (existing != null && existing.rect.width > 1f && existing.rect.height > 1f)
+        {
+            return existing;
+        }
+
+        if (cardUi.GetCardData() is CardData cardData)
+        {
+            return CSingleton<InventoryBase>.Instance.m_MonsterData_SO.GetCardBackSprite(cardData.expansionType);
+        }
+
+        return null;
     }
 
     /// <summary>Shop / held cards: fix atlas UVs on the back mesh without forcing it visible.</summary>
@@ -596,10 +640,78 @@ internal static class TetramonOverlay071Patches
     /// <summary>After ExpansionMod SetCardBacks on shop display cards.</summary>
     public static void SyncTetramonCardBackAfterExpansionMod(CardUI cardUi, Card3dUIGroup card3d)
     {
-        SetCardFrontCanvasActive(cardUi, active: true);
-        SetCardFrontMirrored(cardUi, mirrored: false);
-        PrepareShopDisplayCardBack(cardUi);
-        ApplyShopDisplayBackMesh(cardUi, card3d);
+        ConfigureCard3dForFrontDisplay(cardUi);
+    }
+
+    /// <summary>
+    /// Keep vanilla hover dimming while preventing the solid green type-background from bleeding through overlays.
+    /// </summary>
+    public static void SuppressTetramonHoverChromeBleed(CardUI cardUi)
+    {
+        if (cardUi == null || cardUi.GetCardData()?.expansionType != ECardExpansionType.Tetramon)
+        {
+            return;
+        }
+
+        if (!CardUiDisplayContext.IsFlatAlbumOrBinderCard(cardUi) || !HasActiveTetramonOverlay(cardUi))
+        {
+            return;
+        }
+
+        SetImageEnabled(cardUi.m_CardBGImage, false);
+        SetImageEnabled(cardUi.m_CardFrontImage, false);
+        SetImageEnabled(cardUi.m_CardFrontImageTopLayer, false);
+        SetImageEnabled(cardUi.m_CardBorderImage, false);
+        SetImageEnabled(cardUi.m_CardFullBGImage, false);
+        SetImageEnabled(cardUi.m_CardFullTransparentLayerBGImage, false);
+        SetImageEnabled(cardUi.m_PlayEffectBGImage, false);
+        SetImageEnabled(cardUi.m_BrightnessControl, true);
+    }
+
+    private const int DisplayCardRenderQueue = 3005;
+
+    private static void EnsureDisplayCardRenderPriority(CardUI cardUi)
+    {
+        Canvas? canvas = cardUi.GetComponentInParent<Canvas>();
+        if (canvas != null && canvas.renderMode == RenderMode.WorldSpace)
+        {
+            canvas.overrideSorting = true;
+            if (canvas.sortingOrder < 10)
+            {
+                canvas.sortingOrder = 10;
+            }
+        }
+
+        BoostImageRenderQueue(cardUi.m_CardFrontImage);
+        BoostImageRenderQueue(cardUi.m_BrightnessControl);
+        BoostImageRenderQueue(cardUi.m_CardBackImage);
+
+        if (FindOverlayTransform(cardUi) is Transform overlayTransform
+            && overlayTransform.TryGetComponent(out Image overlay))
+        {
+            BoostImageRenderQueue(overlay);
+        }
+    }
+
+    private static void BoostImageRenderQueue(Image? image)
+    {
+        if (image == null)
+        {
+            return;
+        }
+
+        Material? material = image.materialForRendering;
+        if (material != null && material.renderQueue < DisplayCardRenderQueue)
+        {
+            material.renderQueue = DisplayCardRenderQueue;
+        }
+    }
+
+    private static bool HasActiveTetramonOverlay(CardUI cardUi)
+    {
+        return FindOverlayTransform(cardUi) is Transform overlayTransform
+            && overlayTransform.TryGetComponent(out Image overlay)
+            && overlay.enabled;
     }
 
     private static void SuppressFlatUiCardBack(CardUI cardUi)
@@ -781,7 +893,7 @@ internal static class TetramonOverlay071Patches
         }
         else
         {
-            backSprite = CardExtrasCacheAccess.TryGetUiCardBackSprite()
+            backSprite = ResolveShopDisplayBackSprite(cardUi)
                 ?? cardUi.m_CardBackImage?.sprite;
         }
 
@@ -812,6 +924,20 @@ internal static class TetramonOverlay071Patches
         rect.offsetMin = Vector2.zero;
         rect.offsetMax = Vector2.zero;
         rect.localScale = Vector3.one;
+    }
+
+    private static void StretchShopDisplayBackImage(CardUI cardUi, RectTransform rect)
+    {
+        if (cardUi.m_CardBack != null)
+        {
+            rect.SetParent(cardUi.m_CardBack.transform, false);
+        }
+
+        StretchImageToFill(rect);
+        rect.offsetMin = new Vector2(-DisplayBackUiBleedPixels, -DisplayBackUiBleedPixels);
+        rect.offsetMax = new Vector2(DisplayBackUiBleedPixels, DisplayBackUiBleedPixels);
+        rect.localRotation = Quaternion.identity;
+        rect.localScale = Vector3.one * DisplayBackUiOverscanScale;
     }
 
     private static void ApplySpriteToMaterial(Material material, Sprite sprite, float overscan = 1f)
