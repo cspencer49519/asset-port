@@ -37,6 +37,7 @@ internal static class PhoneUi071Patches
     private static readonly Dictionary<int, string> ScannerTitleTextById = new();
     private static bool fontsCached;
     private static bool loggedPhoneUiDiagnostics;
+    private static bool loggedSubScreenLayering;
 
     internal static bool IsPhoneModeActive { get; private set; }
 
@@ -202,6 +203,12 @@ internal static class PhoneUi071Patches
             return 0;
         }
 
+        if (!loggedSubScreenLayering && IsPhoneModeActive)
+        {
+            loggedSubScreenLayering = true;
+            DumpPhoneCanvasLayering(contentRoot, $"SUB:{(screenRoot != null ? screenRoot.name : contentRoot.name)}");
+        }
+
         int repaired = 0;
         int meshRefreshed = 0;
         try
@@ -347,26 +354,139 @@ internal static class PhoneUi071Patches
     }
 
     /// <summary>
-    /// Shows / hides the phone home content group (clock, day, app grid). The home labels are drawn
-    /// at a high render queue so they appear above the phone background, which also makes them bleed
-    /// through sub-screens (the game leaves the home group active and relies on opaque sub-screen
-    /// panels to occlude it). Explicitly hiding the home group while a sub-screen is open removes the
-    /// bleed without affecting the always-on phone shell (status bar / nav).
+    /// One-shot dump of the phone canvas/sorting layering so we can see exactly what occludes the
+    /// text labels. Logs every Canvas under the phone (sorting context), the graphics of a sample
+    /// button cell (which canvas each renders to + computed depth/queue), and any full-screen image
+    /// that could be the overlay drawn over the text.
     /// </summary>
-    private static void SetPhoneHomeGroupActive(bool active)
+    private static void DumpPhoneCanvasLayering(Transform root, string tag)
     {
         try
         {
-            PhoneManager? phoneManager = PhoneManagerAccess.FindPhoneManager();
-            GameObject? group = phoneManager?.m_UI_PhoneScreen?.m_ScreenGroup;
-            if (group != null && group.activeSelf != active)
+            foreach (Canvas canvas in root.GetComponentsInChildren<Canvas>(true))
             {
-                group.SetActive(active);
+                Plugin.Log.LogInfo(
+                    $"[{tag}] CANVAS '{GetTransformPath(canvas.transform, root)}' mode={canvas.renderMode} overrideSorting={canvas.overrideSorting} sortingLayer='{canvas.sortingLayerName}' sortingOrder={canvas.sortingOrder} enabled={canvas.isActiveAndEnabled}");
+            }
+
+            Transform? cell = FindDescendantByName(root, "PhoneButtonGrp_Restock");
+            if (cell != null)
+            {
+                foreach (Graphic g in cell.GetComponentsInChildren<Graphic>(true))
+                {
+                    Canvas? gc = g.canvas;
+                    Plugin.Log.LogInfo(
+                        $"[{tag}] GFX '{GetTransformPath(g.transform, root)}' type={g.GetType().Name} canvas='{(gc != null ? GetTransformPath(gc.transform, root) : "null")}' sortOrder={(gc != null ? gc.sortingOrder : -999)} queue={g.materialForRendering?.renderQueue} depth={g.depth} sibling={g.transform.GetSiblingIndex()}");
+                }
+            }
+
+            foreach (Image img in root.GetComponentsInChildren<Image>(true))
+            {
+                RectTransform rt = img.rectTransform;
+                if (rt.rect.width < 60f || rt.rect.height < 60f)
+                {
+                    continue;
+                }
+
+                Canvas? ic = img.canvas;
+                Plugin.Log.LogInfo(
+                    $"[{tag}] FULLSCREEN '{GetTransformPath(img.transform, root)}' rect=({rt.rect.width:F0}x{rt.rect.height:F0}) canvas='{(ic != null ? GetTransformPath(ic.transform, root) : "null")}' sortOrder={(ic != null ? ic.sortingOrder : -999)} queue={img.materialForRendering?.renderQueue} depth={img.depth} sibling={img.transform.GetSiblingIndex()} colorA={img.color.a:F2} raycast={img.raycastTarget}");
             }
         }
         catch (System.Exception ex)
         {
-            Plugin.Log.LogWarning($"Phone home group toggle failed: {ex.Message}");
+            Plugin.Log.LogWarning($"[{tag}] canvas layering dump failed: {ex.Message}");
+        }
+    }
+
+    private static Transform? FindDescendantByName(Transform root, string name)
+    {
+        foreach (Transform t in root.GetComponentsInChildren<Transform>(true))
+        {
+            if (t.name == name)
+            {
+                return t;
+            }
+        }
+
+        return null;
+    }
+
+    private static string GetTransformPath(Transform t, Transform stopAt)
+    {
+        string path = t.name;
+        Transform? node = t.parent;
+        while (node != null && node != stopAt)
+        {
+            path = node.name + "/" + path;
+            node = node.parent;
+        }
+
+        return path;
+    }
+
+    /// <summary>
+    /// Shows / hides the phone home content (clock, day, app grid) while a sub-screen is open.
+    /// The home content and every sub-screen group are sibling children of the same home
+    /// <c>m_ScreenGroup</c>, so sub-screens with transparent bodies (e.g. Hire) otherwise let the
+    /// home icons show through. We deactivate only the home-content children, never the sub-screen
+    /// containers, so the nested sub-screens keep rendering.
+    /// </summary>
+    private static void SetPhoneHomeContentActive(bool active)
+    {
+        try
+        {
+            PhoneManager? phoneManager = PhoneManagerAccess.FindPhoneManager();
+            UI_PhoneScreen? home = phoneManager?.m_UI_PhoneScreen;
+            GameObject? group = home?.m_ScreenGroup;
+            if (phoneManager == null || home == null || group == null)
+            {
+                return;
+            }
+
+            Transform homeRoot = group.transform;
+
+            List<Transform> subScreenTransforms = new();
+            foreach (UIScreenBase? screen in PhoneAppUiScope.EnumerateScreens(phoneManager))
+            {
+                if (screen == null || ReferenceEquals(screen, home))
+                {
+                    continue;
+                }
+
+                subScreenTransforms.Add(screen.transform);
+                if (screen.m_ScreenGroup != null)
+                {
+                    subScreenTransforms.Add(screen.m_ScreenGroup.transform);
+                }
+            }
+
+            foreach (Transform child in homeRoot)
+            {
+                bool isSubScreenContainer = false;
+                foreach (Transform sub in subScreenTransforms)
+                {
+                    if (sub == child || sub.IsChildOf(child))
+                    {
+                        isSubScreenContainer = true;
+                        break;
+                    }
+                }
+
+                if (isSubScreenContainer)
+                {
+                    continue;
+                }
+
+                if (child.gameObject.activeSelf != active)
+                {
+                    child.gameObject.SetActive(active);
+                }
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Plugin.Log.LogWarning($"Phone home content toggle failed: {ex.Message}");
         }
     }
 
@@ -460,6 +580,7 @@ internal static class PhoneUi071Patches
 
         loggedPhoneUiDiagnostics = true;
         DumpButtonHierarchyOnce(root);
+        DumpPhoneCanvasLayering(root, "HOME");
         int logged = 0;
         foreach (TextMeshProUGUI label in root.GetComponentsInChildren<TextMeshProUGUI>(true))
         {
@@ -536,7 +657,7 @@ internal static class PhoneUi071Patches
         else
         {
             Material? crMat = cr.materialCount > 0 ? cr.GetMaterial(0) : null;
-            crInfo = $"crMatCount={cr.materialCount}, crMat='{crMat?.name}', crTex='{crMat?.mainTexture?.name}', crCull={cr.cull}, crAlpha={cr.GetAlpha():F2}";
+            crInfo = $"crMatCount={cr.materialCount}, crMat='{crMat?.name}', crQueue={crMat?.renderQueue}, crTex='{crMat?.mainTexture?.name}', crCull={cr.cull}, crAlpha={cr.GetAlpha():F2}";
         }
 
         Bounds bounds = label.mesh != null ? label.mesh.bounds : default;
@@ -577,6 +698,7 @@ internal static class PhoneUi071Patches
     {
         IsPhoneModeActive = true;
         loggedPhoneUiDiagnostics = false;
+        loggedSubScreenLayering = false;
         SchedulePhoneHomeRepair();
         PhoneUiLateRepairBehaviour.RequestDeferredPhoneOpenRefresh();
         PhoneUiRenderSyncBehaviour.ScheduleOpenRefresh();
@@ -598,6 +720,8 @@ internal static class PhoneUi071Patches
             __instance.m_ScreenGroup.SetActive(true);
         }
 
+        // Home screen is showing: make sure its content (icons / clock / day) is visible again.
+        SetPhoneHomeContentActive(true);
         SchedulePhoneHomeRepair();
     }
 
@@ -605,8 +729,8 @@ internal static class PhoneUi071Patches
     [HarmonyPatch(typeof(UI_PhoneScreen), "OnChildScreenClosed")]
     public static void UI_PhoneScreen_OnChildScreenClosed_Postfix()
     {
-        // Returning to the home screen: re-show the home content we hid while a sub-screen was open.
-        SetPhoneHomeGroupActive(true);
+        // Back on the home screen: restore the home content we hid while the sub-screen was open.
+        SetPhoneHomeContentActive(true);
         SchedulePhoneHomeRepair();
     }
 
@@ -628,7 +752,7 @@ internal static class PhoneUi071Patches
     [HarmonyPatch(typeof(HireWorkerScreen), "OnOpenScreen")]
     public static void HireWorkerScreen_OnOpenScreen_Postfix(HireWorkerScreen __instance)
     {
-        SetPhoneHomeGroupActive(false);
+        SetPhoneHomeContentActive(false);
         SchedulePhoneAppRepair(__instance.transform);
     }
 
@@ -643,7 +767,7 @@ internal static class PhoneUi071Patches
     [HarmonyPatch(typeof(RestockItemScreen), "OnOpenScreen")]
     public static void RestockItemScreen_OnOpenScreen_Postfix(RestockItemScreen __instance)
     {
-        SetPhoneHomeGroupActive(false);
+        SetPhoneHomeContentActive(false);
         SchedulePhoneAppRepair(__instance.transform);
     }
 
@@ -659,7 +783,7 @@ internal static class PhoneUi071Patches
     [HarmonyPatch(typeof(ScannerRestockScreen), "OnOpenScreen")]
     public static void ScannerRestockScreen_OnOpenScreen_Postfix(ScannerRestockScreen __instance)
     {
-        SetPhoneHomeGroupActive(false);
+        SetPhoneHomeContentActive(false);
         SchedulePhoneAppRepair(__instance.transform);
     }
 
@@ -667,7 +791,7 @@ internal static class PhoneUi071Patches
     [HarmonyPatch(typeof(RentBillScreen), "OnOpenScreen")]
     public static void RentBillScreen_OnOpenScreen_Postfix(RentBillScreen __instance)
     {
-        SetPhoneHomeGroupActive(false);
+        SetPhoneHomeContentActive(false);
         SchedulePhoneAppRepair(__instance.transform);
     }
 
@@ -722,11 +846,11 @@ internal static class PhoneUi071Patches
             return;
         }
 
-        // Any phone screen other than the home screen is a sub-screen overlaying the home content;
-        // hide the home group so its high-queue labels don't bleed through.
+        // A sub-screen (anything other than the home screen) is opening; hide the home content so it
+        // doesn't show through sub-screens that have transparent bodies (e.g. Hire).
         if (!(__instance is UI_PhoneScreen))
         {
-            SetPhoneHomeGroupActive(false);
+            SetPhoneHomeContentActive(false);
         }
 
         SchedulePhoneAppRepair(__instance.transform);
@@ -1166,11 +1290,14 @@ internal static class PhoneUi071Patches
         Material? material = label.materialForRendering ?? label.fontMaterial;
         if (material != null)
         {
-            // The phone labels otherwise render *behind* the phone's dark background panel and stay
-            // invisible. Bumping the queue past Transparent (3000) makes them draw on top of the
-            // background/icons without moving them in Z (a z-nudge magnifies under the close FixedFOV
-            // camera). Bleed-through onto sub-screens is handled by hiding the home group instead.
-            material.renderQueue = 4000;
+            // The phone runs on a single world-space canvas. The mod stack bumped every UI *image*
+            // material to Transparent+5 (3005) but left the TMP text material at 3000, so the text
+            // sorts *under* its own full-cell button background and disappears. Matching the text to
+            // the neighbouring images' queue makes draw order fall back to canvas depth: the label's
+            // depth is the highest in its cell, so it draws on top of its background, while sub-screen
+            // panels (opened later, much higher depth) still occlude it - i.e. no bleed-through, the
+            // way the unmodded game behaves.
+            material.renderQueue = ResolvePhoneLabelRenderQueue(label);
 
             canvasRenderer.materialCount = 1;
             canvasRenderer.SetMaterial(material, 0);
@@ -1181,6 +1308,27 @@ internal static class PhoneUi071Patches
                 canvasRenderer.SetTexture(atlas);
             }
         }
+    }
+
+    private const int PhoneUiDefaultImageQueue = 3005;
+
+    private static int ResolvePhoneLabelRenderQueue(TextMeshProUGUI label)
+    {
+        int queue = PhoneUiDefaultImageQueue;
+        Transform? cell = label.transform.parent;
+        if (cell != null)
+        {
+            foreach (Image img in cell.GetComponentsInChildren<Image>(true))
+            {
+                Material? m = img.materialForRendering;
+                if (m != null && m.renderQueue > queue)
+                {
+                    queue = m.renderQueue;
+                }
+            }
+        }
+
+        return queue;
     }
 
     private static bool EnsurePhoneLabelMaterial(TextMeshProUGUI label)

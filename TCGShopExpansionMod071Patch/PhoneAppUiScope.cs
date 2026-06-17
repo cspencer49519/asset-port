@@ -188,6 +188,11 @@ internal static class PhoneAppUiScope
         return namedRoot ?? fromTransform;
     }
 
+    public static System.Collections.Generic.IEnumerable<UIScreenBase?> EnumerateScreens(PhoneManager phoneManager)
+    {
+        return EnumeratePhoneManagerScreens(phoneManager);
+    }
+
     public static bool IsPhoneRelatedScreen(UIScreenBase? screen)
     {
         if (screen == null)

@@ -34,7 +34,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     public const string PluginName = "TCGShopExpansionMod 0.71 Patch";
 
-    public const string PluginVersion = "1.1.035";
+    public const string PluginVersion = "1.1.037";
 
 
 
