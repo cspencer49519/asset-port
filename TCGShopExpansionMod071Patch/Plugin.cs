@@ -22,6 +22,8 @@ namespace TCGShopExpansionMod071Patch;
 
 [BepInDependency("com.DarkDragoon.TCGShopExpansionMod", BepInDependency.DependencyFlags.HardDependency)]
 
+[BepInDependency("shaklin.TextureReplacer", BepInDependency.DependencyFlags.HardDependency)]
+
 [BepInDependency("cklapperich.ArtExpander", BepInDependency.DependencyFlags.SoftDependency)]
 
 public sealed class Plugin : BaseUnityPlugin
@@ -32,7 +34,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     public const string PluginName = "TCGShopExpansionMod 0.71 Patch";
 
-    public const string PluginVersion = "1.0.107";
+    public const string PluginVersion = "1.1.035";
 
 
 
@@ -45,7 +47,7 @@ public sealed class Plugin : BaseUnityPlugin
     {
 
         Log = Logger;
-
+        PhoneFontMaterialSnapshot.CaptureIfNeeded();
         Harmony harmony = new(PluginGuid);
 
 
@@ -81,6 +83,8 @@ public sealed class Plugin : BaseUnityPlugin
         harmony.PatchAll(typeof(InteractableCard3d071Patches));
 
         harmony.PatchAll(typeof(LightManager071Patches));
+        TryPatchPhoneUi(harmony);
+        TryPatchTextureReplacerGuards(harmony);
 
 
 
@@ -190,6 +194,8 @@ public sealed class Plugin : BaseUnityPlugin
         TryPatchExtrasHandlerCardBacks(harmony);
 
         gameObject.AddComponent<PackOpeningLateSyncBehaviour>();
+        gameObject.AddComponent<PhoneUiLateRepairBehaviour>();
+        gameObject.AddComponent<PhoneUiRenderSyncBehaviour>();
 
         ArtExpanderBridge.TryInitialize();
 
@@ -198,6 +204,127 @@ public sealed class Plugin : BaseUnityPlugin
     }
 
 
+
+    private static void TryPatchPhoneUi(Harmony harmony)
+    {
+        try
+        {
+            harmony.PatchAll(typeof(PhoneUi071Patches));
+            Log.LogInfo("Phone UI repair patches applied.");
+        }
+        catch (Exception ex)
+        {
+            Log.LogError($"Failed to apply phone UI repair patches: {ex.Message}");
+        }
+    }
+
+    private static void TryPatchTextureReplacerGuards(Harmony harmony)
+    {
+        try
+        {
+            TextureReplacerMaterialGuardPatches.ApplyPatches(harmony);
+            Log.LogInfo("TextureReplacer material guard patch applied.");
+        }
+        catch (Exception ex)
+        {
+            Log.LogWarning($"Failed to apply TextureReplacer material guard patch: {ex.Message}");
+        }
+
+        System.Type? textureReplacer = TextureReplacerPhoneUiGuardPatches.ResolveTextureReplacerPluginType();
+        if (textureReplacer == null)
+        {
+            Log.LogWarning("TextureReplacer.BepInExPlugin type not found; skipping phone UI guard patches.");
+            return;
+        }
+
+        int applied = 0;
+        applied += TryPatchTextureReplacerMethod(
+            harmony,
+            textureReplacer,
+            "GetCachedTexture",
+            prefix: nameof(TextureReplacerPhoneUiGuardPatches.GetCachedTexture_Prefix)) ? 1 : 0;
+        applied += TryPatchTextureReplacerMethod(
+            harmony,
+            textureReplacer,
+            "GetCachedTexture_static",
+            prefix: nameof(TextureReplacerPhoneUiGuardPatches.GetCachedTexture_Static_Prefix)) ? 1 : 0;
+        applied += TryPatchTextureReplacerMethod(
+            harmony,
+            textureReplacer,
+            "ForceWhiteIfNotGrayOrWhite",
+            prefix: nameof(TextureReplacerPhoneUiGuardPatches.ForceWhiteIfNotGrayOrWhite_Prefix)) ? 1 : 0;
+        applied += TryPatchTextureReplacerMethod(
+            harmony,
+            textureReplacer,
+            "UpdateTitleTexts",
+            prefix: nameof(TextureReplacerPhoneUiGuardPatches.UpdateTitleTexts_Prefix)) ? 1 : 0;
+        applied += TryPatchTextureReplacerMethod(
+            harmony,
+            textureReplacer,
+            "ReplaceItemDataInList",
+            prefix: nameof(TextureReplacerPhoneUiGuardPatches.ReplaceItemDataInList_Prefix),
+            postfix: nameof(TextureReplacerPhoneUiGuardPatches.ReplaceItemDataInList_Postfix)) ? 1 : 0;
+        applied += TryPatchTextureReplacerMethod(
+            harmony,
+            textureReplacer,
+            "FixPhone",
+            postfix: nameof(TextureReplacerPhoneUiGuardPatches.FixPhone_Postfix)) ? 1 : 0;
+
+        MethodInfo? doReplace = AccessTools.Method(textureReplacer, "DoReplace");
+        if (doReplace == null)
+        {
+            Log.LogWarning("TextureReplacer.DoReplace not found; skipping phone font repair hook.");
+        }
+        else
+        {
+            try
+            {
+                harmony.Patch(
+                    doReplace,
+                    prefix: new HarmonyMethod(typeof(TextureReplacerPhoneUiGuardPatches), nameof(TextureReplacerPhoneUiGuardPatches.DoReplace_Prefix)),
+                    finalizer: new HarmonyMethod(typeof(TextureReplacerPhoneUiGuardPatches), nameof(TextureReplacerPhoneUiGuardPatches.DoReplace_Finalizer)));
+                applied++;
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"Failed to patch TextureReplacer.DoReplace for phone UI repair: {ex.Message}");
+            }
+        }
+
+        Log.LogInfo($"TextureReplacer phone UI guard patches applied ({applied}).");
+    }
+
+    private static bool TryPatchTextureReplacerMethod(
+        Harmony harmony,
+        System.Type textureReplacerType,
+        string methodName,
+        string? prefix = null,
+        string? postfix = null)
+    {
+        MethodInfo? method = AccessTools.Method(textureReplacerType, methodName);
+        if (method == null)
+        {
+            Log.LogDebug($"TextureReplacer method not found: {methodName}");
+            return false;
+        }
+
+        try
+        {
+            HarmonyMethod? prefixMethod = prefix != null
+                ? new HarmonyMethod(typeof(TextureReplacerPhoneUiGuardPatches), prefix)
+                : null;
+            HarmonyMethod? postfixMethod = postfix != null
+                ? new HarmonyMethod(typeof(TextureReplacerPhoneUiGuardPatches), postfix)
+                : null;
+            harmony.Patch(method, prefix: prefixMethod, postfix: postfixMethod);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.LogWarning($"Failed to patch TextureReplacer.{methodName}: {ex.Message}");
+            return false;
+        }
+    }
 
     private static void TryPatchExtrasHandlerCardBacks(Harmony harmony)
 
