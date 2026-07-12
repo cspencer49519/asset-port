@@ -98,7 +98,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 ## Pack opening / display case visual bugs
 
-Ensure patch version **1.1.038** or newer in log.
+Ensure patch version **1.1.039** or newer in log.
 
 | Issue | Check |
 |-------|--------|
@@ -114,7 +114,7 @@ Ensure patch version **1.1.038** or newer in log.
 
 **Symptoms:** `MissingFieldException: CardUI.m_GhostCard` on album zoom; `NullReferenceException` in `OpenSortAlbumScreen` postfix; hundreds of suppressed `SetCardUI` `MissingFieldException`s.
 
-**Fix:** Install **071 Patch 1.1.038+**. It skips ExpansionMod’s incompatible album/binder/`HandleCards` methods on 0.71.
+**Fix:** Install **071 Patch 1.1.039+**. It unpatches ExpansionMod’s incompatible album/binder hooks and skips HandleCards on 0.71.
 
 ---
 
@@ -128,9 +128,11 @@ Ensure patch version **1.1.038** or newer in log.
 
 ## ArtExpander GhostCardPatch error in log
 
-Genobear’s bundled ArtExpander **3.4.3** patches removed `CardUI.SetGhostCardUI` and fails Harmony load on 0.71.
+Genobear’s bundled ArtExpander **3.4.3** patches removed `CardUI.SetGhostCardUI` and fails Harmony load on 0.71 — **non-fatal**. Keep Genobear’s DLL; art still loads via `cardart.assets`.
 
-**Fix:** Replace `BepInEx/plugins/ArtExpander/ArtExpander.dll` with the **3.8.1** build from `ArtExpander-src` (SetCardUI-based). Keep `cardart.assets`. `animated.assets not found` remains optional/safe to ignore.
+Do **not** replace with ArtExpander-src 3.8.1 on this install — that build caused wrong card face sizes with Genobear `cardart.assets`.
+
+`animated.assets not found` remains optional/safe to ignore.
 
 ---
 

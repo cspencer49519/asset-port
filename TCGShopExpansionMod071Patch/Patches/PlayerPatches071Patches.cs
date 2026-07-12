@@ -30,7 +30,8 @@ internal static class PlayerPatches071Patches
     }
 
     /// <summary>
-    /// Album close-up postfix reads removed CardUI.m_GhostCard on 0.71 — skip it.
+    /// Album close-up postfix reads removed CardUI.m_GhostCard — removed via Harmony.Unpatch instead.
+    /// Kept as unused helper documentation; do not Prefix-patch the ExpansionMod method body.
     /// </summary>
     public static bool EnterViewUpCloseState_Postfix_Prefix()
     {
@@ -38,8 +39,7 @@ internal static class PlayerPatches071Patches
     }
 
     /// <summary>
-    /// Sort-album postfix NREs on 0.71 expansion button list / GetComponentInChildren — skip it.
-    /// ExpansionMod's OpenSortAlbumScreen prefix (index remap) is left alone.
+    /// Sort-album postfix NREs on 0.71 — removed via Harmony.Unpatch instead.
     /// </summary>
     public static bool OpenSortAlbumScreen_Postfix_Prefix()
     {

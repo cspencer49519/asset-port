@@ -1,7 +1,7 @@
 {
   "packageName": "TCG Card Shop Simulator 0.71 Genobear Compatibility",
   "gameVersion": "0.71",
-  "patchVersion": "1.1.038",
+  "patchVersion": "1.1.039",
   "patchGuid": "local.tcgshop.expansionmod071patch",
   "dependencies": [
     {
@@ -45,7 +45,7 @@
       "id": "TCGShopExpansionMod071Patch",
       "name": "TCGShopExpansionMod 0.71 Patch",
       "required": true,
-      "version": "1.1.038",
+      "version": "1.1.039",
       "installPath": "BepInEx/plugins/TCGShopExpansionMod071Patch/"
     }
   ],
@@ -82,15 +82,15 @@
     "vanillaBytes": 47282752
   },
   "logSuccessMarkers": [
-    "TCGShopExpansionMod 0.71 Patch 1.1.038",
+    "TCGShopExpansionMod 0.71 Patch 1.1.039",
     "Patched ExpansionMod for game 0.71",
     "ArtExpander bridge ready"
   ],
   "logFailureMarkers": [
     "Shelf data not loaded properly",
     "m_CardBorderList",
-    "Undefined target method for patch method static void ArtExpander.Patches.GhostCardPatch",
-    "Could not load file or assembly 'Imazen.WebP"
+    "Could not load file or assembly 'Imazen.WebP",
+    "IL Compile Error"
   ],
   "expansionModConfig": {
     "note": "Open in-game config (F1) under com.DarkDragoon.TCGShopExpansionMod",

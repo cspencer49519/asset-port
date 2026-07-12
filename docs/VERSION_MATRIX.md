@@ -8,10 +8,10 @@ Pin these versions when reporting bugs or helping others install.
 | **BepInEx** | 5.4.22+ | Must load before other plugins |
 | **TCGShopNewCardsMod** | 1.6.0.0+ | Add New Cards Mod |
 | **TCGShopExpansionMod** | **1.8.7** | More Card Expansions — **not** 0.71-native; requires patch |
-| **TCGShopExpansionMod071Patch** | **1.1.038** | This repo — album/binder skips, HandleCards skip, graded-set clamp |
+| **TCGShopExpansionMod071Patch** | **1.1.039** | This repo — album/binder unpatch, HandleCards skip, graded-set clamp |
 | **Imazen.WebP** | **10.0.1** | Place `deps/Imazen.WebP.dll` next to ExpansionMod DLL |
 | **TextureReplacer** | 1.6.1+ | Required by Genobear |
-| **ArtExpander** | **3.8.1** (ArtExpander-src rebuild) | SetCardUI-based; do **not** use Genobear 3.4.3 `GhostCardPatch` DLL |
+| **ArtExpander** | Genobear **3.4.3** (+ `cardart.assets`) | Keep Genobear DLL on 0.71; `GhostCardPatch` Harmony error is non-fatal. Do not deploy ArtExpander-src 3.8.1 (wrong face sizing). |
 | **sharedassets0 trio** | **Ported** (release `assets/`) | **Required** for Genobear card frames — install script copies these |
 | **Configuration Manager** | Nexus mod 31 | Recommended — **F1** in-game config |
 
@@ -32,14 +32,14 @@ Under **com.DarkDragoon.TCGShopExpansionMod**:
 
 ### Must fix
 
-- ExpansionMod album close-up / binder sort / `HandleCards` using removed `CardUI.m_GhostCard` — fixed by **071 Patch 1.1.038+** (skips those ExpansionMod methods)
-- ArtExpander `GhostCardPatch` / `SetGhostCardUI` — fixed by deploying **ArtExpander 3.8.1** from `ArtExpander-src`
+- ExpansionMod album close-up / binder sort / `HandleCards` using removed `CardUI.m_GhostCard` — fixed by **071 Patch 1.1.039+** (Unpatch album/binder hooks; skip HandleCards)
+- ArtExpander: keep Genobear **3.4.3** — `GhostCardPatch` fails soft; ArtExpander-src 3.8.1 caused wrong card face sizes
 - Missing `Imazen.WebP` next to ExpansionMod — install from `deps/Imazen.WebP.dll`
 - `CardOpeningSequence` pack refs `animator=False, mesh=False` after sharedassets port — UI fan may work; pack wrapper animation needs scene object restore (see TROUBLESHOOTING)
 
 ### Worth watching
 
-- `GradedCardSetCheckStatusScreen` oversized set — clamped by 071 Patch 1.1.038+
+- `GradedCardSetCheckStatusScreen` oversized set — clamped by 071 Patch 1.1.039+
 - SteamAPI init failed — ignore unless launched outside Steam and Steam features are required
 
 ### Safe to ignore
@@ -53,7 +53,7 @@ Under **com.DarkDragoon.TCGShopExpansionMod**:
 ## Success checklist
 
 - [ ] Save loads (no “Shelf data not loaded properly”)
-- [ ] Log shows `071 Patch` **1.1.038+** and no `GhostCardPatch` / `SetGhostCardUI` errors
+- [ ] Log shows `071 Patch` **1.1.039+**, album/binder unpatched, and Genobear ArtExpander 3.4.3 (GhostCardPatch warning OK)
 - [ ] Album close-up and binder sort open without ExpansionMod `MissingFieldException` / NRE spam
 - [ ] Tetramon pack rip: stacked back → flip each card → fan row
 - [ ] Shop display case: fronts toward customer, backs from behind

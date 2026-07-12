@@ -34,7 +34,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     public const string PluginName = "TCGShopExpansionMod 0.71 Patch";
 
-    public const string PluginVersion = "1.1.038";
+    public const string PluginVersion = "1.1.039";
 
 
 
@@ -192,51 +192,23 @@ public sealed class Plugin : BaseUnityPlugin
 
 
 
-        MethodInfo? enterViewUpClose = AccessTools.Method(playerPatches, "CollectionBinderFlipAnimCtrl_EnterViewUpCloseState_Postfix");
+        // Do NOT Harmony.Patch ExpansionMod methods that IL-reference removed CardUI fields
+        // (m_GhostCard etc.) — MonoMod fails to compile them and aborts Awake mid-setup.
+        // Unpatch those ExpansionMod hooks from the game methods instead.
+        TryUnpatchExpansionModHook(
+            harmony,
+            typeof(CollectionBinderFlipAnimCtrl),
+            "EnterViewUpCloseState",
+            playerPatches,
+            "CollectionBinderFlipAnimCtrl_EnterViewUpCloseState_Postfix");
 
-        if (enterViewUpClose != null)
-
-        {
-
-            harmony.Patch(
-
-                enterViewUpClose,
-
-                prefix: new HarmonyMethod(typeof(PlayerPatches071Patches), nameof(PlayerPatches071Patches.EnterViewUpCloseState_Postfix_Prefix)));
-
-        }
-
-        else
-
-        {
-
-            Log.LogWarning("Could not patch CollectionBinderFlipAnimCtrl_EnterViewUpCloseState_Postfix.");
-
-        }
-
-
-
-        MethodInfo? openSortAlbumPostfix = AccessTools.Method(playerPatches, "CollectionBinderUI_OpenSortAlbumScreen_HarmonyPostfix");
-
-        if (openSortAlbumPostfix != null)
-
-        {
-
-            harmony.Patch(
-
-                openSortAlbumPostfix,
-
-                prefix: new HarmonyMethod(typeof(PlayerPatches071Patches), nameof(PlayerPatches071Patches.OpenSortAlbumScreen_Postfix_Prefix)));
-
-        }
-
-        else
-
-        {
-
-            Log.LogWarning("Could not patch CollectionBinderUI_OpenSortAlbumScreen_HarmonyPostfix.");
-
-        }
+        TryUnpatchExpansionModHook(
+            harmony,
+            typeof(CollectionBinderUI),
+            "OpenSortAlbumScreen",
+            playerPatches,
+            "CollectionBinderUI_OpenSortAlbumScreen_HarmonyPostfix",
+            new[] { typeof(int), typeof(int), typeof(bool) });
 
 
 
@@ -248,8 +220,43 @@ public sealed class Plugin : BaseUnityPlugin
 
         ArtExpanderBridge.TryInitialize();
 
-        Log.LogInfo($"Patched ExpansionMod for game 0.71 (album/binder skips + HandleCards skip + Tetramon overlay). v{PluginVersion}");
+        Log.LogInfo($"Patched ExpansionMod for game 0.71 (album/binder unpatch + HandleCards skip + Tetramon overlay). v{PluginVersion}");
 
+    }
+
+
+
+    /// <summary>
+    /// Remove an ExpansionMod Harmony hook from a game method. Safer than prefixing ExpansionMod
+    /// methods whose IL still references removed 0.62 CardUI fields.
+    /// </summary>
+    private static void TryUnpatchExpansionModHook(
+        Harmony harmony,
+        System.Type gameType,
+        string gameMethodName,
+        System.Type expansionModType,
+        string expansionModPatchMethodName,
+        System.Type[]? gameMethodParameters = null)
+    {
+        try
+        {
+            MethodInfo? gameMethod = gameMethodParameters == null
+                ? AccessTools.Method(gameType, gameMethodName)
+                : AccessTools.Method(gameType, gameMethodName, gameMethodParameters);
+            MethodInfo? expansionPatch = AccessTools.Method(expansionModType, expansionModPatchMethodName);
+            if (gameMethod == null || expansionPatch == null)
+            {
+                Log.LogWarning($"Could not unpatch {expansionModPatchMethodName} (method not found).");
+                return;
+            }
+
+            harmony.Unpatch(gameMethod, expansionPatch);
+            Log.LogInfo($"Unpatched ExpansionMod {expansionModPatchMethodName} from {gameType.Name}.{gameMethodName}.");
+        }
+        catch (Exception ex)
+        {
+            Log.LogWarning($"Failed to unpatch {expansionModPatchMethodName}: {ex.GetType().Name}: {ex.Message}");
+        }
     }
 
 
