@@ -98,7 +98,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 ## Pack opening / display case visual bugs
 
-Ensure patch version **1.0.51** or newer in log.
+Ensure patch version **1.1.038** or newer in log.
 
 | Issue | Check |
 |-------|--------|
@@ -106,14 +106,31 @@ Ensure patch version **1.0.51** or newer in log.
 | No pack backs / blank white stack during rip | Patch **1.0.50+** resolves Tetramon back sprite via `GetCardBackSprite`; log should show `Pack back sprite resolved from:` |
 | Cards invisible mid-flip, shadows over cards | Patch **1.0.50+** keeps already-revealed cards face-up during flip states |
 | Display case wrong faces | Load save after patch install; check F1 ExpansionMod settings |
+| Pack wrapper anim missing (`animator=False, mesh=False`) | Texture port can leave `CardOpeningSequence` pack mesh/animator refs null. UI card fan may still run. Log `Pack open readiness` and late-sync give-up lines. A/B: compare against `sharedassets0.assets.backup` (vanilla) — if animators only exist on vanilla, restore pack scene objects or re-port carefully. |
+
+---
+
+## Album close-up / binder sort spam (ExpansionMod)
+
+**Symptoms:** `MissingFieldException: CardUI.m_GhostCard` on album zoom; `NullReferenceException` in `OpenSortAlbumScreen` postfix; hundreds of suppressed `SetCardUI` `MissingFieldException`s.
+
+**Fix:** Install **071 Patch 1.1.038+**. It skips ExpansionMod’s incompatible album/binder/`HandleCards` methods on 0.71.
+
+---
+
+## Missing Imazen.WebP
+
+**Symptoms:** `TypeLoadException` / Harmony reflection warning for `Imazen.WebP, Version=10.0.1.0`.
+
+**Fix:** Copy `deps/Imazen.WebP.dll` to `BepInEx/plugins/TCGShopExpansionMod/` (next to `TCGShopExpansionMod.dll`). Native `libwebp` is only needed if you actually decode `.webp` custom art (Genobear PNGs do not require it).
 
 ---
 
 ## ArtExpander GhostCardPatch error in log
 
-Harmony patch mismatch between Genobear’s bundled ArtExpander and game 0.71 — often **non-fatal**. Card art still loads if `cardart.assets` is present and log shows `ArtExpander bridge ready`.
+Genobear’s bundled ArtExpander **3.4.3** patches removed `CardUI.SetGhostCardUI` and fails Harmony load on 0.71.
 
-If the game crashes on ArtExpander load, replace `ArtExpander.dll` with a 0.71-compatible build (see maintainer notes in [DEVELOPERS.md](DEVELOPERS.md)).
+**Fix:** Replace `BepInEx/plugins/ArtExpander/ArtExpander.dll` with the **3.8.1** build from `ArtExpander-src` (SetCardUI-based). Keep `cardart.assets`. `animated.assets not found` remains optional/safe to ignore.
 
 ---
 

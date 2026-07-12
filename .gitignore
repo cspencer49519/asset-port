@@ -8,6 +8,12 @@ dist/
 # CI reference assemblies (copy from game — see lib/game/README.md)
 lib/game/*.dll
 
+# ArtExpander local game refs (copied from Managed for builds)
+ArtExpander-src/lib/
+
+# Downloaded NuGet scratch for Imazen.WebP (keep deps/Imazen.WebP.dll)
+tools/imazen-webp-nupkg/
+
 # Local Unity asset binaries (copy from your game/mod install locally)
 base-071/
 vanilla-05/
@@ -17,12 +23,20 @@ mod-paired/
 mod-paired-05/
 output/
 exported-mod/
+exported-mod-0623/
 atnet-test/
 atnet-import-test/
 work-atnet/
 roundtrip-test/
 roundtrip-test2/
 assets/
+
+# Large / generated 0.62.3 tooling artifacts (keep scripts + patcher source)
+tools/Grading Overhaul.patched.dll
+tools/nexus612-wayback.html
+port_report_0623.json
+tmp_InputManager.txt
+tmp_ipc.cs/
 
 # Archives and dumps
 *.zip

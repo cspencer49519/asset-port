@@ -48,15 +48,14 @@ internal static class TetramonOverlay071Patches
     private static bool LoggedFirstCenterArt;
     private static bool LoggedMissingArt;
 
-    /// <summary>Skip ExpansionMod HandleCards for Tetramon on 0.71 (uses removed CardUI fields).</summary>
+    /// <summary>
+    /// Skip ExpansionMod HandleCards on 0.71. That method always reads removed CardUI fields
+    /// (m_GhostCard for Ghost, m_FullArtCard for FullArt, m_MonsterImage for config-driven cards).
+    /// Tetramon presentation is applied by SetCardUI_ApplyTetramonOverlay instead.
+    /// </summary>
     public static bool SkipMainPostfixForTetramon_Prefix(CardUI __instance, CardData cardData)
     {
-        if (cardData != null && cardData.expansionType == ECardExpansionType.Tetramon)
-        {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     /// <summary>

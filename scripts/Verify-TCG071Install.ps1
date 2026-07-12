@@ -78,7 +78,9 @@ Test-FileExists $manifest.paths.gameExe | Out-Null
 Test-FileExists "BepInEx" | Out-Null
 Test-FileExists $manifest.paths.patchDll | Out-Null
 Test-FileExists $manifest.paths.expansionModDll | Out-Null
+Test-FileExists $manifest.paths.imazenWebPDll | Out-Null
 Test-FileExists $manifest.paths.newCardsModDll | Out-Null
+Test-FileExists $manifest.paths.artExpanderDll $false | Out-Null
 Test-FileExists $manifest.paths.cardArtAssets $false | Out-Null
 Test-FileExists $manifest.paths.sharedAssets $false | Out-Null
 
@@ -87,11 +89,15 @@ if (Test-Path -LiteralPath $sharedPath) {
     $size = (Get-Item -LiteralPath $sharedPath).Length
     if ($manifest.sharedAssets) {
         if ($size -le $manifest.sharedAssets.vanillaBytes) {
-            Write-Skip "sharedassets0.assets is vanilla size ($size bytes) — re-run install without -SkipAssets"
+            Write-Skip ("sharedassets0.assets is vanilla size ({0} bytes) - re-run install without -SkipAssets" -f $size)
             $warnCount++
         }
         elseif ($size -ge $manifest.sharedAssets.portedMinBytes) {
-            Write-Pass "sharedassets0.assets looks ported ($size bytes)"
+            Write-Pass ("sharedassets0.assets looks ported ({0} bytes)" -f $size)
+        }
+        else {
+            Write-Skip ("sharedassets0.assets size ({0} bytes) is between vanilla and portedMin - check port" -f $size)
+            $warnCount++
         }
     }
 }
@@ -119,7 +125,7 @@ if (Test-Path -LiteralPath $logPath) {
     }
 }
 else {
-    Write-Skip "No log yet — launch the game once, then re-run this script."
+    Write-Skip "No log yet - launch the game once, then re-run this script."
     $warnCount++
 }
 

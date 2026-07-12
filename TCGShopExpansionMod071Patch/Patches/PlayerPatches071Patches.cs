@@ -29,6 +29,23 @@ internal static class PlayerPatches071Patches
         return false;
     }
 
+    /// <summary>
+    /// Album close-up postfix reads removed CardUI.m_GhostCard on 0.71 — skip it.
+    /// </summary>
+    public static bool EnterViewUpCloseState_Postfix_Prefix()
+    {
+        return false;
+    }
+
+    /// <summary>
+    /// Sort-album postfix NREs on 0.71 expansion button list / GetComponentInChildren — skip it.
+    /// ExpansionMod's OpenSortAlbumScreen prefix (index remap) is left alone.
+    /// </summary>
+    public static bool OpenSortAlbumScreen_Postfix_Prefix()
+    {
+        return false;
+    }
+
     public static bool LightManager_Awake_Prefix_Prefix()
     {
         EnsureMaterialFields();

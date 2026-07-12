@@ -9,8 +9,14 @@ namespace TCGShopExpansionMod071Patch;
 /// </summary>
 internal sealed class PackOpeningLateSyncBehaviour : MonoBehaviour
 {
+    private const float BootstrapRetryIntervalSeconds = 1f;
+    private const int BootstrapGiveUpRetries = 45;
+
     private float _bootstrapRetryTimer;
+    private int _bootstrapRetryCount;
     private bool _packRefsReady;
+    private bool _loggedBootstrapSuccess;
+    private bool _loggedBootstrapGiveUp;
 
     private void Update()
     {
@@ -20,12 +26,14 @@ internal sealed class PackOpeningLateSyncBehaviour : MonoBehaviour
         }
 
         _bootstrapRetryTimer += Time.unscaledDeltaTime;
-        if (_bootstrapRetryTimer < 1f)
+        if (_bootstrapRetryTimer < BootstrapRetryIntervalSeconds)
         {
             return;
         }
 
         _bootstrapRetryTimer = 0f;
+        _bootstrapRetryCount++;
+
         CardOpeningSequence? sequence = CSingleton<CardOpeningSequence>.Instance;
         if (sequence == null)
         {
@@ -33,11 +41,32 @@ internal sealed class PackOpeningLateSyncBehaviour : MonoBehaviour
         }
 
         PackOpeningRefsBootstrap.TryBootstrap(sequence);
-        if (PackOpeningRefsBootstrap.HasMinimumPackOpenRefs(sequence)
-            && PackOpeningRefsBootstrap.HasOpenSequenceUiRefs(sequence))
+        bool hasMin = PackOpeningRefsBootstrap.HasMinimumPackOpenRefs(sequence);
+        bool hasUi = PackOpeningRefsBootstrap.HasOpenSequenceUiRefs(sequence);
+        if (hasMin && hasUi)
         {
             _packRefsReady = true;
             PackOpeningRefsBootstrap.TryRecoverStart(sequence);
+            if (!_loggedBootstrapSuccess)
+            {
+                _loggedBootstrapSuccess = true;
+                Plugin.Log.LogInfo(
+                    "CardOpeningSequence pack refs ready after late sync " +
+                    $"(retries={_bootstrapRetryCount}, animator=True, mesh=True, startLerp=True, ui=True).");
+            }
+
+            return;
+        }
+
+        if (!_loggedBootstrapGiveUp && _bootstrapRetryCount >= BootstrapGiveUpRetries)
+        {
+            _loggedBootstrapGiveUp = true;
+            Plugin.Log.LogWarning(
+                "CardOpeningSequence pack ref late sync giving up after " +
+                $"{BootstrapGiveUpRetries}s: minRefs={hasMin}, uiRefs={hasUi}, " +
+                $"animator={sequence.m_CardPackAnimator != null}, mesh={sequence.m_CardPackMesh != null}, " +
+                $"startLerp={sequence.m_StartLerpTransform != null}. " +
+                "Pack wrapper animation may stay broken until scene objects are restored from vanilla 0.71.");
         }
     }
 

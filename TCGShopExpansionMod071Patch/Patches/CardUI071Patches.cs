@@ -5,6 +5,9 @@ namespace TCGShopExpansionMod071Patch.Patches;
 
 internal static class CardUI071Patches
 {
+    private const int MaxSuppressedSetCardUiWarnings = 5;
+    private static int SuppressedSetCardUiWarningCount;
+
     [HarmonyFinalizer]
     [HarmonyPatch(typeof(CardUI), "SetCardUI", new[] { typeof(CardData) })]
     public static Exception SetCardUI_Finalizer(CardUI __instance, CardData cardData, Exception __exception)
@@ -20,7 +23,7 @@ internal static class CardUI071Patches
 
         if (__exception != null)
         {
-            Plugin.Log.LogWarning($"Suppressed ExpansionMod SetCardUI error: {__exception.GetType().Name}");
+            LogSuppressedSetCardUiError(__exception);
             return null;
         }
 
@@ -64,5 +67,19 @@ internal static class CardUI071Patches
         }
 
         TetramonOverlay071Patches.SetCardUI_ApplyTetramonOverlay(__instance, cardData);
+    }
+
+    private static void LogSuppressedSetCardUiError(Exception exception)
+    {
+        SuppressedSetCardUiWarningCount++;
+        if (SuppressedSetCardUiWarningCount <= MaxSuppressedSetCardUiWarnings)
+        {
+            Plugin.Log.LogWarning($"Suppressed ExpansionMod SetCardUI error: {exception.GetType().Name}");
+            if (SuppressedSetCardUiWarningCount == MaxSuppressedSetCardUiWarnings)
+            {
+                Plugin.Log.LogWarning(
+                    "Further ExpansionMod SetCardUI suppressions will be silent this session (HandleCards is skipped on 0.71).");
+            }
+        }
     }
 }

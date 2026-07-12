@@ -34,7 +34,7 @@ public sealed class Plugin : BaseUnityPlugin
 
     public const string PluginName = "TCGShopExpansionMod 0.71 Patch";
 
-    public const string PluginVersion = "1.1.037";
+    public const string PluginVersion = "1.1.038";
 
 
 
@@ -83,6 +83,7 @@ public sealed class Plugin : BaseUnityPlugin
         harmony.PatchAll(typeof(InteractableCard3d071Patches));
 
         harmony.PatchAll(typeof(LightManager071Patches));
+        harmony.PatchAll(typeof(GradedCardSetCheckStatusScreen071Patches));
         TryPatchPhoneUi(harmony);
         TryPatchTextureReplacerGuards(harmony);
 
@@ -191,6 +192,54 @@ public sealed class Plugin : BaseUnityPlugin
 
 
 
+        MethodInfo? enterViewUpClose = AccessTools.Method(playerPatches, "CollectionBinderFlipAnimCtrl_EnterViewUpCloseState_Postfix");
+
+        if (enterViewUpClose != null)
+
+        {
+
+            harmony.Patch(
+
+                enterViewUpClose,
+
+                prefix: new HarmonyMethod(typeof(PlayerPatches071Patches), nameof(PlayerPatches071Patches.EnterViewUpCloseState_Postfix_Prefix)));
+
+        }
+
+        else
+
+        {
+
+            Log.LogWarning("Could not patch CollectionBinderFlipAnimCtrl_EnterViewUpCloseState_Postfix.");
+
+        }
+
+
+
+        MethodInfo? openSortAlbumPostfix = AccessTools.Method(playerPatches, "CollectionBinderUI_OpenSortAlbumScreen_HarmonyPostfix");
+
+        if (openSortAlbumPostfix != null)
+
+        {
+
+            harmony.Patch(
+
+                openSortAlbumPostfix,
+
+                prefix: new HarmonyMethod(typeof(PlayerPatches071Patches), nameof(PlayerPatches071Patches.OpenSortAlbumScreen_Postfix_Prefix)));
+
+        }
+
+        else
+
+        {
+
+            Log.LogWarning("Could not patch CollectionBinderUI_OpenSortAlbumScreen_HarmonyPostfix.");
+
+        }
+
+
+
         TryPatchExtrasHandlerCardBacks(harmony);
 
         gameObject.AddComponent<PackOpeningLateSyncBehaviour>();
@@ -199,7 +248,7 @@ public sealed class Plugin : BaseUnityPlugin
 
         ArtExpanderBridge.TryInitialize();
 
-        Log.LogInfo($"Patched ExpansionMod for game 0.71 (Tetramon overlay + safe card UI hooks). v{PluginVersion}");
+        Log.LogInfo($"Patched ExpansionMod for game 0.71 (album/binder skips + HandleCards skip + Tetramon overlay). v{PluginVersion}");
 
     }
 

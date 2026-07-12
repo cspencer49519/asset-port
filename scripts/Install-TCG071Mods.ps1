@@ -154,6 +154,20 @@ elseif ($PSCmdlet.ShouldProcess($pluginDll, "Install patch DLL")) {
     Write-Ok "Installed patch DLL v$($manifest.patchVersion)"
 }
 
+$imazenSrc = Join-Path $releaseRoot "deps\Imazen.WebP.dll"
+$imazenDst = Join-Path $gameRoot $manifest.paths.imazenWebPDll
+if (Test-Path -LiteralPath $imazenSrc) {
+    $imazenDir = Split-Path -Parent $imazenDst
+    Ensure-Directory $imazenDir
+    if ($PSCmdlet.ShouldProcess($imazenDst, "Install Imazen.WebP.dll")) {
+        Copy-Item -LiteralPath $imazenSrc -Destination $imazenDst -Force
+        Write-Ok "Installed Imazen.WebP.dll next to ExpansionMod"
+    }
+}
+else {
+    Write-Warn "deps/Imazen.WebP.dll missing - ExpansionMod WebP decode types may fail to load."
+}
+
 if (-not $SkipAssets) {
     Write-Step "Ported sharedassets trio (Genobear card frames)"
     $dataDir = Join-Path $gameRoot $manifest.paths.dataFolder
@@ -163,7 +177,7 @@ if (-not $SkipAssets) {
     }
 
     if (-not (Test-Path $assetsSource)) {
-        Write-Warn "No assets/ or output/ folder in release — skipping sharedassets install."
+        Write-Warn "No assets/ or output/ folder in release - skipping sharedassets install."
         Write-Warn "Card frames will stay vanilla until you get a full release zip with assets/."
     }
     else {
@@ -199,6 +213,6 @@ Write-Step "Manual steps still required"
 Write-Host "  1. Install Nexus mods + Genobear (phases 1-3 in docs/INSTALL-071.md) if not done yet"
 Write-Host "  2. Run: .\scripts\Verify-TCG071Install.ps1 -GamePath `"$gameRoot`""
 Write-Host "  3. Launch game, press F1, configure ExpansionMod (see docs/VERSION_MATRIX.md)"
-Write-Host "  4. Do not use -SkipAssets on a normal install — card frames need the ported trio"
+Write-Host "  4. Do not use -SkipAssets on a normal install - card frames need the ported trio"
 Write-Host ""
 Write-Ok "Install complete."

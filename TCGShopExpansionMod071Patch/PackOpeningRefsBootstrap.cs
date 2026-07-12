@@ -232,6 +232,8 @@ internal static class PackOpeningRefsBootstrap
             : "null";
         Plugin.Log.LogWarning(
             "Pack open readiness: " +
+            $"animator={sequence.m_CardPackAnimator != null}, mesh={sequence.m_CardPackMesh != null}, " +
+            $"startLerp={sequence.m_StartLerpTransform != null}, " +
             $"uiGroup={sequence.m_CardOpeningUIGroup != null}, rotateAnim={sequence.m_CardOpeningRotateToFrontAnim != null}, " +
             $"rotatePath={rotatePath}, newCardIcon={sequence.m_NewCardIcon != null}, highValueIcon={sequence.m_HighValueCardIcon != null}, " +
             $"card3d={sequence.m_Card3dUIList?.Count ?? 0}, cardAnim={sequence.m_CardAnimList?.Count ?? 0}, " +
@@ -239,7 +241,12 @@ internal static class PackOpeningRefsBootstrap
             $"showAllPos={sequence.m_ShowAllCardPosList?.Count ?? 0}, openVfx={sequence.m_OpenPackVFX != null}, " +
             $"sequenceUi={sequence.m_CardOpeningSequenceUI != null}, " +
             $"enableTooltip={CSingleton<CGameManager>.Instance?.m_EnableTooltip}");
-    }
+        if (sequence.m_CardPackAnimator == null || sequence.m_CardPackMesh == null || sequence.m_StartLerpTransform == null)
+        {
+            Plugin.Log.LogWarning(
+                "Pack open visuals incomplete: animator/mesh/startLerp still missing at pack-open time " +
+                "(UI card fan may still run). Check sharedassets scene objects vs vanilla 0.71.");
+        }    }
 
     private static readonly System.Collections.Generic.HashSet<int> _dumpedStackStates = new();
     private static bool _loggedFanDiagnostics;
