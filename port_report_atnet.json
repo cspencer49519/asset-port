@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-14T05:30:03.714526+00:00",
+  "generated_at": "2026-07-17T22:06:44.005078+00:00",
   "tool": "UnityPy export + AssetsTools.NET write",
-  "method": "card frame textures only; foil/outline/font atlases stay vanilla 0.71",
+  "method": "card frame textures only; foil/outline/font atlases stay vanilla 0.70.3",
   "skipped_same": [
     {
       "path_id": 54,
@@ -831,12 +831,12 @@
     {
       "path_id": 105,
       "name": "PS5_Options_Flat",
-      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
+      "error": "[Errno 13] Permission denied: 'C:/Users/GraFfiX/gitProjects/asset-port/mod-paired'"
     },
     {
       "path_id": 188,
       "name": "LDR_LLL1_54",
-      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
+      "error": "[Errno 13] Permission denied: 'C:/Users/GraFfiX/gitProjects/asset-port/mod-paired'"
     },
     {
       "path_id": 275,
@@ -856,7 +856,7 @@
     {
       "path_id": 278,
       "name": "WhiteTile",
-      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
+      "error": "[Errno 13] Permission denied: 'C:/Users/GraFfiX/gitProjects/asset-port/mod-paired'"
     },
     {
       "path_id": 279,
@@ -971,7 +971,7 @@
     {
       "path_id": 301,
       "name": "JapanOutline09 Atlas",
-      "error": "[Errno 21] Is a directory: '/Volumes/ExtraStorage3/TCGModWork/asset-port/mod-paired'"
+      "error": "[Errno 13] Permission denied: 'C:/Users/GraFfiX/gitProjects/asset-port/mod-paired'"
     },
     {
       "path_id": 302,
@@ -989,7 +989,7 @@
     {
       "path_id": 100,
       "name": "CardFrontIconOnly",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardFrontIconOnly.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardFrontIconOnly.png",
       "base_size": [
         1024,
         1024
@@ -1002,7 +1002,7 @@
     {
       "path_id": 106,
       "name": "CardBack",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBack.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardBack.png",
       "base_size": [
         1024,
         1024
@@ -1015,7 +1015,7 @@
     {
       "path_id": 115,
       "name": "CardIcon_Legend",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardIcon_Legend.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardIcon_Legend.png",
       "base_size": [
         256,
         256
@@ -1028,7 +1028,7 @@
     {
       "path_id": 126,
       "name": "GradedCardCase",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/GradedCardCase.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\GradedCardCase.png",
       "base_size": [
         1024,
         1024
@@ -1041,7 +1041,7 @@
     {
       "path_id": 163,
       "name": "GradedCardCaseBack",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/GradedCardCaseBack.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\GradedCardCaseBack.png",
       "base_size": [
         1024,
         1024
@@ -1054,7 +1054,7 @@
     {
       "path_id": 170,
       "name": "CardBG_Air",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBG_Air.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardBG_Air.png",
       "base_size": [
         256,
         256
@@ -1067,7 +1067,7 @@
     {
       "path_id": 174,
       "name": "GradeCardScratch10",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/GradeCardScratch10.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\GradeCardScratch10.png",
       "base_size": [
         1024,
         1024
@@ -1080,7 +1080,7 @@
     {
       "path_id": 181,
       "name": "CardDarkFadeBar",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardDarkFadeBar.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardDarkFadeBar.png",
       "base_size": [
         2048,
         2048
@@ -1093,7 +1093,7 @@
     {
       "path_id": 184,
       "name": "BatD",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/BatD.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\BatD.png",
       "base_size": [
         819,
         1024
@@ -1106,7 +1106,7 @@
     {
       "path_id": 191,
       "name": "CardBorderMask",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBorderMask.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardBorderMask.png",
       "base_size": [
         2048,
         2048
@@ -1119,7 +1119,7 @@
     {
       "path_id": 215,
       "name": "CardBorder_EX",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardBorder_EX.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardBorder_EX.png",
       "base_size": [
         1024,
         1024
@@ -1132,7 +1132,7 @@
     {
       "path_id": 224,
       "name": "CardCenterFrameFullArtMask",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardCenterFrameFullArtMask.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardCenterFrameFullArtMask.png",
       "base_size": [
         2048,
         2048
@@ -1145,7 +1145,7 @@
     {
       "path_id": 238,
       "name": "Ghost_PiggyD",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/Ghost_PiggyD.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\Ghost_PiggyD.png",
       "base_size": [
         819,
         1024
@@ -1158,7 +1158,7 @@
     {
       "path_id": 241,
       "name": "CardFrontFullArt_Air",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardFrontFullArt_Air.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardFrontFullArt_Air.png",
       "base_size": [
         2048,
         2048
@@ -1171,7 +1171,7 @@
     {
       "path_id": 242,
       "name": "CardFullMask",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/CardFullMask.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\CardFullMask.png",
       "base_size": [
         2048,
         2048
@@ -1184,7 +1184,7 @@
     {
       "path_id": 245,
       "name": "BatC",
-      "png": "/Volumes/ExtraStorage3/TCGModWork/asset-port/exported-mod/BatC.png",
+      "png": "C:\\Users\\GraFfiX\\gitProjects\\asset-port\\exported-mod\\BatC.png",
       "base_size": [
         819,
         1024

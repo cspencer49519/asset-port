@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Builds the patch DLL and assembles dist/TCG-071-Genobear-{version} for release upload.
+  Builds the patch DLL and assembles dist/TCG-0703-Genobear-{version} for release upload.
 #>
 [CmdletBinding()]
 param(
@@ -14,11 +14,11 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 $manifest = Get-Content -Raw (Join-Path $repoRoot "manifest.json") | ConvertFrom-Json
 $version = $manifest.patchVersion
-$distName = "TCG-071-Genobear-$version"
+$distName = "TCG-0703-Genobear-$version"
 $distRoot = Join-Path $repoRoot "dist\$distName"
 
-Write-Host "Building TCGShopExpansionMod071Patch..." -ForegroundColor Cyan
-$csproj = Join-Path $repoRoot "TCGShopExpansionMod071Patch\TCGShopExpansionMod071Patch.csproj"
+Write-Host "Building TCGShopExpansionMod0703Patch..." -ForegroundColor Cyan
+$csproj = Join-Path $repoRoot "TCGShopExpansionMod0703Patch\TCGShopExpansionMod0703Patch.csproj"
 $dotnet = Get-Command dotnet -ErrorAction SilentlyContinue
 if (-not $dotnet) {
     $fallback = "${env:ProgramFiles}\dotnet\dotnet.exe"
@@ -33,7 +33,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "dotnet build failed"
 }
 
-$builtDll = Join-Path $repoRoot "TCGShopExpansionMod071Patch\bin\$Configuration\netstandard2.1\TCGShopExpansionMod071Patch.dll"
+$builtDll = Join-Path $repoRoot "TCGShopExpansionMod0703Patch\bin\$Configuration\netstandard2.1\TCGShopExpansionMod0703Patch.dll"
 if (-not (Test-Path $builtDll)) {
     throw "Built DLL not found: $builtDll"
 }
@@ -52,15 +52,15 @@ foreach ($d in $dirs) {
     New-Item -ItemType Directory -Path $d -Force | Out-Null
 }
 
-Copy-Item -LiteralPath $builtDll -Destination "$distRoot\patches\TCGShopExpansionMod071Patch.dll"
+Copy-Item -LiteralPath $builtDll -Destination "$distRoot\patches\TCGShopExpansionMod0703Patch.dll"
 Copy-Item -LiteralPath (Join-Path $repoRoot "manifest.json") -Destination "$distRoot\manifest.json"
 Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs") -File | Copy-Item -Destination "$distRoot\docs\"
-Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG071Mods.ps1") -Destination "$distRoot\scripts\"
-Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG071Install.ps1") -Destination "$distRoot\scripts\"
-Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG071Mods.bat") -Destination "$distRoot\scripts\"
-Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG071Install.bat") -Destination "$distRoot\scripts\"
-Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG071Mods.sh") -Destination "$distRoot\scripts\"
-Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG071Install.sh") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.ps1") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.ps1") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.bat") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.bat") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.sh") -Destination "$distRoot\scripts\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.sh") -Destination "$distRoot\scripts\"
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\read_manifest.py") -Destination "$distRoot\scripts\"
 
 $assetSources = @(

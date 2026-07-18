@@ -1,6 +1,6 @@
-# Genobear Real TCG Overhaul on game 0.71 — quick reference
+# Genobear Real TCG Overhaul on game 0.70.3 — quick reference
 
-**Players:** use the full guide → **[docs/INSTALL-071.md](docs/INSTALL-071.md)**
+**Players:** use the full guide → **[docs/INSTALL-0703.md](docs/INSTALL-0703.md)**
 
 This file is a maintainer checklist mirroring a working install.
 
@@ -8,10 +8,10 @@ This file is a maintainer checklist mirroring a working install.
 
 | Component | Version / source |
 |-----------|------------------|
-| Game | **0.71** (Steam) |
+| Game | **0.70.3** (Steam) |
 | BepInEx Pack | Nexus mod 27 |
 | Add New Cards Mod | Nexus mod 3 |
-| More Card Expansions | **1.8.7** + **TCGShopExpansionMod071Patch 1.0.49** |
+| More Card Expansions | **1.8.7** + **TCGShopExpansionMod0703Patch 1.0.49** |
 | TextureReplacer | Nexus mod 26 |
 | ArtExpander + `cardart.assets` | Genobear pack (~15 GB) |
 | **Ported sharedassets0 trio** | Release `assets/` via install script — **not** raw Genobear 0.62 file |
@@ -19,9 +19,9 @@ This file is a maintainer checklist mirroring a working install.
 ## Install flow (player)
 
 1. Nexus mods + Genobear (manual)
-2. Extract **TCG-071-Genobear** release zip
-3. Run `Install-TCG071Mods` script (patch + sharedassets)
-4. Run `Verify-TCG071Install` script
+2. Extract **TCG-0703-Genobear** release zip
+3. Run `Install-TCG0703Mods` script (patch + sharedassets)
+4. Run `Verify-TCG0703Install` script
 5. F1 → ExpansionMod settings per [VERSION_MATRIX.md](docs/VERSION_MATRIX.md)
 
 ## Optional but common
@@ -32,7 +32,7 @@ This file is a maintainer checklist mirroring a working install.
 
 ## Known non-fatal log messages
 
-- ArtExpander GhostCardPatch Harmony error (Genobear DLL vs 0.71)
+- ArtExpander GhostCardPatch Harmony error (Genobear DLL vs 0.70.3)
 - `animated.assets not found`
 
 ## Shelf crash without patch

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import UnityPy
 
-BASE = Path(r"c:\TCGCardShopModWork\asset-port\base-071")
+BASE = Path(r"c:\TCGCardShopModWork\asset-port\base-0703")
 MOD = Path(r"c:\TCGCardShopModWork\asset-port\mod-062")
 
 
@@ -40,8 +40,8 @@ def texture_index(folder: Path, label: str) -> dict[str, dict]:
 
 
 def main() -> None:
-    print("Loading base-071 (full trio)...")
-    base = texture_index(BASE, "base-071")
+    print("Loading base-0703 (full trio)...")
+    base = texture_index(BASE, "base-0703")
 
     print("Loading mod-062 (.assets only)...")
     mod_only = texture_index(MOD, "mod-062-assets-only")

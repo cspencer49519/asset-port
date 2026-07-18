@@ -1,6 +1,6 @@
 """Port mod textures using UnityPy export + AssetsTools.NET write.
 
-UnityPy save corrupts 0.71 sharedassets/.resS pairing (white screen). UnityPy read
+UnityPy save corrupts 0.70.3 sharedassets/.resS pairing (white screen). UnityPy read
 is reliable for decoding mod textures. AssetsTools.NET v3 preserves file structure
 when writing patched Texture2D payloads.
 """
@@ -26,7 +26,7 @@ from AssetsTools.NET.Texture import TextureFile, TextureFormat  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent
 ATNET = ROOT / "tools" / "atnet"
-BASE_DIR = ROOT / "base-071"
+BASE_DIR = ROOT / "base-0703"
 MOD_ASSETS = ROOT / "mod-062" / "sharedassets0.assets"
 MOD_PAIRED = ROOT / "mod-paired"
 EXPORTED = ROOT / "exported-mod"
@@ -45,7 +45,7 @@ PORT_NAME = re.compile(
     re.IGNORECASE,
 )
 
-# Foil/outline/font atlases must stay vanilla 0.71 — mod pixels break TMP glyph layout.
+# Foil/outline/font atlases must stay vanilla 0.70.3 — mod pixels break TMP glyph layout.
 SKIP_TEXTURE = re.compile(
     r"(?:"
     r"^RainbowFoil$"
@@ -268,7 +268,7 @@ def main() -> None:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "tool": "UnityPy export + AssetsTools.NET write",
-        "method": "card frame textures only; foil/outline/font atlases stay vanilla 0.71",
+        "method": "card frame textures only; foil/outline/font atlases stay vanilla 0.70.3",
         **export_report,
         **result,
     }

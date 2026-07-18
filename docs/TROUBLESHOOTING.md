@@ -1,22 +1,22 @@
-# Troubleshooting — 0.71 + Genobear + 071 patch
+# Troubleshooting — 0.70.3 + Genobear + 0703 patch
 
 Primary log: **`BepInEx/LogOutput.log`** (in the game folder).
 
 Run the verifier first:
 
 ```powershell
-.\scripts\Verify-TCG071Install.ps1 -GamePath "YOUR_GAME_PATH"
+.\scripts\Verify-TCG0703Install.ps1 -GamePath "YOUR_GAME_PATH"
 ```
 
 ```bat
-scripts\Verify-TCG071Install.bat "YOUR_GAME_PATH"
+scripts\Verify-TCG0703Install.bat "YOUR_GAME_PATH"
 ```
 
 ```bash
-./scripts/Verify-TCG071Install.sh --game-path "YOUR_GAME_PATH"
+./scripts/Verify-TCG0703Install.sh --game-path "YOUR_GAME_PATH"
 ```
 
-Full install guide: [INSTALL-071.md](INSTALL-071.md).
+Full install guide: [INSTALL-0703.md](INSTALL-0703.md).
 
 ---
 
@@ -37,12 +37,12 @@ Full install guide: [INSTALL-071.md](INSTALL-071.md).
 
 ## “Shelf data not loaded properly” / return to title
 
-**Cause:** More Card Expansions 1.8.7 hits removed field `m_CardBorderList` on game 0.71.
+**Cause:** More Card Expansions 1.8.7 hits removed field `m_CardBorderList` on game 0.70.3.
 
 **Fix:**
 
-1. Confirm `BepInEx/plugins/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.dll` exists.
-2. Log must show `TCGShopExpansionMod 0.71 Patch` and `Patched ExpansionMod for game 0.71`.
+1. Confirm `BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll` exists.
+2. Log must show `TCGShopExpansionMod 0.70.3 Patch` and `Patched ExpansionMod for game 0.70.3`.
 3. Re-run the install script if the patch is missing or outdated.
 
 See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
@@ -53,7 +53,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 | Symptom | Fix |
 |---------|-----|
-| No “071 Patch” line in log | Install DLL to `BepInEx/plugins/TCGShopExpansionMod071Patch/` |
+| No “0703 Patch” line in log | Install DLL to `BepInEx/plugins/TCGShopExpansionMod0703Patch/` |
 | BepInEx not loading plugins | Reinstall BepInEx mod 27; run game once |
 | ExpansionMod missing | Install Nexus mod 48 (v1.8.7); patch has hard dependency |
 | `FileNotFoundException: MonoMod.Backports` | Copy `MonoMod.Backports.dll` and `MonoMod.ILHelpers.dll` from BepInEx pack into `BepInEx/core/` (some Wine/Mac installs) |
@@ -74,7 +74,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 ## Game crash on launch after sharedassets change
 
-**Cause:** Mixed game versions — e.g. Genobear 0.62 `.assets` with 0.71 `.resS`.
+**Cause:** Mixed game versions — e.g. Genobear 0.62 `.assets` with 0.70.3 `.resS`.
 
 **Fix:**
 
@@ -92,7 +92,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 1. Restore backup from `Card Shop Simulator_Data/_backup_sharedassets_*`.
 2. Re-run install script using assets from a **trusted release zip** only.
-3. Do not use homemade UnityPy `save()` ports for 0.71.
+3. Do not use homemade UnityPy `save()` ports for 0.70.3.
 
 ---
 
@@ -102,7 +102,7 @@ Ensure patch version **1.1.039** or newer in log.
 
 | Issue | Check |
 |-------|--------|
-| Wide stretched cards | Update to latest 071 patch |
+| Wide stretched cards | Update to latest 0703 patch |
 | No pack backs / blank white stack during rip | Patch **1.0.50+** resolves Tetramon back sprite via `GetCardBackSprite`; log should show `Pack back sprite resolved from:` |
 | Cards invisible mid-flip, shadows over cards | Patch **1.0.50+** keeps already-revealed cards face-up during flip states |
 | Display case wrong faces | Load save after patch install; check F1 ExpansionMod settings |
@@ -114,7 +114,7 @@ Ensure patch version **1.1.039** or newer in log.
 
 **Symptoms:** `MissingFieldException: CardUI.m_GhostCard` on album zoom; `NullReferenceException` in `OpenSortAlbumScreen` postfix; hundreds of suppressed `SetCardUI` `MissingFieldException`s.
 
-**Fix:** Install **071 Patch 1.1.039+**. It unpatches ExpansionMod’s incompatible album/binder hooks and skips HandleCards on 0.71.
+**Fix:** Install **0703 Patch 1.1.039+**. It unpatches ExpansionMod’s incompatible album/binder hooks and skips HandleCards on 0.70.3.
 
 ---
 
@@ -128,7 +128,7 @@ Ensure patch version **1.1.039** or newer in log.
 
 ## ArtExpander GhostCardPatch error in log
 
-Genobear’s bundled ArtExpander **3.4.3** patches removed `CardUI.SetGhostCardUI` and fails Harmony load on 0.71 — **non-fatal**. Keep Genobear’s DLL; art still loads via `cardart.assets`.
+Genobear’s bundled ArtExpander **3.4.3** patches removed `CardUI.SetGhostCardUI` and fails Harmony load on 0.70.3 — **non-fatal**. Keep Genobear’s DLL; art still loads via `cardart.assets`.
 
 Do **not** replace with ArtExpander-src 3.8.1 on this install — that build caused wrong card face sizes with Genobear `cardart.assets`.
 

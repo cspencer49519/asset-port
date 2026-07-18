@@ -1,3 +1,6 @@
+# Port tooling venv (local)
+.venv-port/
+
 # Build output
 **/bin/
 **/obj/
@@ -15,7 +18,7 @@ ArtExpander-src/lib/
 tools/imazen-webp-nupkg/
 
 # Local Unity asset binaries (copy from your game/mod install locally)
-base-071/
+base-0703/
 vanilla-05/
 vanilla-062/
 mod-062/

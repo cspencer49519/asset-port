@@ -25,13 +25,13 @@ build-patch:
         echo "See lib/game/README.md"
         exit 1
       fi
-    - dotnet build TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.csproj -c Release
-    - test -f TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
+    - dotnet build TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.csproj -c Release
+    - test -f TCGShopExpansionMod0703Patch/bin/Release/netstandard2.1/TCGShopExpansionMod0703Patch.dll
   artifacts:
     when: on_success
     expire_in: 30 days
     paths:
-      - TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
+      - TCGShopExpansionMod0703Patch/bin/Release/netstandard2.1/TCGShopExpansionMod0703Patch.dll
 
 # Keeps main pipelines green when lib/game/ is not populated on the runner.
 ci-build-skipped:
@@ -61,7 +61,7 @@ package-release:
   before_script:
     - apt-get update -qq && apt-get install -y -qq zip python3 >/dev/null
   script:
-    - test -f TCGShopExpansionMod071Patch/bin/Release/netstandard2.1/TCGShopExpansionMod071Patch.dll
+    - test -f TCGShopExpansionMod0703Patch/bin/Release/netstandard2.1/TCGShopExpansionMod0703Patch.dll
     - chmod +x scripts/Build-Release.sh
     - ./scripts/Build-Release.sh --skip-build --patch-only
     - ls -lh dist/*.zip
@@ -85,7 +85,7 @@ upload_release_asset:
   script:
     - |
       VERSION="${CI_COMMIT_TAG#v}"
-      ZIP="dist/TCG-071-Genobear-${VERSION}-patch-only.zip"
+      ZIP="dist/TCG-0703-Genobear-${VERSION}-patch-only.zip"
       test -f "$ZIP"
       echo "Uploading $(basename "$ZIP")..."
       UPLOAD_JSON=$(curl --silent --show-error --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
@@ -112,13 +112,13 @@ create_release:
     - echo "Publishing release ${CI_COMMIT_TAG} with asset ${ZIP_NAME}"
   release:
     tag_name: "$CI_COMMIT_TAG"
-    name: "TCGShopExpansionMod 0.71 Patch $CI_COMMIT_TAG"
+    name: "TCGShopExpansionMod 0.70.3 Patch $CI_COMMIT_TAG"
     description: |
-      **TCG Card Shop Simulator 0.71** compatibility patch for Genobear Real TCG Overhaul.
+      **TCG Card Shop Simulator 0.70.3** compatibility patch for Genobear Real TCG Overhaul.
 
-      Download **TCG-071-Genobear-*.zip** from release assets below.
+      Download **TCG-0703-Genobear-*.zip** from release assets below.
 
-      Player install: see [docs/INSTALL-071.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_TAG}/docs/INSTALL-071.md)
+      Player install: see [docs/INSTALL-0703.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_TAG}/docs/INSTALL-0703.md)
 
       Release notes: [docs/release-notes/${CI_COMMIT_TAG}.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_TAG}/docs/release-notes/${CI_COMMIT_TAG}.md)
     assets:

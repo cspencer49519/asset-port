@@ -1,4 +1,4 @@
-"""Port Genobear mod sharedassets0 texture changes onto game 0.71 base.
+"""Port Genobear mod sharedassets0 texture changes onto game 0.70.3 base.
 
 Only applies card/mod-related Texture2D assets. UI, font, loader, and input
 textures are skipped to avoid white-screen / invisible UI regressions caused by
@@ -17,7 +17,7 @@ import UnityPy
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
-BASE = ROOT / "base-071"
+BASE = ROOT / "base-0703"
 MOD_ASSETS = ROOT / "mod-062" / "sharedassets0.assets"
 MOD_PAIRED = ROOT / "mod-paired"
 EXPORTED = ROOT / "exported-mod"

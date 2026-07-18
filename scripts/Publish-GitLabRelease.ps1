@@ -31,7 +31,7 @@ $repoRoot = Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 $manifest = Get-Content -Raw (Join-Path $repoRoot "manifest.json") | ConvertFrom-Json
 $version = $manifest.patchVersion
 $tagName = if ($Tag) { $Tag } else { "v$version" }
-$distName = "TCG-071-Genobear-$version"
+$distName = "TCG-0703-Genobear-$version"
 $zipFile = if ($ZipPath) { $ZipPath } else { Join-Path $repoRoot "dist\$distName.zip" }
 
 $apiToken = $Token
@@ -52,20 +52,20 @@ if (-not (Test-Path -LiteralPath $zipFile)) {
 $patchOnlyZip = Join-Path $repoRoot "dist\$distName-patch-only.zip"
 if (-not (Test-Path -LiteralPath $patchOnlyZip)) {
     Write-Host "Building patch-only zip (no sharedassets)..." -ForegroundColor Yellow
-    $tempRoot = Join-Path $env:TEMP "tcg071-patch-$version"
+    $tempRoot = Join-Path $env:TEMP "tcg0703-patch-$version"
     $folderName = $distName
     if (Test-Path $tempRoot) { Remove-Item -Recurse -Force $tempRoot }
     New-Item -ItemType Directory -Path "$tempRoot\$folderName\patches", "$tempRoot\$folderName\scripts", "$tempRoot\$folderName\docs" -Force | Out-Null
-    $builtDll = Join-Path $repoRoot "TCGShopExpansionMod071Patch\bin\Release\netstandard2.1\TCGShopExpansionMod071Patch.dll"
+    $builtDll = Join-Path $repoRoot "TCGShopExpansionMod0703Patch\bin\Release\netstandard2.1\TCGShopExpansionMod0703Patch.dll"
     if (-not (Test-Path $builtDll)) {
         & (Join-Path $repoRoot "scripts\Build-Release.ps1")
-        $builtDll = Join-Path $repoRoot "TCGShopExpansionMod071Patch\bin\Release\netstandard2.1\TCGShopExpansionMod071Patch.dll"
+        $builtDll = Join-Path $repoRoot "TCGShopExpansionMod0703Patch\bin\Release\netstandard2.1\TCGShopExpansionMod0703Patch.dll"
     }
     Copy-Item -LiteralPath $builtDll -Destination "$tempRoot\$folderName\patches\"
     Copy-Item -LiteralPath (Join-Path $repoRoot "manifest.json") -Destination "$tempRoot\$folderName\"
     Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs") -File | Copy-Item -Destination "$tempRoot\$folderName\docs\"
-    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG071Mods.ps1") -Destination "$tempRoot\$folderName\scripts\"
-    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG071Install.ps1") -Destination "$tempRoot\$folderName\scripts\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.ps1") -Destination "$tempRoot\$folderName\scripts\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.ps1") -Destination "$tempRoot\$folderName\scripts\"
     if (Test-Path $patchOnlyZip) { Remove-Item -Force $patchOnlyZip }
     Compress-Archive -Path "$tempRoot\$folderName" -DestinationPath $patchOnlyZip
 }
@@ -85,7 +85,7 @@ if (-not $SkipTagPush) {
             & $git -C $repoRoot tag -a $tagName -F $notesPath
         }
         else {
-            & $git -C $repoRoot tag -a $tagName -m "TCGShopExpansionMod 0.71 Patch $version"
+            & $git -C $repoRoot tag -a $tagName -m "TCGShopExpansionMod 0.70.3 Patch $version"
         }
     }
     Write-Host "Pushing tag $tagName..." -ForegroundColor Cyan
@@ -117,16 +117,16 @@ $description = if (Test-Path $notesPath) {
 }
 else {
     @"
-# TCGShopExpansionMod 0.71 Patch $version
+# TCGShopExpansionMod 0.70.3 Patch $version
 
 Download release assets from this page (requires GitLab login) or use curl with a deploy token below.
 
-See [INSTALL-071.md](http://$GitLabHost/$ProjectPath/-/blob/$tagName/docs/INSTALL-071.md) for player install steps.
+See [INSTALL-0703.md](http://$GitLabHost/$ProjectPath/-/blob/$tagName/docs/INSTALL-0703.md) for player install steps.
 "@
 }
 
 $releasePayload = @{
-    name        = "TCGShopExpansionMod 0.71 Patch $version"
+    name        = "TCGShopExpansionMod 0.70.3 Patch $version"
     tag_name    = $tagName
     description = $description
 } | ConvertTo-Json -Depth 4
@@ -140,7 +140,7 @@ catch {
         Write-Host "Release exists; updating description..." -ForegroundColor Yellow
         $updateUri = "$releaseUri/$([uri]::EscapeDataString($tagName))"
         $updatePayload = @{
-            name        = "TCGShopExpansionMod 0.71 Patch $version"
+            name        = "TCGShopExpansionMod 0.70.3 Patch $version"
             description = $description
         } | ConvertTo-Json -Depth 4
         Invoke-RestMethod -Method Put -Uri $updateUri -Headers $headers -ContentType "application/json" -Body $updatePayload | Out-Null
@@ -158,7 +158,7 @@ foreach ($old in $existingLinks.assets.links) {
     Write-Host "Removed old link: $($old.name)" -ForegroundColor Yellow
 }
 
-$packageName = "tcg-071-genobear"
+$packageName = "tcg-0703-genobear"
 $uploads = @(
     @{ Path = $zipFile; Label = "$distName-full.zip" }
     @{ Path = $patchOnlyZip; Label = "$distName-patch-only.zip" }

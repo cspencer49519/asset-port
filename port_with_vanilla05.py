@@ -1,7 +1,7 @@
 """Port Genobear sharedassets0 using 0.5 reference + AssetsTools.NET.
 
 Ports card frame textures only. Foil textures are left to Holographic Overhaul;
-outline/font atlases stay on vanilla 0.71 so TMP glyph mapping stays valid.
+outline/font atlases stay on vanilla 0.70.3 so TMP glyph mapping stays valid.
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from AssetsTools.NET.Texture import TextureFile, TextureFormat  # noqa: E402
 from System.Collections.Generic import List  # noqa: E402
 
 ROOT = Path(r"c:\TCGCardShopModWork\asset-port")
-BASE = ROOT / "base-071"
+BASE = ROOT / "base-0703"
 VANILLA_05 = ROOT / "vanilla-05"
 MOD_ASSETS = ROOT / "mod-062" / "sharedassets0.assets"
 MOD_PAIRED = ROOT / "mod-paired-05"
@@ -47,7 +47,7 @@ PORT_TEXTURE = re.compile(
 )
 
 # Mod foil layers fight Holographic Overhaul (rolling garbled backgrounds).
-# Outline/font atlases must stay vanilla 0.71 — mod pixels break glyph UV layout.
+# Outline/font atlases must stay vanilla 0.70.3 — mod pixels break glyph UV layout.
 SKIP_TEXTURE = re.compile(
     r"(?:"
     r"^RainbowFoil$"

@@ -1,8 +1,8 @@
 {
-  "packageName": "TCG Card Shop Simulator 0.71 Genobear Compatibility",
-  "gameVersion": "0.71",
+  "packageName": "TCG Card Shop Simulator 0.70.3 Genobear Compatibility",
+  "gameVersion": "0.70.3",
   "patchVersion": "1.1.039",
-  "patchGuid": "local.tcgshop.expansionmod071patch",
+  "patchGuid": "local.tcgshop.expansionmod0703patch",
   "dependencies": [
     {
       "id": "bepinex",
@@ -42,11 +42,11 @@
       "installPath": "BepInEx/plugins/ArtExpander/"
     },
     {
-      "id": "TCGShopExpansionMod071Patch",
-      "name": "TCGShopExpansionMod 0.71 Patch",
+      "id": "TCGShopExpansionMod0703Patch",
+      "name": "TCGShopExpansionMod 0.70.3 Patch",
       "required": true,
       "version": "1.1.039",
-      "installPath": "BepInEx/plugins/TCGShopExpansionMod071Patch/"
+      "installPath": "BepInEx/plugins/TCGShopExpansionMod0703Patch/"
     }
   ],
   "optionalMods": [
@@ -64,7 +64,7 @@
   "paths": {
     "gameExe": "Card Shop Simulator.exe",
     "dataFolder": "Card Shop Simulator_Data",
-    "patchDll": "BepInEx/plugins/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.dll",
+    "patchDll": "BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll",
     "expansionModDll": "BepInEx/plugins/TCGShopExpansionMod/TCGShopExpansionMod.dll",
     "imazenWebPDll": "BepInEx/plugins/TCGShopExpansionMod/Imazen.WebP.dll",
     "newCardsModDll": "BepInEx/plugins/TCGShopNewCardsMod/TCGShopNewCardsMod.dll",
@@ -77,13 +77,13 @@
   },
   "sharedAssets": {
     "requiredForGenobearFrames": true,
-    "note": "Pre-ported trio from release assets/ folder. Do not use raw Genobear 0.62 sharedassets on game 0.71.",
+    "note": "Pre-ported trio from release assets/ folder. Do not use raw Genobear 0.62 sharedassets on game 0.70.3.",
     "portedMinBytes": 100000000,
     "vanillaBytes": 47282752
   },
   "logSuccessMarkers": [
-    "TCGShopExpansionMod 0.71 Patch 1.1.039",
-    "Patched ExpansionMod for game 0.71",
+    "TCGShopExpansionMod 0.70.3 Patch 1.1.039",
+    "Patched ExpansionMod for game 0.70.3",
     "ArtExpander bridge ready"
   ],
   "logFailureMarkers": [

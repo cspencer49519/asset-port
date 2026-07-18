@@ -5,7 +5,7 @@ from pathlib import Path
 
 import UnityPy
 
-BASE = Path(r"c:\TCGCardShopModWork\asset-port\base-071")
+BASE = Path(r"c:\TCGCardShopModWork\asset-port\base-0703")
 MOD = Path(r"c:\TCGCardShopModWork\asset-port\mod-062\sharedassets0.assets")
 
 

@@ -1,35 +1,35 @@
-# TCG Card Shop Simulator — 0.71 Mod Tooling
+# TCG Card Shop Simulator — 0.70.3 Mod Tooling
 
-Compatibility patch and install tooling for **Genobear Real TCG Overhaul** on **TCG Card Shop Simulator 0.71**.
+Compatibility patch and install tooling for **Genobear Real TCG Overhaul** on **TCG Card Shop Simulator 0.70.3**.
 
 ## Players — start here
 
-**[docs/INSTALL-071.md](docs/INSTALL-071.md)** — full step-by-step guide (Nexus mods, Genobear, then one install script).
+**[docs/INSTALL-0703.md](docs/INSTALL-0703.md)** — full step-by-step guide (Nexus mods, Genobear, then one install script).
 
-**What the release zip does for you:** copies the 0.71 compatibility patch **and** the pre-ported `sharedassets0` trio (Genobear card frames). You do **not** need to port assets yourself.
+**What the release zip does for you:** copies the 0.70.3 compatibility patch **and** the pre-ported `sharedassets0` trio (Genobear card frames). You do **not** need to port assets yourself.
 
 After installing Nexus mods and Genobear, run one script pair from the extracted release zip:
 
 ```powershell
-.\scripts\Install-TCG071Mods.ps1 -GamePath "YOUR_STEAM_GAME_FOLDER"
-.\scripts\Verify-TCG071Install.ps1 -GamePath "YOUR_STEAM_GAME_FOLDER"
+.\scripts\Install-TCG0703Mods.ps1 -GamePath "YOUR_STEAM_GAME_FOLDER"
+.\scripts\Verify-TCG0703Install.ps1 -GamePath "YOUR_STEAM_GAME_FOLDER"
 ```
 
 ```bat
-scripts\Install-TCG071Mods.bat "YOUR_STEAM_GAME_FOLDER"
-scripts\Verify-TCG071Install.bat "YOUR_STEAM_GAME_FOLDER"
+scripts\Install-TCG0703Mods.bat "YOUR_STEAM_GAME_FOLDER"
+scripts\Verify-TCG0703Install.bat "YOUR_STEAM_GAME_FOLDER"
 ```
 
 ```bash
-./scripts/Install-TCG071Mods.sh --game-path "YOUR_STEAM_GAME_FOLDER"
-./scripts/Verify-TCG071Install.sh --game-path "YOUR_STEAM_GAME_FOLDER"
+./scripts/Install-TCG0703Mods.sh --game-path "YOUR_STEAM_GAME_FOLDER"
+./scripts/Verify-TCG0703Install.sh --game-path "YOUR_STEAM_GAME_FOLDER"
 ```
 
 Download a release zip from GitLab (or run `scripts/Build-Release.ps1` locally).
 
 | Doc | Purpose |
 |-----|---------|
-| [INSTALL-071.md](docs/INSTALL-071.md) | Full install guide |
+| [INSTALL-0703.md](docs/INSTALL-0703.md) | Full install guide |
 | [VERSION_MATRIX.md](docs/VERSION_MATRIX.md) | Pinned mod versions + F1 settings |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Log errors and fixes |
 | [DEVELOPERS.md](docs/DEVELOPERS.md) | Build from source, release process |
@@ -38,9 +38,9 @@ Download a release zip from GitLab (or run `scripts/Build-Release.ps1` locally).
 
 | Path | Purpose |
 |------|---------|
-| `TCGShopExpansionMod071Patch/` | BepInEx Harmony patch (v1.0.49) — ExpansionMod + pack/display fixes on 0.71 |
+| `TCGShopExpansionMod0703Patch/` | BepInEx Harmony patch (v1.0.49) — ExpansionMod + pack/display fixes on 0.70.3 |
 | `manifest.json` | Version pins for install/verify scripts |
-| `scripts/` | `Install-TCG071Mods` / `Verify-TCG071Install` (`.ps1`, `.bat`, `.sh`), `read_manifest.py`, `Build-Release.ps1` |
+| `scripts/` | `Install-TCG0703Mods` / `Verify-TCG0703Install` (`.ps1`, `.bat`, `.sh`), `read_manifest.py`, `Build-Release.ps1` |
 | `port_*.py` | Maintainer asset port tools (not required for players) |
 
 ## Maintainers — build release
@@ -49,7 +49,7 @@ Download a release zip from GitLab (or run `scripts/Build-Release.ps1` locally).
 .\scripts\Build-Release.ps1
 ```
 
-Upload `dist/TCG-071-Genobear-*.zip` to GitLab Releases. See [DEVELOPERS.md](docs/DEVELOPERS.md).
+Upload `dist/TCG-0703-Genobear-*.zip` to GitLab Releases. See [DEVELOPERS.md](docs/DEVELOPERS.md).
 
 ## Legacy notes
 

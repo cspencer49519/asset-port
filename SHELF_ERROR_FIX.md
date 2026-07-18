@@ -10,7 +10,7 @@ MissingFieldException: Field not found:
   .MonsterData_ScriptableObject.m_CardBorderList
 ```
 
-**Game 0.71 removed `m_CardBorderList`** (and several related list fields) from
+**Game 0.70.3 removed `m_CardBorderList`** (and several related list fields) from
 `MonsterData_ScriptableObject`. The game now uses methods like `GetCardBorderSprite`
 instead. **More Card Expansions v1.8.7 still reads the old field via reflection**, so
 first world load fails every time.
@@ -21,7 +21,7 @@ This is **not** caused by the ported `sharedassets0.assets` work.
 
 - Log shows `Loading [TCGShopExpansionMod 1.8.7]` — update from 1.8.5.2 was applied.
 - Load still fails with the **same** `m_CardBorderList` error.
-- **Conclusion:** 1.8.7 is **not** compatible with game **0.71** yet.
+- **Conclusion:** 1.8.7 is **not** compatible with game **0.70.3** yet.
 
 ### Error chain in your log
 
@@ -47,31 +47,31 @@ This is **not** caused by the ported `sharedassets0.assets` work.
 Genobear card **art** still comes mainly from ArtExpander + NewCardsMod; ExpansionMod is for
 layout/config overlays, not the 15 GB art bundle.
 
-### Option B — Wait for / request a 0.71-compatible ExpansionMod
+### Option B — Wait for / request a 0.70.3-compatible ExpansionMod
 
 - Watch [Nexus mod 48](https://www.nexusmods.com/tcgcardshopsimulator/mods/48) for a release
-  **after 1.8.7** that mentions game 0.71 or `GetCardBorderSprite` / removed `m_CardBorderList`.
+  **after 1.8.7** that mentions game 0.70.3 or `GetCardBorderSprite` / removed `m_CardBorderList`.
 - File a bug report with the log excerpt above — the author closed older tickets assuming 1.8.7
   fixed remaining issues.
 
-### Option C — Roll back game version (not ideal if you need 0.71)
+### Option C — Roll back game version (not ideal if you need 0.70.3)
 
 Steam → game Properties → Betas → last version before the MonsterData refactor (if available).
 Only use if you cannot play without ExpansionMod.
 
-### Option E — 0.71 compatibility patch (installed in this workspace)
+### Option E — 0.70.3 compatibility patch (installed in this workspace)
 
-A small BepInEx plugin **`TCGShopExpansionMod071Patch`** skips ExpansionMod calls that
-mutate removed `MonsterData_ScriptableObject` sprite lists on game 0.71:
+A small BepInEx plugin **`TCGShopExpansionMod0703Patch`** skips ExpansionMod calls that
+mutate removed `MonsterData_ScriptableObject` sprite lists on game 0.70.3:
 
 - `SetCardExtrasImages` / `ReplaceCardBorders` / `ReplaceCardBGs` / `ReplaceCardFronts`
 - Adds null guards on ExpansionMod `CardUI_SetCardUI` and `LightManager_Awake` patches
 
-**Location:** `BepInEx/plugins/TCGShopExpansionMod071Patch/TCGShopExpansionMod071Patch.dll`  
-**Source:** `asset-port/TCGShopExpansionMod071Patch/` (rebuild with `dotnet build -c Release`)
+**Location:** `BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll`  
+**Source:** `asset-port/TCGShopExpansionMod0703Patch/` (rebuild with `dotnet build -c Release`)
 
 After installing, launch and confirm log contains:
-`Patched ExpansionMod for game 0.71`. Load/start a game — `m_CardBorderList` error should be gone.
+`Patched ExpansionMod for game 0.70.3`. Load/start a game — `m_CardBorderList` error should be gone.
 
 ## F1 settings after ExpansionMod update (Genobear README)
 
