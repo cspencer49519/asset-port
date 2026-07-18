@@ -129,13 +129,16 @@ internal static class InteractableCard3d0703Patches
 
         TetramonOverlay0703Patches.ReassertWorldCardFoilPolicy(cardUi);
 
-        if (cardData.expansionType != ECardExpansionType.Tetramon)
+        if (!CardUiDisplayContext.ShouldUseRotatableWorldCardBack(cardUi))
         {
             return;
         }
 
-        if (!CardUiDisplayContext.ShouldUseRotatableWorldCardBack(cardUi))
+        // Destiny/Trainer shelf: opaque expansion backs (fixes front-visible-from-behind).
+        // Tetramon shelf: same Configure path for Pokemon CardBack + orientation.
+        if (cardData.cardGrade > 0)
         {
+            TetramonOverlay0703Patches.ApplyGradedHeldPresentation(cardUi, interactable.m_Card3dUI);
             return;
         }
 

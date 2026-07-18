@@ -4,7 +4,7 @@ namespace TCGShopExpansionMod0703Patch.Patches;
 
 /// <summary>
 /// ExpansionMod SetCardBacks applies the full texture atlas without sprite UVs.
-/// Re-route Tetramon back mesh updates so pack cards get correct sprite UVs.
+/// Re-route back mesh / canvas updates for Tetramon and Destiny/Trainer shelf displays.
 /// </summary>
 internal static class ExtrasHandler0703Patches
 {
@@ -22,15 +22,52 @@ internal static class ExtrasHandler0703Patches
     {
         CardUI? cardUi = card3dUI?.m_CardUI;
         CardData? cardData = cardUi?.GetCardData();
-        if (cardUi == null || cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
+        if (cardUi == null || cardData == null)
         {
             return;
         }
 
-        // Graded slabs: front + case toward camera (no rotatable back / flat-scale reset).
+        // Graded: shelf keeps opposite-face back; album/held only hide backs + keep face in slab.
         if (cardData.cardGrade > 0)
         {
-            TetramonOverlay0703Patches.ApplyGradedHeldPresentation(cardUi, card3dUI);
+            InteractableCard3d? interactable = Card3dInteractableRegistry.FindForCardUi(cardUi);
+            bool onShelf = interactable != null && interactable.IsDisplayedOnShelf();
+            if (onShelf)
+            {
+                TetramonOverlay0703Patches.ApplyGradedHeldPresentation(cardUi, card3dUI);
+            }
+            else
+            {
+                // Do not call ConfigureCard3dForFrontDisplay — that re-enables shop card back.
+                if (cardData.expansionType != ECardExpansionType.Tetramon)
+                {
+                    TetramonOverlay0703Patches.ApplyGradedCardPresentationPublic(cardUi, cardData);
+                }
+                else
+                {
+                    TetramonOverlay0703Patches.ApplyGradedHeldPresentation(cardUi, card3dUI);
+                }
+
+                TetramonOverlay0703Patches.HideGradedCardBackFaces(cardUi);
+            }
+
+            return;
+        }
+
+        if (cardData.expansionType != ECardExpansionType.Tetramon)
+        {
+            if (PackOpeningState.IsPackOpeningInProgress())
+            {
+                return;
+            }
+
+            if (CardUiDisplayContext.ShouldUseRotatableWorldCardBack(cardUi))
+            {
+                TetramonOverlay0703Patches.ConfigureCard3dForFrontDisplay(cardUi);
+                return;
+            }
+
+            TetramonOverlay0703Patches.ApplyFlatScreenCardPresentation(cardUi, card3dUI);
             return;
         }
 

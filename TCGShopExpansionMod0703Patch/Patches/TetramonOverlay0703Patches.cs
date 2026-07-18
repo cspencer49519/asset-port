@@ -116,11 +116,11 @@ internal static class TetramonOverlay0703Patches
 
     private static void ApplyNonTetramonFacePresentation(CardUI cardUi, CardData cardData)
     {
-        // Full-card overlay + chrome hide empties the graded slab window — use vanilla case layout.
+        // Graded: paint ArtExpander art onto m_CardFrontImage (scaled into the slab by ShowGradedCardCase).
         if (cardData.cardGrade > 0)
         {
-            ApplyGradedCardPresentation(cardUi, cardData);
-            TryApplyGradedDestinyTrainerCenterArt(cardUi, cardData);
+            ApplyGradedNonTetramonFace(cardUi, cardData);
+            FinalizeNonTetramonWorldPresentation(cardUi, cardData);
             return;
         }
 
@@ -136,63 +136,1375 @@ internal static class TetramonOverlay0703Patches
         {
             ApplyFullCardOverlay(cardUi, cardArt);
             EnsureAlbumArtAndFoilLayering(cardUi);
+            FinalizeNonTetramonWorldPresentation(cardUi, cardData);
             return;
         }
 
         ClearStaleOverlayChromeOnly(cardUi);
         StripAlbumHoFoilMaterials(cardUi);
         EnsureReadableWithoutFullCardOverlay(cardUi);
+        FinalizeNonTetramonWorldPresentation(cardUi, cardData);
     }
 
     /// <summary>
-    /// Graded Destiny/Trainer: full-card overlay cannot be used inside the slab; push ArtExpander
-    /// art onto the center frame so the case is not empty after chrome restore.
+    /// Shelf Destiny/Trainer must get an opaque expansion card back — otherwise the front overlay
+    /// shows through from behind (front on both sides).
     /// </summary>
-    private static void TryApplyGradedDestinyTrainerCenterArt(CardUI cardUi, CardData cardData)
+    private static void FinalizeNonTetramonWorldPresentation(CardUI cardUi, CardData cardData)
+    {
+        if (cardUi == null || cardData == null)
+        {
+            return;
+        }
+
+        if (PackOpeningState.IsPackOpeningInProgress() || PackOpeningState.IsFanRowVisible())
+        {
+            return;
+        }
+
+        // Graded Destiny/Ghost: FlatScreen re-enables CardFront at full binder scale and undoes
+        // GradedCardFrontScaling — that is the "card peeking behind empty slab" loop.
+        if (cardData.cardGrade > 0)
+        {
+            return;
+        }
+
+        if (CardUiDisplayContext.IsBinderAlbumCard(cardUi)
+            || CardUiDisplayContext.IsFlatAlbumOrBinderCard(cardUi))
+        {
+            ApplyFlatScreenCardPresentation(cardUi);
+            return;
+        }
+
+        if (CardUiDisplayContext.ShouldUseRotatableWorldCardBack(cardUi))
+        {
+            ConfigureCard3dForFrontDisplay(cardUi);
+            return;
+        }
+
+        ApplyFlatScreenCardPresentation(cardUi);
+    }
+
+    /// <summary>
+    /// Graded Destiny/Trainer/Ghost album slabs are 3D (Card3dUIGroup.m_GradedCardGrp).
+    /// SetSimplifyCardDistanceCull(true) disables m_GradedCardCullGrp — that is the face volume
+    /// inside the plastic, so the window looks empty while the 3D PSA label still shows CardBack
+    /// (TextureReplacer). Fix: keep CullGrp on, paint ArtExpander art on CardFront at
+    /// GradedCardFrontScaling, clear CardBack/Scratch on 3D slab renderers, clear UI scratch slot.
+    /// </summary>
+    private static int _gradedNonTetramonApplyDepth;
+    private static bool _loggedGradedTextureSlot;
+    private static bool _loggedGradedNonTetramonFace;
+
+    private static void ApplyGradedNonTetramonFace(CardUI cardUi, CardData cardData, bool albumSimplified = false)
     {
         if (cardData.expansionType == ECardExpansionType.Tetramon)
         {
+            ApplyGradedCardPresentation(cardUi, cardData);
             return;
         }
 
-        Sprite? cardArt = ArtExpanderBridge.LoadCardArt(cardData);
-        if (cardArt == null)
-        {
-            cardArt = ResolveCardArt(cardUi, cardData, out _);
-        }
-
-        if (cardArt == null)
+        if (_gradedNonTetramonApplyDepth > 0)
         {
             return;
         }
 
-        object? cardConfig = NewSwappingHandler.TryGetCardFromCache(cardData);
-        ApplyCenterArtLayout(cardUi, cardArt, cardConfig);
-        HideDuplicateAlbumFoilHosts(cardUi);
-        StripAlbumHoFoilMaterials(cardUi);
-
+        _gradedNonTetramonApplyDepth++;
         try
         {
-            cardUi.m_Show2DGradedCase = true;
-            cardUi.ShowGradedCardCase(isShow: true);
+            ApplyGradedNonTetramonFaceCore(cardUi, cardData, albumSimplified);
         }
-        catch
+        finally
         {
-            // Older CardUI without graded helpers.
+            _gradedNonTetramonApplyDepth--;
+        }
+    }
+
+    private static void ApplyGradedNonTetramonFaceCore(CardUI cardUi, CardData cardData, bool albumSimplified)
+    {
+        Sprite? cardArt = ArtExpanderBridge.LoadCardArt(cardData);
+        bool fromBridge = cardArt != null;
+        if (cardArt == null)
+        {
+            cardArt = ResolveCardArt(cardUi, cardData, out fromBridge);
         }
 
-        if (cardUi.m_GradedCardCaseGrp != null)
+        HideDuplicateAlbumFoilHosts(cardUi);
+        StripAlbumHoFoilMaterials(cardUi);
+        DisableOverlayImage(cardUi);
+        HideGradedCardBackFaces(cardUi);
+        DisableGradedHeaderTextureSlot(cardUi);
+        RestoreGraded3dSlabFaceVisibility(cardUi);
+
+        if (cardArt == null || !(fromBridge || LooksLikeFullCard(cardArt)))
         {
-            cardUi.m_GradedCardCaseGrp.transform.SetAsLastSibling();
+            ApplyGradedCardPresentation(cardUi, cardData);
+            HideGradedCardBackFaces(cardUi);
+            DisableGradedHeaderTextureSlot(cardUi);
+            HideOccludingGradedSlabMeshes(cardUi);
+            EnsureGradeLabelTextsVisible(cardUi);
+            return;
+        }
+
+        if (cardUi.m_GradedCardCaseGrp == null)
+        {
+            ApplyGradedCardPresentation(cardUi, cardData);
+            HideGradedCardBackFaces(cardUi);
+            DisableGradedHeaderTextureSlot(cardUi);
+            return;
+        }
+
+        EnsureCardShellVisible(cardUi);
+
+        if (!albumSimplified)
+        {
+            try
+            {
+                cardUi.m_Show2DGradedCase = true;
+                cardUi.ShowGradedCardCase(isShow: true);
+            }
+            catch
+            {
+                // Older CardUI without graded helpers.
+            }
+        }
+
+        // 3D Base/Top are translucent empty or opaque covers for Destiny. Drive the slab from UI.
+        HideOccludingGradedSlabMeshes(cardUi);
+        BlankGraded3dSlabCardBackMaterials(cardUi);
+        HideGradedCardBackFaces(cardUi);
+        DisableGradedHeaderTextureSlot(cardUi);
+        ApplyGradedCaseFaceArt(cardUi, cardArt);
+        HideOversizedCardFrontBehindSlab(cardUi);
+        HideDuplicateAlbumFoilHosts(cardUi);
+        StripAlbumHoFoilMaterials(cardUi);
+        EnsureGradeLabelTextsVisible(cardUi);
+        DumpGradedSlabHierarchyOnce(cardUi);
+
+        cardUi.m_GradedCardCaseGrp.SetActive(true);
+        cardUi.m_GradedCardCaseGrp.transform.SetAsLastSibling();
+        AlbumHoFoilRepairBehaviour.EnsureOn(cardUi);
+
+        if (!_loggedGradedNonTetramonFace)
+        {
+            _loggedGradedNonTetramonFace = true;
+            Plugin.Log.LogInfo(
+                $"Graded non-Tetramon: UI GradedFace slab {cardArt.name} "
+                + $"({cardArt.rect.width}x{cardArt.rect.height}), expansion={cardData.expansionType}, "
+                + $"grade={cardData.cardGrade}, simplified={albumSimplified}.");
         }
     }
 
     /// <summary>
-    /// Graded cards: restore chrome, re-apply slab scale, keep HO foil hosts off the case window.
-    /// HO HoloFixMatLock re-enables foil every LateUpdate — AlbumHoFoilRepairBehaviour keeps them off.
+    /// Keep CardUIAnimGrp on. Hard-hide 3D slab plastics — Destiny Base/Top leave empty
+    /// translucent shells; GradedFace0703 + UI chrome supply the visible slab.
     /// </summary>
+    private static void RestoreGraded3dSlabFaceVisibility(CardUI cardUi)
+    {
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d == null)
+        {
+            return;
+        }
+
+        if (card3d.m_CardUIAnimGrp != null)
+        {
+            card3d.m_CardUIAnimGrp.gameObject.SetActive(true);
+        }
+
+        card3d.m_IgnoreCulling = true;
+        try
+        {
+            card3d.SetAlwaysCulling(alwaysCulling: false, setVisibilityInstant: true);
+        }
+        catch
+        {
+            // Older signature.
+        }
+
+        if (card3d.m_GradedCardGrp != null)
+        {
+            card3d.m_GradedCardGrp.SetActive(true);
+        }
+
+        if (card3d.m_GradedCaseCullCardFrontMeshBlocker != null)
+        {
+            card3d.m_GradedCaseCullCardFrontMeshBlocker.SetActive(false);
+        }
+
+        if (card3d.m_GradedCaseCullCardBackMeshBlocker != null)
+        {
+            card3d.m_GradedCaseCullCardBackMeshBlocker.SetActive(false);
+        }
+
+        HideOccludingGradedSlabMeshes(cardUi);
+
+        if (card3d.m_GradedCardBrightnessControl != null)
+        {
+            card3d.m_GradedCardBrightnessControl.enabled = false;
+            if (card3d.m_GradedCardBrightnessControl.gameObject != null)
+            {
+                card3d.m_GradedCardBrightnessControl.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private static void HideOccludingGradedSlabMeshes(CardUI cardUi)
+    {
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d == null)
+        {
+            return;
+        }
+
+        if (card3d.m_GradedCardCullGrp != null)
+        {
+            card3d.m_GradedCardCullGrp.SetActive(false);
+            ForceDisableSlabRenderersUnder(card3d.m_GradedCardCullGrp.transform);
+        }
+
+        if (card3d.m_SlabTopLayerMesh != null)
+        {
+            ForceDisableSlabObject(card3d.m_SlabTopLayerMesh);
+        }
+
+        if (card3d.m_GradedCardGrp != null)
+        {
+            ForceDisableSlabRenderersUnder(card3d.m_GradedCardGrp.transform);
+            DisableNamedChildren(card3d.m_GradedCardGrp.transform, "Slab_BaseMesh");
+            DisableNamedChildren(card3d.m_GradedCardGrp.transform, "Slab_TopLayerMesh");
+            DisableNamedChildren(card3d.m_GradedCardGrp.transform, "CardBackMeshBlocker");
+            DisableNamedChildren(card3d.m_GradedCardGrp.transform, "CardFrontMeshBlocker");
+        }
+    }
+
+    private static void ForceDisableSlabRenderersUnder(Transform root)
+    {
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(includeInactive: true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer? renderer = renderers[i];
+            if (renderer == null || renderer.gameObject == null)
+            {
+                continue;
+            }
+
+            string objectName = renderer.gameObject.name ?? string.Empty;
+            bool slabPlastic = objectName.IndexOf("Slab_", StringComparison.OrdinalIgnoreCase) >= 0
+                || objectName.IndexOf("MeshBlocker", StringComparison.OrdinalIgnoreCase) >= 0
+                || objectName.IndexOf("TopLayer", StringComparison.OrdinalIgnoreCase) >= 0
+                || objectName.IndexOf("BaseMesh", StringComparison.OrdinalIgnoreCase) >= 0;
+            if (!slabPlastic)
+            {
+                continue;
+            }
+
+            ForceDisableSlabObject(renderer.gameObject);
+        }
+    }
+
+    private static void DestroyUiOnlyGradedSlabArtifacts(CardUI cardUi)
+    {
+        // Kept for callers that tear down experimental UI; 1.1.075 recreates chrome via EnsureGradedCaseChrome.
+        _ = cardUi;
+    }
+
+    private static void ReparentGradeTmpToCase(object? tmp, Transform caseRoot)
+    {
+        if (tmp is not Behaviour behaviour || behaviour.transform == null)
+        {
+            return;
+        }
+
+        if (behaviour.transform.parent != caseRoot)
+        {
+            behaviour.transform.SetParent(caseRoot, false);
+        }
+    }
+
+    private static void RestoreSlabObject(GameObject? go)
+    {
+        if (go == null)
+        {
+            return;
+        }
+
+        if (go.transform.localScale == Vector3.zero)
+        {
+            go.transform.localScale = Vector3.one;
+        }
+
+        go.SetActive(true);
+        Renderer[] renderers = go.GetComponentsInChildren<Renderer>(includeInactive: true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+            {
+                renderers[i].enabled = true;
+            }
+        }
+    }
+
+    private static void ForceDisableSlabObject(GameObject go)
+    {
+        go.SetActive(false);
+        go.transform.localScale = Vector3.zero;
+        Renderer[] renderers = go.GetComponentsInChildren<Renderer>(includeInactive: true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+            {
+                renderers[i].enabled = false;
+            }
+        }
+    }
+
+    private static void DisableNamedChildren(Transform? root, string childName)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        Transform[] all = root.GetComponentsInChildren<Transform>(includeInactive: true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            Transform? t = all[i];
+            if (t != null && string.Equals(t.name, childName, StringComparison.OrdinalIgnoreCase))
+            {
+                ForceDisableSlabObject(t.gameObject);
+            }
+        }
+    }
+
+    private static void EnableNamedChildren(Transform? root, string childName)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        Transform[] all = root.GetComponentsInChildren<Transform>(includeInactive: true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            Transform? t = all[i];
+            if (t == null || !string.Equals(t.name, childName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (t.localScale == Vector3.zero)
+            {
+                t.localScale = Vector3.one;
+            }
+
+            t.gameObject.SetActive(true);
+            Renderer[] renderers = t.GetComponentsInChildren<Renderer>(includeInactive: true);
+            for (int r = 0; r < renderers.Length; r++)
+            {
+                if (renderers[r] != null)
+                {
+                    renderers[r].enabled = true;
+                }
+            }
+        }
+    }
+
+    private static void HideOversizedCardFrontBehindSlab(CardUI cardUi)
+    {
+        SetCardFrontCanvasActive(cardUi, active: false);
+        if (cardUi.m_CardFront != null)
+        {
+            cardUi.m_CardFront.SetActive(false);
+            cardUi.m_CardFront.transform.localScale = Vector3.zero;
+        }
+    }
+
+    private static Image GetOrCreateGradedCaseFaceImage(CardUI cardUi)
+    {
+        Transform caseRoot = cardUi.m_GradedCardCaseGrp.transform;
+        Transform? existing = caseRoot.Find(GradedCaseFaceObjectName);
+        if (existing != null && existing.TryGetComponent(out Image cached))
+        {
+            return cached;
+        }
+
+        GameObject faceObject = new(GradedCaseFaceObjectName);
+        faceObject.transform.SetParent(caseRoot, false);
+        Image image = faceObject.AddComponent<Image>();
+        image.raycastTarget = false;
+        image.maskable = true;
+        return image;
+    }
+
+    private const string GradedCaseChromeObjectName = "GradedCaseChrome0703";
+    private const string GradedCaseHeaderBarObjectName = "GradedCaseHeaderBar0703";
+    private const float GradedCardAspect = 2.5f / 3.5f;
+
+    private static void ApplyGradedCaseFaceArt(CardUI cardUi, Sprite cardArt)
+    {
+        EnsureGradedCaseChrome(cardUi);
+
+        Image caseFace = GetOrCreateGradedCaseFaceImage(cardUi);
+        caseFace.sprite = cardArt;
+        caseFace.type = Image.Type.Simple;
+        caseFace.preserveAspect = false;
+        caseFace.color = Color.white;
+        caseFace.raycastTarget = false;
+        caseFace.maskable = true;
+        caseFace.material = null;
+        caseFace.enabled = true;
+        caseFace.gameObject.SetActive(true);
+
+        RectTransform? caseRect = cardUi.m_GradedCardCaseGrp.transform as RectTransform;
+        RectTransform faceRect = caseFace.rectTransform;
+        faceRect.SetParent(cardUi.m_GradedCardCaseGrp.transform, false);
+        faceRect.localScale = Vector3.one;
+        faceRect.localRotation = Quaternion.identity;
+        LayoutGradedFaceInCaseWindow(faceRect, caseRect);
+        // chrome(0) header(1) face(2) — TMP last via EnsureGradeLabelTextsVisible
+        faceRect.SetSiblingIndex(2);
+
+        if (!_loggedGradedFaceLayout)
+        {
+            _loggedGradedFaceLayout = true;
+            Plugin.Log.LogInfo(
+                $"GradedFace UI-only layout pos={faceRect.anchoredPosition} sizeDelta={faceRect.sizeDelta} "
+                + $"caseSize={(caseRect != null ? caseRect.rect.size.ToString() : "n/a")}");
+        }
+    }
+
+    private static void EnsureGradedCaseChrome(CardUI cardUi)
+    {
+        Transform caseRoot = cardUi.m_GradedCardCaseGrp.transform;
+        Sprite white = SolidWhiteUiSprite.Get();
+
+        Image chrome = GetOrCreateCaseImage(caseRoot, GradedCaseChromeObjectName);
+        chrome.sprite = white;
+        chrome.type = Image.Type.Simple;
+        chrome.color = new Color(0.08f, 0.08f, 0.09f, 1f);
+        chrome.material = null; // default UI queue ~3000; TMP repaired to 3100 draws above
+        chrome.raycastTarget = false;
+        chrome.enabled = true;
+        chrome.gameObject.SetActive(true);
+        RectTransform chromeRect = chrome.rectTransform;
+        chromeRect.anchorMin = Vector2.zero;
+        chromeRect.anchorMax = Vector2.one;
+        chromeRect.offsetMin = Vector2.zero;
+        chromeRect.offsetMax = Vector2.zero;
+        chromeRect.localScale = Vector3.one;
+        chromeRect.SetAsFirstSibling();
+
+        Image headerBar = GetOrCreateCaseImage(caseRoot, GradedCaseHeaderBarObjectName);
+        headerBar.sprite = white;
+        headerBar.type = Image.Type.Simple;
+        headerBar.color = new Color(0.02f, 0.02f, 0.03f, 1f);
+        headerBar.material = null;
+        headerBar.raycastTarget = false;
+        headerBar.enabled = true;
+        headerBar.gameObject.SetActive(true);
+        RectTransform headerRect = headerBar.rectTransform;
+        headerRect.anchorMin = new Vector2(0.04f, 0.78f);
+        headerRect.anchorMax = new Vector2(0.96f, 0.98f);
+        headerRect.offsetMin = Vector2.zero;
+        headerRect.offsetMax = Vector2.zero;
+        headerRect.localScale = Vector3.one;
+        headerRect.SetSiblingIndex(1);
+
+        // Remove nested Canvas from 1.1.073 — it broke chrome/face drawing.
+        Canvas? nested = headerBar.GetComponent<Canvas>();
+        if (nested != null)
+        {
+            UnityEngine.Object.Destroy(nested);
+        }
+
+        UnityEngine.UI.GraphicRaycaster? raycaster = headerBar.GetComponent<UnityEngine.UI.GraphicRaycaster>();
+        if (raycaster != null)
+        {
+            UnityEngine.Object.Destroy(raycaster);
+        }
+
+        // Nudge case slightly toward camera so UI draws over any residual 3D mesh.
+        if (caseRoot is RectTransform caseRt)
+        {
+            Vector3 lp = caseRt.localPosition;
+            if (Mathf.Abs(lp.z) < 0.001f)
+            {
+                caseRt.localPosition = new Vector3(lp.x, lp.y, -2f);
+            }
+        }
+    }
+
+    private static Image GetOrCreateCaseImage(Transform caseRoot, string objectName)
+    {
+        Transform? existing = caseRoot.Find(objectName);
+        if (existing != null && existing.TryGetComponent(out Image cached))
+        {
+            return cached;
+        }
+
+        GameObject go = new(objectName);
+        go.transform.SetParent(caseRoot, false);
+        Image image = go.AddComponent<Image>();
+        image.raycastTarget = false;
+        return image;
+    }
+
+    private static void LayoutGradedFaceInCaseWindow(RectTransform faceRect, RectTransform? caseRect)
+    {
+        _ = caseRect;
+        // Fill nearly the whole case under a thin header band.
+        faceRect.anchorMin = new Vector2(0.05f, 0.03f);
+        faceRect.anchorMax = new Vector2(0.95f, 0.76f);
+        faceRect.pivot = new Vector2(0.5f, 0.5f);
+        faceRect.offsetMin = Vector2.zero;
+        faceRect.offsetMax = Vector2.zero;
+        faceRect.anchoredPosition = Vector2.zero;
+        faceRect.sizeDelta = Vector2.zero;
+    }
+
+    private static void DestroyFakeGradedCaseChrome(CardUI cardUi)
+    {
+        if (cardUi.m_GradedCardCaseGrp == null)
+        {
+            return;
+        }
+
+        Transform caseRoot = cardUi.m_GradedCardCaseGrp.transform;
+        DestroyNamedChild(caseRoot, GradedCaseChromeObjectName);
+        DestroyNamedChild(caseRoot, GradedCaseHeaderBarObjectName);
+    }
+
+    private static void DestroyNamedChild(Transform parent, string childName)
+    {
+        Transform? existing = parent.Find(childName);
+        if (existing != null)
+        {
+            UnityEngine.Object.Destroy(existing.gameObject);
+        }
+    }
+
+    private static bool _loggedGradedFaceLayout;
+
+    /// <summary>Unused — kept so older repair call sites compile if referenced.</summary>
+    private static void ResetGradedSlabPlasticMeshes(CardUI cardUi)
+    {
+        HideOccludingGradedSlabMeshes(cardUi);
+    }
+
+    private static void ApplyGradedArtTo3dFaceMeshes(CardUI cardUi, Sprite cardArt)
+    {
+        _ = cardUi;
+        _ = cardArt;
+    }
+
+    private static bool _loggedGradedSlabDump;
+
+    private static void DumpGradedSlabHierarchyOnce(CardUI cardUi)
+    {
+        if (_loggedGradedSlabDump)
+        {
+            return;
+        }
+
+        _loggedGradedSlabDump = true;
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        Plugin.Log.LogWarning("=== Graded slab hierarchy dump (once) ===");
+        DumpImagesUnder("CardUI", cardUi.transform);
+        if (card3d != null)
+        {
+            DumpImagesUnder("Card3d", card3d.transform);
+            DumpRenderersUnder("Card3d", card3d.transform);
+            Plugin.Log.LogWarning(
+                $"card3d flags: gradedGrp={card3d.m_GradedCardGrp?.activeSelf} "
+                + $"cullGrp={card3d.m_GradedCardCullGrp?.activeSelf} "
+                + $"slabTop={card3d.m_SlabTopLayerMesh?.activeSelf} "
+                + $"animGrp={card3d.m_CardUIAnimGrp?.gameObject.activeSelf} "
+                + $"frontBlocker={card3d.m_GradedCaseCullCardFrontMeshBlocker?.activeSelf} "
+                + $"frontMeshPos={card3d.m_CardFrontMeshPos?.activeSelf}");
+        }
+        else
+        {
+            Plugin.Log.LogWarning("card3d=null");
+        }
+
+        if (cardUi.m_CardFront != null)
+        {
+            Transform ft = cardUi.m_CardFront.transform;
+            Plugin.Log.LogWarning(
+                $"CardFront active={cardUi.m_CardFront.activeSelf} scale={ft.localScale} "
+                + $"pos={ft.localPosition} sprite={cardUi.m_CardFrontImage?.sprite?.name}");
+        }
+    }
+
+    private static void DumpImagesUnder(string label, Transform root)
+    {
+        Image[] images = root.GetComponentsInChildren<Image>(includeInactive: true);
+        int logged = 0;
+        for (int i = 0; i < images.Length && logged < 40; i++)
+        {
+            Image? image = images[i];
+            if (image == null)
+            {
+                continue;
+            }
+
+            string spriteName = image.sprite != null ? image.sprite.name : "null";
+            RectTransform rt = image.rectTransform;
+            Plugin.Log.LogWarning(
+                $"{label} Image[{logged}] path={GetTransformPath(image.transform)} "
+                + $"sprite={spriteName} enabled={image.enabled} active={image.gameObject.activeInHierarchy} "
+                + $"size={rt.sizeDelta} scale={rt.localScale}");
+            logged++;
+        }
+    }
+
+    private static void DumpRenderersUnder(string label, Transform root)
+    {
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(includeInactive: true);
+        int logged = 0;
+        for (int i = 0; i < renderers.Length && logged < 40; i++)
+        {
+            Renderer? renderer = renderers[i];
+            if (renderer == null)
+            {
+                continue;
+            }
+
+            Material? mat = renderer.sharedMaterial;
+            Texture? tex = mat != null
+                ? (mat.HasProperty("_MainTex") ? mat.GetTexture("_MainTex") : mat.mainTexture)
+                : null;
+            Plugin.Log.LogWarning(
+                $"{label} Renderer[{logged}] path={GetTransformPath(renderer.transform)} "
+                + $"mat={mat?.name} tex={tex?.name} enabled={renderer.enabled} "
+                + $"active={renderer.gameObject.activeInHierarchy}");
+            logged++;
+        }
+    }
+
+    private static string GetTransformPath(Transform t)
+    {
+        string path = t.name;
+        Transform? parent = t.parent;
+        int depth = 0;
+        while (parent != null && depth < 6)
+        {
+            path = parent.name + "/" + path;
+            parent = parent.parent;
+            depth++;
+        }
+
+        return path;
+    }
+
+    /// <summary>
+    /// 3D slab PSA label meshes often sample CardBack after TextureReplacer. Blank those.
+    /// </summary>
+    private static void BlankGraded3dSlabCardBackMaterials(CardUI cardUi)
+    {
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d == null)
+        {
+            return;
+        }
+
+        BlankCardBackScratchRenderersUnder(card3d.m_GradedCardGrp != null ? card3d.m_GradedCardGrp.transform : null);
+        BlankCardBackScratchRenderersUnder(card3d.m_GradedCardCullGrp != null ? card3d.m_GradedCardCullGrp.transform : null);
+        BlankCardBackScratchRenderersUnder(card3d.m_SlabTopLayerMesh != null ? card3d.m_SlabTopLayerMesh.transform : null);
+        BlankCardBackScratchRenderersUnder(card3d.transform);
+    }
+
+    private static void BlankCardBackScratchRenderersUnder(Transform? root)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        Texture2D clearTex = GradedScratchClearSprite.ClearTexture;
+        Renderer[] renderers = root.GetComponentsInChildren<Renderer>(includeInactive: true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer? renderer = renderers[i];
+            if (renderer == null)
+            {
+                continue;
+            }
+
+            string objectName = renderer.gameObject != null ? renderer.gameObject.name : string.Empty;
+            Material[] materials = renderer.materials;
+            bool changed = false;
+            for (int m = 0; m < materials.Length; m++)
+            {
+                Material? mat = materials[m];
+                if (mat == null)
+                {
+                    continue;
+                }
+
+                string matName = mat.name ?? string.Empty;
+                Texture? mainTex = mat.HasProperty("_MainTex") ? mat.GetTexture("_MainTex") : mat.mainTexture;
+                string texName = mainTex != null ? mainTex.name ?? string.Empty : string.Empty;
+
+                // Never wipe Slab_TopLayer / Slab_Base materials — that turns the chrome opaque
+                // grey and hides the card window. CardBack/Scratch only on non-slab objects.
+                bool isSlabPlastic = objectName.IndexOf("Slab_", StringComparison.OrdinalIgnoreCase) >= 0
+                    || objectName.IndexOf("TopLayer", StringComparison.OrdinalIgnoreCase) >= 0
+                    || objectName.IndexOf("BaseMesh", StringComparison.OrdinalIgnoreCase) >= 0;
+                if (isSlabPlastic)
+                {
+                    continue;
+                }
+
+                bool scratchOrBack = matName.IndexOf("Scratch", StringComparison.OrdinalIgnoreCase) >= 0
+                    || matName.IndexOf("GradeCard", StringComparison.OrdinalIgnoreCase) >= 0
+                    || matName.IndexOf("CardBack", StringComparison.OrdinalIgnoreCase) >= 0
+                    || texName.IndexOf("Scratch", StringComparison.OrdinalIgnoreCase) >= 0
+                    || texName.IndexOf("GradeCard", StringComparison.OrdinalIgnoreCase) >= 0
+                    || texName.IndexOf("CardBack", StringComparison.OrdinalIgnoreCase) >= 0
+                    || objectName.IndexOf("Scratch", StringComparison.OrdinalIgnoreCase) >= 0
+                    || objectName.IndexOf("CardBack", StringComparison.OrdinalIgnoreCase) >= 0;
+
+                if (!scratchOrBack)
+                {
+                    continue;
+                }
+
+                if (objectName.IndexOf("Front", StringComparison.OrdinalIgnoreCase) >= 0
+                    || objectName.IndexOf("Face", StringComparison.OrdinalIgnoreCase) >= 0
+                    || objectName.IndexOf("CardArt", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    continue;
+                }
+
+                if (mat.HasProperty("_MainTex"))
+                {
+                    mat.SetTexture("_MainTex", clearTex);
+                }
+
+                if (mat.HasProperty("_BaseMap"))
+                {
+                    mat.SetTexture("_BaseMap", clearTex);
+                }
+
+                mat.mainTexture = clearTex;
+                if (mat.HasProperty("_Color"))
+                {
+                    mat.SetColor("_Color", Color.clear);
+                }
+
+                changed = true;
+            }
+
+            if (changed)
+            {
+                renderer.materials = materials;
+            }
+
+            var block = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(block);
+            if (block.HasTexture("_MainTex"))
+            {
+                Texture? blockTex = block.GetTexture("_MainTex");
+                string blockName = blockTex != null ? blockTex.name ?? string.Empty : string.Empty;
+                if (blockName.IndexOf("CardBack", StringComparison.OrdinalIgnoreCase) >= 0
+                    || blockName.IndexOf("Scratch", StringComparison.OrdinalIgnoreCase) >= 0
+                    || blockName.IndexOf("GradeCard", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    block.SetTexture("_MainTex", clearTex);
+                    renderer.SetPropertyBlock(block);
+                }
+            }
+        }
+    }
+
+    private static void FitCardFrontIntoGradedSlabWindow(CardUI cardUi)
+    {
+        if (cardUi.m_CardFront == null || cardUi.m_GradedCardFrontScaling == null)
+        {
+            return;
+        }
+
+        Transform front = cardUi.m_CardFront.transform;
+        Transform scaling = cardUi.m_GradedCardFrontScaling;
+        cardUi.m_CardFront.SetActive(true);
+        front.localPosition = scaling.localPosition;
+        front.localScale = scaling.localScale;
+        front.localRotation = scaling.localRotation;
+    }
+
+    private static void PaintGradedCardFrontArt(CardUI cardUi, Sprite cardArt)
+    {
+        // Do NOT call HideVanillaChromeWhenOverlayShown — it disables m_CardFrontImage.
+        HideCenterFrameArt(cardUi);
+        HideDuplicateTextWhenOverlayShown(cardUi);
+        HideDuplicateAlbumFoilHosts(cardUi);
+        StripAlbumHoFoilMaterials(cardUi);
+        SetImageEnabled(cardUi.m_BrightnessControl, false);
+        SetImageEnabled(cardUi.m_CardBGImage, false);
+        SetImageEnabled(cardUi.m_CardBorderImage, false);
+        SetImageEnabled(cardUi.m_CardFullBGImage, false);
+        SetImageEnabled(cardUi.m_CardFullTransparentLayerBGImage, false);
+        SetImageEnabled(cardUi.m_RarityImage, false);
+        SetImageEnabled(cardUi.m_FadeBarTopImage, false);
+        SetImageEnabled(cardUi.m_FadeBarBtmImage, false);
+        SetImageEnabled(cardUi.m_StatImage, false);
+
+        ApplySpriteToCardFrontImage(cardUi.m_CardFrontImage, cardArt);
+        ResetImageToDefaultUiMaterial(cardUi.m_CardFrontImage);
+        // Top layer doubles / scrambles under HO — keep a single face image.
+        SetImageEnabled(cardUi.m_CardFrontImageTopLayer, false);
+
+        DisableGradedTextureMask(cardUi);
+    }
+
+    private static void DisableGradedTextureMask(CardUI cardUi)
+    {
+        if (cardUi.m_GradedCardTextureImage != null
+            && cardUi.m_GradedCardTextureImage.transform.parent != null)
+        {
+            Transform mask = cardUi.m_GradedCardTextureImage.transform.parent;
+            if (mask.name.IndexOf("GradedCardTextureMask", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                mask.gameObject.SetActive(false);
+            }
+        }
+
+        Transform? front = cardUi.m_CardFront != null ? cardUi.m_CardFront.transform : null;
+        if (front == null)
+        {
+            return;
+        }
+
+        Transform? maskByName = front.Find("GradedCardTextureMask");
+        if (maskByName != null)
+        {
+            maskByName.gameObject.SetActive(false);
+        }
+    }
+
+    private static void ApplySpriteToCardFrontImage(Image? image, Sprite cardArt)
+    {
+        if (image == null)
+        {
+            return;
+        }
+
+        image.sprite = cardArt;
+        image.type = Image.Type.Simple;
+        image.preserveAspect = false;
+        image.color = Color.white;
+        image.raycastTarget = false;
+        image.maskable = true;
+        image.material = null;
+        image.enabled = true;
+        if (image.gameObject != null)
+        {
+            image.gameObject.SetActive(true);
+        }
+    }
+
+    private const string GradedCaseFaceObjectName = "GradedFace0703";
+
+    private static void DisableLegacyGradedCaseFace(CardUI cardUi)
+    {
+        // No-op: GradedFace0703 + chrome are the Destiny/Ghost graded UI slab.
+        _ = cardUi;
+    }
+
+    private static void DisableGradedHeaderTextureSlot(CardUI cardUi)
+    {
+        Sprite clearScratch = GradedScratchClearSprite.Get();
+
+        if (cardUi.m_GradedCardTextureImage != null)
+        {
+            Image slot = cardUi.m_GradedCardTextureImage;
+            if (!_loggedGradedTextureSlot)
+            {
+                _loggedGradedTextureSlot = true;
+                Plugin.Log.LogInfo(
+                    $"Hard-disabling graded header texture slot (was sprite={slot.sprite?.name ?? "null"}). "
+                    + "UI scratch + 3D slab label CardBack cleared separately.");
+            }
+
+            slot.sprite = clearScratch;
+            slot.overrideSprite = clearScratch;
+            slot.material = null;
+            slot.color = Color.clear;
+            slot.enabled = false;
+            if (slot.gameObject != null)
+            {
+                slot.gameObject.SetActive(false);
+            }
+        }
+
+        if (cardUi.m_GradedCardCaseGrp == null)
+        {
+            return;
+        }
+
+        Transform caseRoot = cardUi.m_GradedCardCaseGrp.transform;
+        Image[] images = caseRoot.GetComponentsInChildren<Image>(includeInactive: true);
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image? image = images[i];
+            if (image == null)
+            {
+                continue;
+            }
+
+            string objectName = image.gameObject != null ? image.gameObject.name : string.Empty;
+            if (objectName == GradedCaseFaceObjectName
+                || objectName == GradedCaseChromeObjectName
+                || objectName == GradedCaseHeaderBarObjectName)
+            {
+                continue;
+            }
+
+            string spriteName = image.sprite != null ? image.sprite.name ?? string.Empty : string.Empty;
+            bool scratchOrBack = spriteName.IndexOf("Scratch", StringComparison.OrdinalIgnoreCase) >= 0
+                || spriteName.IndexOf("GradeCard", StringComparison.OrdinalIgnoreCase) >= 0
+                || spriteName.IndexOf("CardBack", StringComparison.OrdinalIgnoreCase) >= 0
+                || spriteName.IndexOf("card_back", StringComparison.OrdinalIgnoreCase) >= 0
+                || objectName.IndexOf("Scratch", StringComparison.OrdinalIgnoreCase) >= 0
+                || objectName.IndexOf("GradedCardTexture", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (!scratchOrBack)
+            {
+                continue;
+            }
+
+            image.sprite = clearScratch;
+            image.overrideSprite = clearScratch;
+            image.material = null;
+            image.color = Color.clear;
+            image.enabled = false;
+            if (image.gameObject != null)
+            {
+                image.gameObject.SetActive(false);
+            }
+        }
+
+        BlankCardBackScratchRenderersUnder(caseRoot);
+    }
+
+    private static void EnsureGradeLabelTextsVisible(CardUI cardUi)
+    {
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d != null)
+        {
+            DisableGradeTmp(card3d.m_GradeNumberText, cardUi.m_GradeNumberText);
+            DisableGradeTmp(card3d.m_GradeDescriptionText, cardUi.m_GradeDescriptionText);
+            DisableGradeTmp(card3d.m_GradeNameText, cardUi.m_GradeNameText);
+            DisableGradeTmp(card3d.m_GradeExpansionRarityText, cardUi.m_GradeExpansionRarityText);
+            DisableGradeTmp(card3d.m_GradeSerialText, cardUi.m_GradeSerialText);
+        }
+
+        RefreshGradeLabelContent(cardUi);
+        // Parent into header Image (no nested Canvas — that killed chrome in 1.1.073).
+        LayoutGradeLabelsOnSlabHeader(cardUi);
+
+        SetTmpEnabled(cardUi.m_GradeNumberText, true);
+        SetTmpEnabled(cardUi.m_GradeDescriptionText, true);
+        SetTmpEnabled(cardUi.m_GradeNameText, true);
+        SetTmpEnabled(cardUi.m_GradeExpansionRarityText, true);
+        SetTmpEnabled(cardUi.m_GradeSerialText, true);
+
+        RepairGradedGradeTmp(cardUi.m_GradeNumberText);
+        RepairGradedGradeTmp(cardUi.m_GradeDescriptionText);
+        RepairGradedGradeTmp(cardUi.m_GradeNameText);
+        RepairGradedGradeTmp(cardUi.m_GradeExpansionRarityText);
+        RepairGradedGradeTmp(cardUi.m_GradeSerialText);
+
+        if (!_loggedGradeTmpPaths && cardUi.m_GradeNumberText is TMPro.TextMeshProUGUI gradeNumber)
+        {
+            _loggedGradeTmpPaths = true;
+            Material? mat = gradeNumber.fontMaterial;
+            Plugin.Log.LogWarning(
+                $"Grade TMP text='{gradeNumber.text}' size={gradeNumber.rectTransform.rect.size} "
+                + $"queue={mat?.renderQueue} font={gradeNumber.font?.name} "
+                + $"path={GetTransformPath(gradeNumber.transform)}");
+        }
+    }
+
+    private static void RepairGradedGradeTmp(object? tmp)
+    {
+        if (tmp is not TMPro.TextMeshProUGUI label || label.font == null)
+        {
+            return;
+        }
+
+        PhoneFontMaterialSnapshot.CaptureIfNeeded();
+        Material hudMaterial = PhoneFontMaterialSnapshot.CreateHudLabelMaterial(label.font);
+        hudMaterial.renderQueue = 3100;
+        label.fontMaterial = hudMaterial;
+        label.color = Color.white;
+        label.faceColor = new Color32(255, 255, 255, 255);
+        label.enabled = true;
+        label.gameObject.SetActive(true);
+
+        CanvasRenderer? canvasRenderer = label.canvasRenderer;
+        if (canvasRenderer != null)
+        {
+            canvasRenderer.SetColor(Color.white);
+            canvasRenderer.SetAlpha(1f);
+            canvasRenderer.cull = false;
+            canvasRenderer.cullTransparentMesh = false;
+            canvasRenderer.materialCount = 1;
+            canvasRenderer.SetMaterial(hudMaterial, 0);
+            if (label.font.atlasTexture != null)
+            {
+                canvasRenderer.SetTexture(label.font.atlasTexture);
+            }
+        }
+
+        label.SetAllDirty();
+        if (label.gameObject.activeInHierarchy)
+        {
+            label.ForceMeshUpdate(true, false);
+        }
+    }
+
+    private static void RefreshGradeLabelContent(CardUI cardUi)
+    {
+        CardData? cardData = cardUi.GetCardData();
+        if (cardData == null || cardData.cardGrade <= 0)
+        {
+            return;
+        }
+
+        SetTmpText(cardUi.m_GradeNumberText, cardData.cardGrade.ToString());
+
+        try
+        {
+            string gradeName = GameInstance.GetCardGradeString(cardData.cardGrade);
+            SetTmpText(cardUi.m_GradeDescriptionText, gradeName);
+        }
+        catch
+        {
+            // Older GameInstance.
+        }
+
+        string monsterName = string.Empty;
+        if (cardUi.m_MonsterNameText is TMPro.TMP_Text monsterTmp)
+        {
+            monsterName = monsterTmp.text ?? string.Empty;
+        }
+
+        if (string.IsNullOrEmpty(monsterName))
+        {
+            monsterName = cardData.monsterType.ToString();
+        }
+
+        SetTmpText(cardUi.m_GradeNameText, monsterName);
+
+        try
+        {
+            string expansion = cardData.expansionType.ToString()
+                + " "
+                + CPlayerData.GetFullCardTypeName(cardData);
+            SetTmpText(cardUi.m_GradeExpansionRarityText, expansion);
+        }
+        catch
+        {
+            SetTmpText(cardUi.m_GradeExpansionRarityText, cardData.expansionType.ToString());
+        }
+    }
+
+    private static void SetTmpText(object? tmp, string text)
+    {
+        if (tmp is TMPro.TMP_Text tmpText)
+        {
+            tmpText.text = text ?? string.Empty;
+            tmpText.ForceMeshUpdate(true, true);
+        }
+    }
+
+    /// <summary>
+    /// Place grade TMP inside the header bar so they paint above the dark chrome.
+    /// </summary>
+    private static void LayoutGradeLabelsOnSlabHeader(CardUI cardUi)
+    {
+        if (cardUi.m_GradedCardCaseGrp == null)
+        {
+            return;
+        }
+
+        Transform caseRoot = cardUi.m_GradedCardCaseGrp.transform;
+        Transform headerRoot = caseRoot.Find(GradedCaseHeaderBarObjectName) ?? caseRoot;
+
+        // Name left, grade number + description right — inside header bar local space.
+        LayoutGradeTmpInCase(cardUi.m_GradeNameText, headerRoot, new Vector2(0.04f, 0.45f), new Vector2(0.62f, 0.95f), leftAligned: true);
+        LayoutGradeTmpInCase(cardUi.m_GradeNumberText, headerRoot, new Vector2(0.68f, 0.50f), new Vector2(0.96f, 0.98f), leftAligned: false);
+        LayoutGradeTmpInCase(cardUi.m_GradeDescriptionText, headerRoot, new Vector2(0.68f, 0.05f), new Vector2(0.96f, 0.48f), leftAligned: false);
+        LayoutGradeTmpInCase(cardUi.m_GradeExpansionRarityText, headerRoot, new Vector2(0.04f, 0.05f), new Vector2(0.62f, 0.42f), leftAligned: true);
+        LayoutGradeTmpInCase(cardUi.m_GradeSerialText, headerRoot, new Vector2(0.04f, 0.00f), new Vector2(0.45f, 0.20f), leftAligned: true);
+    }
+
+    private static void LayoutGradeTmpInCase(
+        object? tmp,
+        Transform caseRoot,
+        Vector2 anchorMin,
+        Vector2 anchorMax,
+        bool leftAligned)
+    {
+        if (tmp is not Behaviour behaviour || behaviour.transform == null)
+        {
+            return;
+        }
+
+        Transform transform = behaviour.transform;
+        transform.SetParent(caseRoot, false);
+        transform.localScale = Vector3.one;
+        transform.localRotation = Quaternion.identity;
+        transform.SetAsLastSibling();
+
+        if (transform is not RectTransform rect)
+        {
+            return;
+        }
+
+        rect.anchorMin = anchorMin;
+        rect.anchorMax = anchorMax;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = Vector2.zero;
+
+        if (tmp is TMPro.TMP_Text tmpText)
+        {
+            tmpText.enableAutoSizing = true;
+            tmpText.fontSizeMin = 10f;
+            tmpText.fontSizeMax = 64f;
+            tmpText.overflowMode = TMPro.TextOverflowModes.Ellipsis;
+            tmpText.alignment = leftAligned
+                ? TMPro.TextAlignmentOptions.MidlineLeft
+                : TMPro.TextAlignmentOptions.MidlineRight;
+            tmpText.color = Color.white;
+            tmpText.alpha = 1f;
+            try
+            {
+                tmpText.ForceMeshUpdate(true, true);
+            }
+            catch
+            {
+                // TMP mesh update can fail before canvas is ready.
+            }
+        }
+    }
+
+    private static void DisableGradeTmp(object? candidate, object? keepIfSameAs)
+    {
+        if (candidate is not Behaviour behaviour)
+        {
+            return;
+        }
+
+        if (keepIfSameAs is Behaviour keep && ReferenceEquals(behaviour, keep))
+        {
+            return;
+        }
+
+        behaviour.enabled = false;
+        if (behaviour.gameObject != null)
+        {
+            behaviour.gameObject.SetActive(false);
+        }
+    }
+
+    private static bool _loggedGradeTmpPaths;
+
+    private static void SetTmpEnabled(object? tmp, bool enabled)
+    {
+        if (tmp is not Behaviour behaviour)
+        {
+            return;
+        }
+
+        behaviour.enabled = enabled;
+        if (behaviour.gameObject != null)
+        {
+            behaviour.gameObject.SetActive(enabled);
+        }
+    }
+
+    public static void HideGradedCardBackFaces(CardUI cardUi)
+    {
+        SuppressFlatUiCardBack(cardUi);
+        DisableGradedCaseBackAndBackBlocker(cardUi);
+
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d?.m_CardBackMesh != null)
+        {
+            card3d.m_CardBackMesh.SetActive(false);
+        }
+
+        if (cardUi.m_CardBackImage != null)
+        {
+            cardUi.m_CardBackImage.enabled = false;
+            if (cardUi.m_CardBackImage.gameObject != null)
+            {
+                cardUi.m_CardBackImage.gameObject.SetActive(false);
+            }
+        }
+
+        if (cardUi.m_CardBack != null)
+        {
+            cardUi.m_CardBack.SetActive(false);
+        }
+
+        DisableCardBackSpritesUnderTransform(cardUi.m_GradedCardCaseGrp != null
+            ? cardUi.m_GradedCardCaseGrp.transform
+            : null);
+        DisableCardBackSpritesUnderTransform(cardUi.transform);
+    }
+
+    private static void DisableCardBackSpritesUnderTransform(Transform? root)
+    {
+        if (root == null)
+        {
+            return;
+        }
+
+        Image[] images = root.GetComponentsInChildren<Image>(includeInactive: true);
+        for (int i = 0; i < images.Length; i++)
+        {
+            Image? image = images[i];
+            if (image == null || image.sprite == null)
+            {
+                continue;
+            }
+
+            string spriteName = image.sprite.name ?? string.Empty;
+            string objectName = image.gameObject != null ? image.gameObject.name : string.Empty;
+            if (objectName == GradedCaseFaceObjectName || objectName == "TetramonOverlay0703")
+            {
+                continue;
+            }
+
+            bool looksLikeBack = spriteName.IndexOf("CardBack", StringComparison.OrdinalIgnoreCase) >= 0
+                || spriteName.IndexOf("card_back", StringComparison.OrdinalIgnoreCase) >= 0
+                || spriteName.IndexOf("Card_Back", StringComparison.OrdinalIgnoreCase) >= 0
+                || objectName.IndexOf("CardBack", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (!looksLikeBack)
+            {
+                continue;
+            }
+
+            image.enabled = false;
+            if (image.gameObject != null)
+            {
+                image.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private static void DisableGradedCaseBackAndBackBlocker(CardUI cardUi)
+    {
+        if (cardUi.m_GradedCardCaseBackGrp != null)
+        {
+            cardUi.m_GradedCardCaseBackGrp.SetActive(false);
+        }
+
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d?.m_GradedCaseCullCardBackMeshBlocker != null)
+        {
+            card3d.m_GradedCaseCullCardBackMeshBlocker.SetActive(false);
+        }
+    }
+
+    public static void AfterGradedCaseLayoutChanged(CardUI cardUi, bool albumSimplified = false)
+    {
+        CardData? cardData = cardUi?.GetCardData();
+        if (cardData == null || cardData.cardGrade <= 0 || cardData.expansionType == ECardExpansionType.Tetramon)
+        {
+            return;
+        }
+
+        if (cardUi!.m_GradedCardCaseGrp == null)
+        {
+            return;
+        }
+
+        ApplyGradedNonTetramonFace(cardUi, cardData, albumSimplified);
+    }
+
+    /// <summary>
+    /// Album distance-cull turns CullGrp off every call — re-assert Destiny/Ghost graded faces.
+    /// </summary>
+    public static void AfterSimplifyCardDistanceCull(Card3dUIGroup card3d, bool isCull)
+    {
+        if (card3d?.m_CardUI == null)
+        {
+            return;
+        }
+
+        CardData? cardData = card3d.m_CardUI.GetCardData();
+        if (cardData == null || cardData.cardGrade <= 0 || cardData.expansionType == ECardExpansionType.Tetramon)
+        {
+            return;
+        }
+
+        RestoreGraded3dSlabFaceVisibility(card3d.m_CardUI);
+        if (isCull)
+        {
+            AfterGradedCaseLayoutChanged(card3d.m_CardUI, albumSimplified: true);
+        }
+    }
+
+    public static void RepairGradedNonTetramonFace(CardUI cardUi, CardData cardData)
+    {
+        if (cardUi == null || cardData == null || cardUi.m_GradedCardCaseGrp == null)
+        {
+            return;
+        }
+
+        HideDuplicateAlbumFoilHosts(cardUi);
+        HideGradedCardBackFaces(cardUi);
+        DisableGradedHeaderTextureSlot(cardUi);
+        RestoreGraded3dSlabFaceVisibility(cardUi);
+        HideOccludingGradedSlabMeshes(cardUi);
+        BlankGraded3dSlabCardBackMaterials(cardUi);
+        DisableOverlayImage(cardUi);
+        EnsureGradeLabelTextsVisible(cardUi);
+
+        Sprite? cardArt = ArtExpanderBridge.LoadCardArt(cardData) ?? ResolveCardArt(cardUi, cardData, out _);
+        if (cardArt == null)
+        {
+            Transform? faceTransform = cardUi.m_GradedCardCaseGrp.transform.Find(GradedCaseFaceObjectName);
+            if (faceTransform != null
+                && faceTransform.TryGetComponent(out Image existingFace)
+                && existingFace.sprite != null)
+            {
+                cardArt = existingFace.sprite;
+            }
+        }
+
+        if (cardArt != null)
+        {
+            ApplyGradedCaseFaceArt(cardUi, cardArt);
+        }
+
+        HideOversizedCardFrontBehindSlab(cardUi);
+        HideOccludingGradedSlabMeshes(cardUi);
+        HideGradedCardBackFaces(cardUi);
+        DisableGradedHeaderTextureSlot(cardUi);
+        EnsureGradeLabelTextsVisible(cardUi);
+        cardUi.m_GradedCardCaseGrp.SetActive(true);
+        cardUi.m_GradedCardCaseGrp.transform.SetAsLastSibling();
+    }
+
     public static void ApplyGradedCardPresentationPublic(CardUI cardUi, CardData cardData)
     {
+        if (cardData != null && cardData.expansionType != ECardExpansionType.Tetramon)
+        {
+            ApplyGradedNonTetramonFace(cardUi, cardData);
+            return;
+        }
+
         ApplyGradedCardPresentation(cardUi, cardData);
     }
 
@@ -233,12 +1545,40 @@ internal static class TetramonOverlay0703Patches
             return;
         }
 
-        ApplyGradedCardPresentation(cardUi, cardData);
-        SuppressFlatUiCardBack(cardUi);
-        SetCardFrontCanvasActive(cardUi, active: true);
-        // Do not mirror-reset scale — ShowGradedCardCase already set m_CardFront into the slab window.
+        if (cardData.expansionType != ECardExpansionType.Tetramon)
+        {
+            ApplyGradedNonTetramonFace(cardUi, cardData);
+        }
+        else
+        {
+            ApplyGradedCardPresentation(cardUi, cardData);
+        }
 
         card3d ??= CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        InteractableCard3d? interactable = Card3dInteractableRegistry.FindForCardUi(cardUi);
+        bool onShelf = interactable != null && interactable.IsDisplayedOnShelf();
+
+        if (onShelf)
+        {
+            // Graded on display still needs an opaque back when viewed from behind.
+            ConfigureCard3dForFrontDisplay(cardUi);
+            return;
+        }
+
+        // Album / held: never re-enable shop card back.
+        HideGradedCardBackFaces(cardUi);
+        if (cardData.expansionType != ECardExpansionType.Tetramon)
+        {
+            FitCardFrontIntoGradedSlabWindow(cardUi);
+            RestoreGraded3dSlabFaceVisibility(cardUi);
+            HideOccludingGradedSlabMeshes(cardUi);
+            DisableGradedHeaderTextureSlot(cardUi);
+        }
+        else
+        {
+            SetCardFrontCanvasActive(cardUi, active: true);
+        }
+
         if (card3d?.m_CardBackMesh != null)
         {
             card3d.m_CardBackMesh.SetActive(false);
@@ -273,7 +1613,12 @@ internal static class TetramonOverlay0703Patches
         CardData? cardData = cardUi.GetCardData();
         if (cardData != null && cardData.cardGrade > 0)
         {
-            ApplyGradedCardPresentation(cardUi, cardData);
+            HideDuplicateAlbumFoilHosts(cardUi);
+            if (cardData.expansionType != ECardExpansionType.Tetramon)
+            {
+                RepairGradedNonTetramonFace(cardUi, cardData);
+            }
+
             return;
         }
 
@@ -326,6 +1671,11 @@ internal static class TetramonOverlay0703Patches
         if (cardData != null && cardData.cardGrade > 0)
         {
             HideDuplicateAlbumFoilHosts(cardUi);
+            if (cardData.expansionType != ECardExpansionType.Tetramon)
+            {
+                RepairGradedNonTetramonFace(cardUi, cardData);
+            }
+
             AlbumHoFoilRepairBehaviour.EnsureOn(cardUi);
             return;
         }
@@ -807,7 +2157,13 @@ internal static class TetramonOverlay0703Patches
         if (cardData.cardGrade > 0)
         {
             // HO re-enables foil hosts over the slab window every frame — keep them off.
+            // Do not re-enter ShowGradedCardCase / full apply (that re-scrambled every LateUpdate).
             HideDuplicateAlbumFoilHosts(cardUi);
+            if (cardData.expansionType != ECardExpansionType.Tetramon)
+            {
+                RepairGradedNonTetramonFace(cardUi, cardData);
+            }
+
             return;
         }
 
@@ -1461,10 +2817,29 @@ internal static class TetramonOverlay0703Patches
     }
 
     /// <summary>
-    /// ExpansionMod SetCardBacks leaves the full atlas on m_CardBackImage; always prefer the cropped Pokemon back.
+    /// ExpansionMod SetCardBacks leaves the full atlas on m_CardBackImage.
+    /// Prefer expansion-specific backs for Destiny/Trainer/Ghost; Pokemon TR CardBack for Tetramon.
     /// </summary>
     private static Sprite? ResolveShopDisplayBackSprite(CardUI cardUi)
     {
+        CardData? cardData = cardUi.GetCardData();
+        if (cardData != null && cardData.expansionType != ECardExpansionType.Tetramon)
+        {
+            try
+            {
+                Sprite? expansionBack = CSingleton<InventoryBase>.Instance.m_MonsterData_SO
+                    .GetCardBackSprite(cardData.expansionType);
+                if (expansionBack != null && expansionBack.rect.width > 1f && expansionBack.rect.height > 1f)
+                {
+                    return expansionBack;
+                }
+            }
+            catch
+            {
+                // Fall through to shared Pokemon/UI backs.
+            }
+        }
+
         Sprite? backSprite = CardExtrasCacheAccess.TryGetPokemonUiBackSprite()
             ?? CardExtrasCacheAccess.TryGetUiCardBackSprite();
         if (backSprite != null)
@@ -1472,13 +2847,13 @@ internal static class TetramonOverlay0703Patches
             return backSprite;
         }
 
-        Sprite? existing = cardUi.m_CardBackImage.sprite;
+        Sprite? existing = cardUi.m_CardBackImage != null ? cardUi.m_CardBackImage.sprite : null;
         if (existing != null && existing.rect.width > 1f && existing.rect.height > 1f)
         {
             return existing;
         }
 
-        if (cardUi.GetCardData() is CardData cardData)
+        if (cardData != null)
         {
             return CSingleton<InventoryBase>.Instance.m_MonsterData_SO.GetCardBackSprite(cardData.expansionType);
         }

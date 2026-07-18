@@ -91,6 +91,65 @@ internal static class CardUI0703Patches
         }
     }
 
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
+    [HarmonyPatch(typeof(CardUI), nameof(CardUI.ShowGradedCardCase))]
+    public static void ShowGradedCardCase_Postfix(CardUI __instance, bool isShow)
+    {
+        if (!isShow)
+        {
+            return;
+        }
+
+        try
+        {
+            TetramonOverlay0703Patches.AfterGradedCaseLayoutChanged(__instance, albumSimplified: false);
+        }
+        catch (Exception gradedError)
+        {
+            Plugin.Log.LogWarning($"Graded case face repair failed: {gradedError.GetType().Name}: {gradedError.Message}");
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
+    [HarmonyPatch(typeof(CardUI), nameof(CardUI.ShowSimplifiedCullingGradedCardCase))]
+    public static void ShowSimplifiedCullingGradedCardCase_Postfix(CardUI __instance, bool isShow)
+    {
+        if (!isShow)
+        {
+            return;
+        }
+
+        try
+        {
+            // Binder album path — force front realignment into the scaled case.
+            TetramonOverlay0703Patches.AfterGradedCaseLayoutChanged(__instance, albumSimplified: true);
+        }
+        catch (Exception gradedError)
+        {
+            Plugin.Log.LogWarning(
+                $"Simplified graded case face repair failed: {gradedError.GetType().Name}: {gradedError.Message}");
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPriority(Priority.Last)]
+    [HarmonyPatch(typeof(Card3dUIGroup), nameof(Card3dUIGroup.SetSimplifyCardDistanceCull))]
+    public static void SetSimplifyCardDistanceCull_Postfix(Card3dUIGroup __instance, bool isCull)
+    {
+        try
+        {
+            // Album cull disables m_GradedCardCullGrp — empty Destiny/Ghost slab windows.
+            TetramonOverlay0703Patches.AfterSimplifyCardDistanceCull(__instance, isCull);
+        }
+        catch (Exception gradedError)
+        {
+            Plugin.Log.LogWarning(
+                $"Simplify graded cull face repair failed: {gradedError.GetType().Name}: {gradedError.Message}");
+        }
+    }
+
     private static void ApplyTetramonPresentation(CardUI __instance, CardData cardData)
     {
         if (__instance == null || cardData == null)
