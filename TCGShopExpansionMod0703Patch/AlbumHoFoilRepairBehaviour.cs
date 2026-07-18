@@ -4,7 +4,7 @@ namespace TCGShopExpansionMod0703Patch;
 
 /// <summary>
 /// Holographic Overhaul HoloFixMatLock.LateUpdate re-locks foil materials (often white _MainTex).
-/// Re-bind album foil hosts to the ArtExpander face after HO each frame.
+/// Re-bind or hide foil hosts after HO each frame for album and world cards (Destiny shelf/trade).
 /// </summary>
 [DefaultExecutionOrder(32000)]
 internal sealed class AlbumHoFoilRepairBehaviour : MonoBehaviour
@@ -45,12 +45,6 @@ internal sealed class AlbumHoFoilRepairBehaviour : MonoBehaviour
     private void LateUpdate()
     {
         if (_cardUi == null)
-        {
-            enabled = false;
-            return;
-        }
-
-        if (!CardUiDisplayContext.IsBinderAlbumCard(_cardUi))
         {
             enabled = false;
             return;

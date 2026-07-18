@@ -114,13 +114,22 @@ internal static class InteractableCard3d0703Patches
 
         card3d.m_CardUI.SetFoilCullListVisibility(isActive: true);
         card3d.m_CardUI.ResetFarDistanceCull();
+        // HO has 0 foil configs — re-enabling cull lists without a bind scrambles Destiny/Trainer faces.
+        TetramonOverlay0703Patches.ReassertWorldCardFoilPolicy(card3d.m_CardUI);
     }
 
     private static void RefreshDisplayPresentation(InteractableCard3d interactable)
     {
         CardUI? cardUi = interactable.m_Card3dUI?.m_CardUI;
         CardData? cardData = cardUi?.GetCardData();
-        if (cardUi == null || cardData == null || cardData.expansionType != ECardExpansionType.Tetramon)
+        if (cardUi == null || cardData == null)
+        {
+            return;
+        }
+
+        TetramonOverlay0703Patches.ReassertWorldCardFoilPolicy(cardUi);
+
+        if (cardData.expansionType != ECardExpansionType.Tetramon)
         {
             return;
         }

@@ -79,8 +79,8 @@ internal static class TetramonOverlay0703Patches
     }
 
     /// <summary>
-    /// Non-Tetramon SetCardUI: album uses ArtExpander full-card overlay (same as Pokemon) so
-    /// HO HoloSlot=0 foil cannot cover Destiny/Trainer faces. Sell/pack only clear stale overlay.
+    /// Non-Tetramon SetCardUI (Destiny/Trainer/Ghost/etc.): same ArtExpander full-card overlay
+    /// as album for shelf, trade, and pack — album-only overlay left HO foil scrambling world cards.
     /// </summary>
     public static void ApplyNonTetramonPresentation(CardUI cardUi, CardData cardData)
     {
@@ -89,13 +89,7 @@ internal static class TetramonOverlay0703Patches
             return;
         }
 
-        if (CardUiDisplayContext.IsBinderAlbumCard(cardUi))
-        {
-            ApplyNonTetramonAlbumPresentation(cardUi, cardData);
-            return;
-        }
-
-        ClearStaleOverlayChromeOnly(cardUi);
+        ApplyNonTetramonFacePresentation(cardUi, cardData);
     }
 
     /// <summary>
@@ -110,22 +104,23 @@ internal static class TetramonOverlay0703Patches
         }
 
         CardData? cardData = cardUi.GetCardData();
-        if (cardData != null && CardUiDisplayContext.IsBinderAlbumCard(cardUi))
+        if (cardData != null)
         {
-            ApplyNonTetramonAlbumPresentation(cardUi, cardData);
+            ApplyNonTetramonFacePresentation(cardUi, cardData);
             return;
         }
 
         ClearStaleOverlayChromeOnly(cardUi);
-        EnsureAlbumReadableWithoutTetramonOverlay(cardUi);
+        EnsureReadableWithoutFullCardOverlay(cardUi);
     }
 
-    private static void ApplyNonTetramonAlbumPresentation(CardUI cardUi, CardData cardData)
+    private static void ApplyNonTetramonFacePresentation(CardUI cardUi, CardData cardData)
     {
         // Full-card overlay + chrome hide empties the graded slab window — use vanilla case layout.
         if (cardData.cardGrade > 0)
         {
             ApplyGradedCardPresentation(cardUi, cardData);
+            TryApplyGradedDestinyTrainerCenterArt(cardUi, cardData);
             return;
         }
 
@@ -146,7 +141,50 @@ internal static class TetramonOverlay0703Patches
 
         ClearStaleOverlayChromeOnly(cardUi);
         StripAlbumHoFoilMaterials(cardUi);
-        EnsureAlbumReadableWithoutTetramonOverlay(cardUi);
+        EnsureReadableWithoutFullCardOverlay(cardUi);
+    }
+
+    /// <summary>
+    /// Graded Destiny/Trainer: full-card overlay cannot be used inside the slab; push ArtExpander
+    /// art onto the center frame so the case is not empty after chrome restore.
+    /// </summary>
+    private static void TryApplyGradedDestinyTrainerCenterArt(CardUI cardUi, CardData cardData)
+    {
+        if (cardData.expansionType == ECardExpansionType.Tetramon)
+        {
+            return;
+        }
+
+        Sprite? cardArt = ArtExpanderBridge.LoadCardArt(cardData);
+        if (cardArt == null)
+        {
+            cardArt = ResolveCardArt(cardUi, cardData, out _);
+        }
+
+        if (cardArt == null)
+        {
+            return;
+        }
+
+        object? cardConfig = NewSwappingHandler.TryGetCardFromCache(cardData);
+        ApplyCenterArtLayout(cardUi, cardArt, cardConfig);
+        HideDuplicateAlbumFoilHosts(cardUi);
+        StripAlbumHoFoilMaterials(cardUi);
+
+        try
+        {
+            cardUi.m_Show2DGradedCase = true;
+            cardUi.ShowGradedCardCase(isShow: true);
+        }
+        catch
+        {
+            // Older CardUI without graded helpers.
+        }
+
+        if (cardUi.m_GradedCardCaseGrp != null)
+        {
+            cardUi.m_GradedCardCaseGrp.transform.SetAsLastSibling();
+        }
     }
 
     /// <summary>
@@ -165,6 +203,7 @@ internal static class TetramonOverlay0703Patches
         RestoreVanillaChromeVisibility(cardUi);
         RestoreDuplicateTextVisibility(cardUi);
         HideDuplicateAlbumFoilHosts(cardUi);
+        StripAlbumHoFoilMaterials(cardUi);
 
         try
         {
@@ -181,7 +220,7 @@ internal static class TetramonOverlay0703Patches
             cardUi.m_GradedCardCaseGrp.transform.SetAsLastSibling();
         }
 
-        // Keep LateUpdate foil-hide active for graded (see RepairAlbumHoFoilMainTex).
+        // LateUpdate: HO re-enables foil over the slab on album and world cards.
         AlbumHoFoilRepairBehaviour.EnsureOn(cardUi);
     }
 
@@ -220,14 +259,13 @@ internal static class TetramonOverlay0703Patches
     }
 
     /// <summary>
-    /// Album binder: keep ArtExpander face on TetramonOverlay0703 (default UI material), then
-    /// re-enable HO foil hosts with that same art as sprite/_MainTex so CardFoilRainbow modulates
-    /// the face instead of Texture2D.whiteTexture. Sell displays keep the normal HO path.
-    /// Graded cards skip this — see ApplyGradedCardPresentation.
+    /// After full-card overlay (any context): keep ArtExpander face readable and only enable
+    /// HO foil hosts that can be bound to card art. HO currently caches 0 foil configs, so
+    /// unbound hosts scramble shelf/trade faces the same way album used to.
     /// </summary>
     public static void EnsureAlbumArtAndFoilLayering(CardUI cardUi)
     {
-        if (cardUi == null || !CardUiDisplayContext.IsBinderAlbumCard(cardUi))
+        if (cardUi == null)
         {
             return;
         }
@@ -260,8 +298,49 @@ internal static class TetramonOverlay0703Patches
 
         ShowAlbumFoilHosts(cardUi);
         int boundHosts = BindAlbumFoilHostsToCardArt(cardUi, cardArt);
-        BringFoilLayersAboveCardArt(cardUi);
-        LogAlbumHoloBindOnce(cardUi, cardArt, boundHosts);
+        // No HO materials bound (typical when HO foil configs = 0): keep hosts off so the overlay shows.
+        if (boundHosts <= 0)
+        {
+            HideDuplicateAlbumFoilHosts(cardUi);
+        }
+        else
+        {
+            BringFoilLayersAboveCardArt(cardUi);
+            LogAlbumHoloBindOnce(cardUi, cardArt, boundHosts);
+        }
+
+        AlbumHoFoilRepairBehaviour.EnsureOn(cardUi);
+    }
+
+    /// <summary>
+    /// Shelf DisplayCulling re-enables foil hosts after SetCardUI — re-apply overlay foil policy.
+    /// </summary>
+    public static void ReassertWorldCardFoilPolicy(CardUI? cardUi)
+    {
+        if (cardUi == null)
+        {
+            return;
+        }
+
+        CardData? cardData = cardUi.GetCardData();
+        if (cardData != null && cardData.cardGrade > 0)
+        {
+            HideDuplicateAlbumFoilHosts(cardUi);
+            AlbumHoFoilRepairBehaviour.EnsureOn(cardUi);
+            return;
+        }
+
+        if (FindOverlayTransform(cardUi) is Transform overlayTransform
+            && overlayTransform.TryGetComponent(out Image overlay)
+            && overlay.enabled
+            && overlay.sprite != null)
+        {
+            EnsureAlbumArtAndFoilLayering(cardUi);
+            return;
+        }
+
+        // No full-card overlay: unbound HO / foil cull hosts scramble vanilla ArtExpander chrome.
+        HideDuplicateAlbumFoilHosts(cardUi);
         AlbumHoFoilRepairBehaviour.EnsureOn(cardUi);
     }
 
@@ -348,12 +427,17 @@ internal static class TetramonOverlay0703Patches
     }
 
     /// <summary>
-    /// Destiny/Trainer album pages without a full-card overlay — hide opaque HO foil hosts and
+    /// Destiny/Trainer (and album pages) without a full-card overlay — hide opaque HO foil hosts and
     /// strip CardFoil materials from chrome so ArtExpander/vanilla art is visible.
     /// </summary>
     public static void EnsureAlbumReadableWithoutTetramonOverlay(CardUI cardUi)
     {
-        if (cardUi == null || !CardUiDisplayContext.IsBinderAlbumCard(cardUi))
+        EnsureReadableWithoutFullCardOverlay(cardUi);
+    }
+
+    public static void EnsureReadableWithoutFullCardOverlay(CardUI cardUi)
+    {
+        if (cardUi == null)
         {
             return;
         }
@@ -704,11 +788,12 @@ internal static class TetramonOverlay0703Patches
     }
 
     /// <summary>
-    /// LateUpdate re-assert: after HO HoloFixMatLock, keep album foil hosts bound to card art.
+    /// LateUpdate re-assert: after HO HoloFixMatLock, keep foil hosts bound or hidden.
+    /// Runs for album and world cards (Destiny shelf/trade previously skipped this).
     /// </summary>
     public static void RepairAlbumHoFoilMainTex(CardUI cardUi)
     {
-        if (cardUi == null || !CardUiDisplayContext.IsBinderAlbumCard(cardUi))
+        if (cardUi == null)
         {
             return;
         }
@@ -741,11 +826,12 @@ internal static class TetramonOverlay0703Patches
             if (art != null)
             {
                 ApplyFullCardOverlay(cardUi, art);
+                EnsureAlbumArtAndFoilLayering(cardUi);
                 return;
             }
         }
 
-        EnsureAlbumReadableWithoutTetramonOverlay(cardUi);
+        EnsureReadableWithoutFullCardOverlay(cardUi);
     }
 
     private static void BringFoilLayersAboveCardArt(CardUI cardUi)
@@ -1831,8 +1917,9 @@ internal static class TetramonOverlay0703Patches
         }
         else
         {
-            // Shop / pack: default UI material; HO foil hosts work on their own layers.
+            // Shop / trade / pack: same foil policy — unbound HO hosts scramble Destiny/Trainer.
             target.material = null;
+            EnsureAlbumArtAndFoilLayering(cardUi);
             ReapplyGradedCaseLayout(cardUi);
         }
 
