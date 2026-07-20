@@ -52,10 +52,20 @@ Expected output: ~16 card-frame textures applied, `sharedassets0.assets` ~160+ M
 
 ## GitLab release
 
-1. Bump `PluginVersion` in `Plugin.cs` and `manifest.json`
-2. Tag: `git tag v1.0.50 && git push origin v1.0.50`
-3. Run `Build-Release.ps1`, upload zip to GitLab Releases
-4. Optionally attach pre-ported `assets` as separate download if zip is too large
+1. Bump `PluginVersion` in `Plugin.cs` and `patchVersion` in `manifest.json` (keep them identical).
+2. Update `docs/START_HERE.md`, `docs/INSTALL-0703.md`, `docs/VERSION_MATRIX.md`, and add `docs/release-notes/vX.Y.Z.md`.
+3. Commit and push to `main`.
+4. Build and publish:
+
+```powershell
+.\scripts\Build-Release.ps1
+$env:GITLAB_TOKEN = 'glpat-...'   # Personal Access Token with api scope
+.\scripts\Publish-GitLabRelease.ps1
+```
+
+`Publish-GitLabRelease.ps1` creates annotated tag `vX.Y.Z`, GitLab release page, and uploads **full** + **patch-only** zips via the package registry.
+
+Players should open **`docs/START_HERE.md`** inside the zip first.
 
 ## CI note
 

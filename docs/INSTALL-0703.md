@@ -2,7 +2,9 @@
 
 Step-by-step guide for **players**. No coding required.
 
-**Tested stack:** TCG Card Shop Simulator **0.70.3** + Genobear Real TCG Overhaul + **TCGShopExpansionMod0703Patch 1.0.49**.
+**Tested stack:** TCG Card Shop Simulator **0.70.3** + Genobear Real TCG Overhaul + **TCGShopExpansionMod0703Patch 1.1.098**.
+
+**New installers:** start with **[START_HERE.md](START_HERE.md)** (short checklist), then return here if something fails.
 
 ---
 
@@ -17,21 +19,30 @@ Step-by-step guide for **players**. No coding required.
 
 The install script copies the compatibility patch DLL and the **pre-ported `sharedassets0` trio** into your game. You do **not** need to run Python or port assets yourself.
 
+### Already on an older 0703 patch?
+
+If you already ran a **full** install once (ported sharedassets are in place), download the **patch-only** zip and run the installer with `-SkipAssets` / `--skip-assets`. That only refreshes the DLL.
+
 ---
 
 ## What the release zip contains
 
-Download **TCG-0703-Genobear-1.0.49.zip** from GitLab Releases (or build locally with `scripts/Build-Release.ps1`).
+Download from GitLab Releases:
+
+| Zip | Contents |
+|-----|----------|
+| **TCG-0703-Genobear-1.1.098.zip** | Full: patch + `assets/` + scripts + docs |
+| **TCG-0703-Genobear-1.1.098-patch-only.zip** | Patch DLL + scripts + docs (no sharedassets) |
 
 | Folder / file | Purpose |
 |---------------|---------|
-| `patches/TCGShopExpansionMod0703Patch.dll` | Makes ExpansionMod 1.8.7 work on game 0.70.3 |
-| `assets/sharedassets0.*` | **Pre-ported** card-frame textures for 0.70.3 (required for Genobear frames) |
+| `patches/TCGShopExpansionMod0703Patch.dll` | Makes ExpansionMod 1.8.7 work on game 0.70.3 (graded slabs, album, shelf, pack) |
+| `assets/sharedassets0.*` | **Pre-ported** card-frame textures for 0.70.3 (required for Genobear frames) — full zip only |
 | `scripts/Install-TCG0703Mods.*` | Copies patch + sharedassets into your game (backs up originals) |
 | `scripts/Verify-TCG0703Install.*` | Checks files and log markers |
-| `docs/` | This guide, troubleshooting, version pins |
+| `docs/` | This guide, START_HERE, troubleshooting, version pins, release notes |
 
-If the zip has **no `assets/` folder**, the release was built without ported sharedassets — card frames will look wrong until you get a full release or ask a maintainer.
+If the zip has **no `assets/` folder**, use it only as a patch upgrade, or get the **full** zip for first-time frame install.
 
 ---
 
@@ -54,7 +65,7 @@ Follow the Genobear pack README. At minimum you need:
 
 | Item | Location |
 |------|----------|
-| `ArtExpander.dll` | `BepInEx/plugins/ArtExpander/` |
+| `ArtExpander.dll` (**3.4.3** Genobear) | `BepInEx/plugins/ArtExpander/` |
 | **`cardart.assets` (~15 GB)** | `BepInEx/plugins/ArtExpander/` |
 | New Cards / expansion data | Per Genobear README |
 | Config / image packs | Per Genobear README |
@@ -76,13 +87,13 @@ Follow the Genobear pack README. At minimum you need:
 2. Launch the game **once**, then quit (creates `BepInEx` folders on first BepInEx install).
 3. Install **BepInEx** ([mod 27](https://www.nexusmods.com/tcgcardshopsimulator/mods/27)) into the game folder.
 4. Install Nexus mods **3**, **26**, and **48** (ExpansionMod **1.8.7**).
-5. Install **Genobear** — especially `cardart.assets` under `ArtExpander/`.
+5. Install **Genobear** — especially `cardart.assets` under `ArtExpander/`. Keep ArtExpander **3.4.3**.
 6. (Recommended) Install **Configuration Manager** for F1 settings.
-7. Download and extract **TCG-0703-Genobear-1.0.49.zip** anywhere (e.g. `Downloads/TCG-0703-Genobear`).
-8. Run the **install script** (see platform section below). **Do not** use `--skip-assets` / `-SkipAssets` on a normal install.
+7. Download and extract **TCG-0703-Genobear-1.1.098.zip** anywhere (e.g. `Downloads/TCG-0703-Genobear-1.1.098`).
+8. Run the **install script** (see platform section below). **Do not** use `--skip-assets` / `-SkipAssets` on a normal first install.
 9. Run the **verify script** on the same game path.
 10. Launch the game. Open config with **F1** → **com.DarkDragoon.TCGShopExpansionMod** → set values in [VERSION_MATRIX.md](VERSION_MATRIX.md).
-11. **Smoke test:** load a save → open a **Tetramon** pack → check **display case** shelves and card frames.
+11. **Smoke test:** load a save → open a **Tetramon** pack → check **display case** → open binder **graded Destiny/Trainer** pages.
 
 ---
 
@@ -94,7 +105,7 @@ Pick **one** platform. Replace the path with your real Steam game folder.
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-cd "D:\Downloads\TCG-0703-Genobear-1.0.49"
+cd "D:\Downloads\TCG-0703-Genobear-1.1.098"
 .\scripts\Install-TCG0703Mods.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 .\scripts\Verify-TCG0703Install.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
@@ -102,7 +113,7 @@ cd "D:\Downloads\TCG-0703-Genobear-1.0.49"
 ### Windows — CMD
 
 ```bat
-cd /d D:\Downloads\TCG-0703-Genobear-1.0.49
+cd /d D:\Downloads\TCG-0703-Genobear-1.1.098
 scripts\Install-TCG0703Mods.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 scripts\Verify-TCG0703Install.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
@@ -112,7 +123,7 @@ Requires `python` or `py -3` on PATH.
 ### Linux / macOS (Steam / Proton / CrossOver)
 
 ```bash
-cd ~/Downloads/TCG-0703-Genobear-1.0.49
+cd ~/Downloads/TCG-0703-Genobear-1.1.098
 chmod +x scripts/*.sh
 ./scripts/Install-TCG0703Mods.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
 ./scripts/Verify-TCG0703Install.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
@@ -120,6 +131,13 @@ chmod +x scripts/*.sh
 
 - Linux Steam may use `~/.local/share/Steam/steamapps/common/...` — the script auto-detects if you omit `--game-path`.
 - macOS: `~/Library/Application Support/Steam/steamapps/common/TCG Card Shop Simulator`
+
+### Patch-only upgrade
+
+```powershell
+.\scripts\Install-TCG0703Mods.ps1 -GamePath "YOUR_GAME_PATH" -SkipAssets -Force
+.\scripts\Verify-TCG0703Install.ps1 -GamePath "YOUR_GAME_PATH"
+```
 
 ---
 
@@ -137,7 +155,7 @@ chmod +x scripts/*.sh
 | PowerShell | CMD | bash | Effect |
 |------------|-----|------|--------|
 | `-GamePath` | first arg or `/GamePath` | `--game-path` or first arg | Path to game root |
-| `-SkipAssets` | `/SkipAssets` | `--skip-assets` | Patch DLL only — **card frames stay vanilla** |
+| `-SkipAssets` | `/SkipAssets` | `--skip-assets` | Patch DLL only — **card frames stay as-is** |
 | `-WhatIf` | `/WhatIf` | `--dry-run` | Show actions without copying |
 | `-Force` | `/Force` | `--force` | Overwrite patch DLL without prompt |
 
@@ -161,7 +179,7 @@ All three must come from the **same ported release**. Never mix 0.62 `.assets` w
 Open `BepInEx/LogOutput.log`. You should see:
 
 ```
-TCGShopExpansionMod 0.70.3 Patch 1.0.49
+TCGShopExpansionMod 0.70.3 Patch 1.1.098
 Patched ExpansionMod for game 0.70.3
 ArtExpander bridge ready
 ```
@@ -186,6 +204,7 @@ Full matrix: [VERSION_MATRIX.md](VERSION_MATRIX.md).
 - [ ] Save loads (no “Shelf data not loaded properly”)
 - [ ] Tetramon pack: correct card art and Genobear-style frames
 - [ ] Display case: correct fronts/backs
+- [ ] Binder: graded Destiny/Trainer/Ghost slabs fill pockets; grade text readable; art centered
 - [ ] Verify script passes (warnings only for optional items you skipped)
 
 ---
@@ -194,11 +213,12 @@ Full matrix: [VERSION_MATRIX.md](VERSION_MATRIX.md).
 
 | Mistake | Result |
 |---------|--------|
-| Skipping our install script / using `-SkipAssets` | Vanilla card frames, wrong borders |
+| Skipping our install script / using `-SkipAssets` on first install | Vanilla card frames, wrong borders |
 | Copying Genobear 0.62 `sharedassets0` into 0.70.3 | Crash or white screen |
 | Missing `cardart.assets` | Pokémon/Tetramon art missing or icons only |
 | ExpansionMod not 1.8.7 | Shelf load crash without patch |
 | Only replacing `.assets`, not `.resS` + `.resource` | White screen or broken UI |
+| Replacing Genobear ArtExpander 3.4.3 with ArtExpander-src builds | Wrong card face sizes |
 
 Fixes: [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
@@ -207,3 +227,4 @@ Fixes: [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 ## Developers
 
 Build from source and asset porting: [DEVELOPERS.md](DEVELOPERS.md) (maintainers only).
+Release notes: [release-notes/v1.1.098.md](release-notes/v1.1.098.md).

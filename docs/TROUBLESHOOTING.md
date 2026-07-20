@@ -98,7 +98,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 ## Pack opening / display case visual bugs
 
-Ensure patch version **1.1.039** or newer in log.
+Ensure patch version **1.1.098** or newer in log.
 
 | Issue | Check |
 |-------|--------|
@@ -115,6 +115,19 @@ Ensure patch version **1.1.039** or newer in log.
 **Symptoms:** `MissingFieldException: CardUI.m_GhostCard` on album zoom; `NullReferenceException` in `OpenSortAlbumScreen` postfix; hundreds of suppressed `SetCardUI` `MissingFieldException`s.
 
 **Fix:** Install **0703 Patch 1.1.039+**. It unpatches ExpansionMod’s incompatible album/binder hooks and skips HandleCards on 0.70.3.
+
+---
+
+## Graded Destiny / Trainer / Ghost slabs wrong size or empty
+
+**Symptoms:** Graded cards in the binder show empty slabs, tiny floating cases, fat/stretched art, or unreadable PSA grade text.
+
+**Fix:**
+
+1. Confirm log shows **`TCGShopExpansionMod 0.70.3 Patch 1.1.098`** (or newer).
+2. Re-run the install script (patch-only is fine if sharedassets are already ported).
+3. Keep Genobear **ArtExpander 3.4.3** — newer ArtExpander-src builds can wrong-size faces.
+4. Optional: drop a real `GradedCardCase.png` into `BepInEx/plugins/TextureReplacer/objects_textures/` to replace the procedural slab chrome.
 
 ---
 

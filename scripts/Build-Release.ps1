@@ -45,7 +45,6 @@ if (Test-Path $distRoot) {
 $dirs = @(
     "$distRoot\patches",
     "$distRoot\scripts",
-    "$distRoot\docs",
     "$distRoot\assets"
 )
 foreach ($d in $dirs) {
@@ -54,7 +53,9 @@ foreach ($d in $dirs) {
 
 Copy-Item -LiteralPath $builtDll -Destination "$distRoot\patches\TCGShopExpansionMod0703Patch.dll"
 Copy-Item -LiteralPath (Join-Path $repoRoot "manifest.json") -Destination "$distRoot\manifest.json"
-Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs") -File | Copy-Item -Destination "$distRoot\docs\"
+Copy-Item -LiteralPath (Join-Path $repoRoot "README.md") -Destination "$distRoot\README.md"
+# Include nested docs (release-notes/, etc.) so players get START_HERE + changelog.
+Copy-Item -LiteralPath (Join-Path $repoRoot "docs") -Destination "$distRoot\docs" -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.ps1") -Destination "$distRoot\scripts\"
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.ps1") -Destination "$distRoot\scripts\"
 Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.bat") -Destination "$distRoot\scripts\"
@@ -89,5 +90,5 @@ Write-Host ""
 Write-Host "Release folder: $distRoot" -ForegroundColor Green
 Write-Host "Release zip:    $zipPath" -ForegroundColor Green
 if (-not $copiedAssets) {
-    Write-Host "Note: No sharedassets trio in assets/ or output/ — patch-only zip." -ForegroundColor Yellow
+    Write-Host "Note: No sharedassets trio in assets/ or output/ - patch-only zip." -ForegroundColor Yellow
 }

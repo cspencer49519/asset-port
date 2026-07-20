@@ -55,7 +55,7 @@ if (-not (Test-Path -LiteralPath $patchOnlyZip)) {
     $tempRoot = Join-Path $env:TEMP "tcg0703-patch-$version"
     $folderName = $distName
     if (Test-Path $tempRoot) { Remove-Item -Recurse -Force $tempRoot }
-    New-Item -ItemType Directory -Path "$tempRoot\$folderName\patches", "$tempRoot\$folderName\scripts", "$tempRoot\$folderName\docs" -Force | Out-Null
+    New-Item -ItemType Directory -Path "$tempRoot\$folderName\patches", "$tempRoot\$folderName\scripts" -Force | Out-Null
     $builtDll = Join-Path $repoRoot "TCGShopExpansionMod0703Patch\bin\Release\netstandard2.1\TCGShopExpansionMod0703Patch.dll"
     if (-not (Test-Path $builtDll)) {
         & (Join-Path $repoRoot "scripts\Build-Release.ps1")
@@ -63,9 +63,15 @@ if (-not (Test-Path -LiteralPath $patchOnlyZip)) {
     }
     Copy-Item -LiteralPath $builtDll -Destination "$tempRoot\$folderName\patches\"
     Copy-Item -LiteralPath (Join-Path $repoRoot "manifest.json") -Destination "$tempRoot\$folderName\"
-    Get-ChildItem -LiteralPath (Join-Path $repoRoot "docs") -File | Copy-Item -Destination "$tempRoot\$folderName\docs\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "README.md") -Destination "$tempRoot\$folderName\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "docs") -Destination "$tempRoot\$folderName\docs" -Recurse -Force
     Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.ps1") -Destination "$tempRoot\$folderName\scripts\"
     Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.ps1") -Destination "$tempRoot\$folderName\scripts\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.bat") -Destination "$tempRoot\$folderName\scripts\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.bat") -Destination "$tempRoot\$folderName\scripts\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Install-TCG0703Mods.sh") -Destination "$tempRoot\$folderName\scripts\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\Verify-TCG0703Install.sh") -Destination "$tempRoot\$folderName\scripts\"
+    Copy-Item -LiteralPath (Join-Path $repoRoot "scripts\read_manifest.py") -Destination "$tempRoot\$folderName\scripts\"
     if (Test-Path $patchOnlyZip) { Remove-Item -Force $patchOnlyZip }
     Compress-Archive -Path "$tempRoot\$folderName" -DestinationPath $patchOnlyZip
 }

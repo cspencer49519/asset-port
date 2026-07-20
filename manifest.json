@@ -1,7 +1,7 @@
 {
   "packageName": "TCG Card Shop Simulator 0.70.3 Genobear Compatibility",
   "gameVersion": "0.70.3",
-  "patchVersion": "1.1.039",
+  "patchVersion": "1.1.098",
   "patchGuid": "local.tcgshop.expansionmod0703patch",
   "dependencies": [
     {
@@ -45,7 +45,7 @@
       "id": "TCGShopExpansionMod0703Patch",
       "name": "TCGShopExpansionMod 0.70.3 Patch",
       "required": true,
-      "version": "1.1.039",
+      "version": "1.1.098",
       "installPath": "BepInEx/plugins/TCGShopExpansionMod0703Patch/"
     }
   ],
@@ -82,7 +82,7 @@
     "vanillaBytes": 47282752
   },
   "logSuccessMarkers": [
-    "TCGShopExpansionMod 0.70.3 Patch 1.1.039",
+    "TCGShopExpansionMod 0.70.3 Patch 1.1.098",
     "Patched ExpansionMod for game 0.70.3",
     "ArtExpander bridge ready"
   ],
