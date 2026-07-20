@@ -107,7 +107,13 @@ $releaseUri = "$baseUrl/projects/$encodedProject/releases"
 $glab = Get-Command glab -ErrorAction SilentlyContinue
 if (-not $glab) {
     $fallbackGlab = Join-Path $env:LOCALAPPDATA "Programs\glab\glab.exe"
-    if (Test-Path $fallbackGlab) { $glab = $fallbackGlab } else { throw "glab CLI not found. Install from https://gitlab.com/gitlab-org/cli" }
+    if (Test-Path $fallbackGlab) {
+        $glab = $fallbackGlab
+        $env:Path = "$(Split-Path $fallbackGlab);$env:Path"
+    }
+    else {
+        throw "glab CLI not found. Install from https://gitlab.com/gitlab-org/cli"
+    }
 }
 else {
     $glab = $glab.Source
@@ -119,37 +125,46 @@ $env:GITLAB_HOST = $GitLabHost
 
 $notesPath = Join-Path $repoRoot "docs\release-notes\$tagName.md"
 $description = if (Test-Path $notesPath) {
-    Get-Content -Raw -LiteralPath $notesPath
+    # Strip BOM / normalize newlines so ConvertTo-Json stays valid for GitLab.
+    $raw = Get-Content -Raw -LiteralPath $notesPath
+    $raw.TrimStart([char]0xFEFF).Replace("`r`n", "`n").Replace("`r", "`n")
 }
 else {
     @"
 # TCGShopExpansionMod 0.70.3 Patch $version
 
-Download release assets from this page (requires GitLab login) or use curl with a deploy token below.
+Download release assets from this page (requires GitLab login).
 
-See [INSTALL-0703.md](http://$GitLabHost/$ProjectPath/-/blob/$tagName/docs/INSTALL-0703.md) for player install steps.
+See docs/START_HERE.md and docs/INSTALL-0703.md in the release zip for player install steps.
 "@
 }
 
-$releasePayload = @{
+# PowerShell 5 ConvertTo-Json + Invoke-RestMethod string bodies often trip GitLab's
+# "Invalid JSON format". Serialize then send UTF-8 bytes.
+Add-Type -AssemblyName System.Web.Extensions
+$serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+$serializer.MaxJsonLength = [int]::MaxValue
+$releasePayload = $serializer.Serialize(@{
     name        = "TCGShopExpansionMod 0.70.3 Patch $version"
     tag_name    = $tagName
     description = $description
-} | ConvertTo-Json -Depth 4
+})
+$releaseBytes = [System.Text.Encoding]::UTF8.GetBytes($releasePayload)
 
 try {
-    Invoke-RestMethod -Method Post -Uri $releaseUri -Headers $headers -ContentType "application/json" -Body $releasePayload | Out-Null
+    Invoke-RestMethod -Method Post -Uri $releaseUri -Headers $headers -ContentType "application/json; charset=utf-8" -Body $releaseBytes | Out-Null
 }
 catch {
     $err = $_.ErrorDetails.Message
     if ($err -match "already exists") {
         Write-Host "Release exists; updating description..." -ForegroundColor Yellow
         $updateUri = "$releaseUri/$([uri]::EscapeDataString($tagName))"
-        $updatePayload = @{
+        $updatePayload = $serializer.Serialize(@{
             name        = "TCGShopExpansionMod 0.70.3 Patch $version"
             description = $description
-        } | ConvertTo-Json -Depth 4
-        Invoke-RestMethod -Method Put -Uri $updateUri -Headers $headers -ContentType "application/json" -Body $updatePayload | Out-Null
+        })
+        $updateBytes = [System.Text.Encoding]::UTF8.GetBytes($updatePayload)
+        Invoke-RestMethod -Method Put -Uri $updateUri -Headers $headers -ContentType "application/json; charset=utf-8" -Body $updateBytes | Out-Null
     }
     else {
         throw "Release create failed: $err"
