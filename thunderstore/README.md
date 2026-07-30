@@ -1,51 +1,86 @@
 # TCGShopExpansionMod 0.70.3 Patch
 
-Compatibility patch for **TCG Card Shop Simulator 0.70.3** so Genobear Real TCG Overhaul / More Card Expansions works on this game build. This package includes the patch DLL and the **pre-ported `sharedassets0` trio** (Genobear card frames for 0.70.3).
+Compatibility patch for **TCG Card Shop Simulator 0.70.3** so [Genobear Real TCG Overhaul](https://old.thunderstore.io/c/tcg-card-shop-simulator/p/Genobear/Real_TCG_Overhaul/) works with More Card Expansions on this game build.
 
-## Install (Thunderstore Mod Manager)
+This package includes the patch DLL and the **pre-ported `sharedassets0` trio** (Genobear card frames for 0.70.3).
 
-1. Install this package with the mod manager (requires [BepInExPack](https://thunderstore.io/c/tcg-card-shop-simulator/p/BepInEx/BepInExPack/)).
+## Required
+
+Install **[Genobear Real TCG Overhaul](https://old.thunderstore.io/c/tcg-card-shop-simulator/p/Genobear/Real_TCG_Overhaul/) first**. This patch is the 0.70.3 compatibility layer on top of that stack - it does **not** replace Genobear.
+
+From Genobear's page, the following mods are required for proper functionality. Install them in this order:
+
+1. **BepInEx Pack** - Base mod loader required for all mods ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/8) | [Thunderstore](https://thunderstore.io/c/tcg-card-shop-simulator/p/BepInEx/BepInExPack/))
+2. **TextureReplacer** - Handles texture modifications ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/69))
+3. **Add New Cards Mod** - Enables adding new cards to the game ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/200))
+4. **More Card Expansions** - Enables additional card expansion packs; use **1.8.7** ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/48))
+
+**Note:** ArtExpander is included in the Genobear Real TCG Overhaul package and does **not** need to be downloaded separately. Credit for that component goes to its original creator ([ArtExpander on Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/417)).
+
+Also required (from Genobear's README, not a Thunderstore dependency):
+
+- **HD card art** (~15 GB `cardart.assets`) from MEGA - place under `BepInEx/plugins/ArtExpander/` with Genobear's ArtExpander **3.4.3**
+
+## Install process
+
+Follow Genobear's install order from [Real TCG Overhaul](https://old.thunderstore.io/c/tcg-card-shop-simulator/p/Genobear/Real_TCG_Overhaul/), then apply this patch.
+
+### 1. Game + BepInEx
+
+1. Own **TCG Card Shop Simulator** on Steam.
+2. Install **BepInEx Pack** (mod manager or manual into the game folder).
+3. Launch the game once so BepInEx generates folders, then quit.
+
+### 2. Core mods (Genobear prerequisites)
+
+Install in this order (mod manager or manual into `BepInEx/plugins` as each mod directs):
+
+1. **TextureReplacer**
+2. **Add New Cards Mod**
+3. **More Card Expansions** (use **1.8.7**)
+
+### 3. Genobear Real TCG Overhaul
+
+1. Install [**Real TCG Overhaul**](https://old.thunderstore.io/c/tcg-card-shop-simulator/p/Genobear/Real_TCG_Overhaul/) with the mod manager (or extract per that package's README).
+2. Download **HD card assets** from MEGA (linked from Genobear's README) and place `cardart.assets` under `BepInEx/plugins/ArtExpander/` (with Genobear's ArtExpander **3.4.3**).
+3. **Do not** copy Genobear's raw 0.62 `sharedassets0` files into game 0.70.3 - use the ported trio from **this** package instead (step 5).
+
+### 4. This 0.70.3 patch (Thunderstore Mod Manager)
+
+1. Install **TCGShopExpansionMod_0703_Patch** with the mod manager.
 2. The manager places `TCGShopExpansionMod0703Patch.dll` under `BepInEx/plugins` correctly.
-3. **Sharedassets are not installed by the mod manager.** Copy them manually (see below).
 
-## Sharedassets (required for Genobear card frames)
+### 5. Sharedassets (manual - required for Genobear card frames)
 
-Thunderstore Mod Manager does not install files into `Card Shop Simulator_Data/`. After installing this package:
+Thunderstore Mod Manager does **not** install files into `Card Shop Simulator_Data/`. After installing this package:
 
-1. Open the package folder (or download the zip manually from the package page / GitLab release).
-2. Copy these three files into your game’s `Card Shop Simulator_Data/` folder (next to the vanilla `sharedassets0.assets`):
+1. Open this package's folder (or download the zip from the package / [GitHub Releases](https://github.com/cspencer49519/asset-port/releases)).
+2. Back up your vanilla `Card Shop Simulator_Data/sharedassets0.*` files.
+3. Copy these three files into `Card Shop Simulator_Data/`:
 
    - `sharedassets0.assets`
    - `sharedassets0.assets.resS`
    - `sharedassets0.resource`
 
-3. Back up the vanilla trio first if you want an easy restore.
+### 6. Configure ExpansionMod (F1)
 
-**Do not** use raw Genobear 0.62 sharedassets on game 0.70.3 — use only the pre-ported trio from this package.
+1. Launch the game and press **F1**.
+2. Open More Card Expansions / TCG shop expansion mod settings.
+3. Enable the expansion / custom config options you need (Genobear typically: enable the main toggles; leave play-table custom images off unless you know you want them).
+4. Save and restart if prompted.
 
-## Manual install (whole zip)
+## Manual install (this zip only)
 
-Extract the zip into the game root (where `Card Shop Simulator.exe` lives) so that:
+Extract this package into the game root (where `Card Shop Simulator.exe` lives) so that:
 
 - `BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll` exists
 - `Card Shop Simulator_Data/sharedassets0.*` are replaced by the packaged trio
 
-## Prerequisites (not on Thunderstore)
+You must still complete steps 1-3 (BepInEx, core mods, Genobear + HD art) first.
 
-Install these before or alongside this patch:
+## Alternative: GitHub / GitLab installer zip
 
-| Dependency | Source |
-|------------|--------|
-| Add New Cards Mod | [Nexus mod 3](https://www.nexusmods.com/tcgcardshopsimulator/mods/3) |
-| More Card Expansions **1.8.7** | [Nexus mod 48](https://www.nexusmods.com/tcgcardshopsimulator/mods/48) |
-| TextureReplacer | [Nexus mod 26](https://www.nexusmods.com/tcgcardshopsimulator/mods/26) |
-| Genobear Real TCG Overhaul (`ArtExpander` + `cardart.assets`) | Genobear pack / MEGA |
-
-Optional: [Configuration Manager](https://www.nexusmods.com/tcgcardshopsimulator/mods/31) (F1 in-game settings).
-
-## Alternative GitLab installer zip
-
-GitLab Releases also ship `TCG-0703-Genobear-*.zip` with install/verify scripts that copy the patch and sharedassets for you. Prefer that if you are not using a Thunderstore mod manager. Start with `docs/START_HERE.md` inside the zip.
+[GitHub Releases](https://github.com/cspencer49519/asset-port/releases) also ship `TCG-0703-Genobear-*.zip` with install/verify scripts that copy the patch and sharedassets for you. Start with `docs/START_HERE.md` inside that zip after Genobear is installed.
 
 ## Team
 

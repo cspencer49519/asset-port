@@ -2,7 +2,7 @@
 
 This package makes **Genobear Real TCG Overhaul** work on **TCG Card Shop Simulator 0.70.3**.
 
-**Current patch:** **1.2.2**
+**Current patch:** **1.2.3**
 
 ---
 
@@ -31,10 +31,10 @@ Optional but recommended: [Configuration Manager](https://www.nexusmods.com/tcgc
 
 ## 2. Extract this zip
 
-Unzip **TCG-0703-Genobear-1.2.2** anywhere (e.g. Downloads). You should see:
+Unzip **TCG-0703-Genobear-1.2.3** anywhere (e.g. Downloads). You should see:
 
 ```
-TCG-0703-Genobear-1.2.2/
+TCG-0703-Genobear-1.2.3/
   patches/TCGShopExpansionMod0703Patch.dll
   assets/sharedassets0.*     ← full zip only
   scripts/Install-TCG0703Mods.*
@@ -53,7 +53,7 @@ Replace the game path with yours.
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-cd "D:\Downloads\TCG-0703-Genobear-1.2.2"
+cd "D:\Downloads\TCG-0703-Genobear-1.2.3"
 .\scripts\Install-TCG0703Mods.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 .\scripts\Verify-TCG0703Install.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
@@ -61,7 +61,7 @@ cd "D:\Downloads\TCG-0703-Genobear-1.2.2"
 ### Windows (CMD)
 
 ```bat
-cd /d D:\Downloads\TCG-0703-Genobear-1.2.2
+cd /d D:\Downloads\TCG-0703-Genobear-1.2.3
 scripts\Install-TCG0703Mods.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 scripts\Verify-TCG0703Install.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
@@ -69,7 +69,7 @@ scripts\Verify-TCG0703Install.bat "D:\Steam\steamapps\common\TCG Card Shop Simul
 ### Linux / macOS
 
 ```bash
-cd ~/Downloads/TCG-0703-Genobear-1.2.2
+cd ~/Downloads/TCG-0703-Genobear-1.2.3
 chmod +x scripts/*.sh
 ./scripts/Install-TCG0703Mods.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
 ./scripts/Verify-TCG0703Install.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
@@ -89,7 +89,7 @@ chmod +x scripts/*.sh
 2. Open `BepInEx/LogOutput.log` — look for:
 
 ```
-TCGShopExpansionMod 0.70.3 Patch 1.2.2
+TCGShopExpansionMod 0.70.3 Patch 1.2.3
 Patched ExpansionMod for game 0.70.3
 ```
 
@@ -105,4 +105,4 @@ Patched ExpansionMod for game 0.70.3
 | [INSTALL-0703.md](INSTALL-0703.md) | Full step-by-step + flags + manual install |
 | [VERSION_MATRIX.md](VERSION_MATRIX.md) | Exact pinned versions + F1 settings |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Log errors and common fixes |
-| [release-notes/v1.2.2.md](release-notes/v1.2.2.md) | What changed in this release |
+| [release-notes/v1.2.3.md](release-notes/v1.2.3.md) | What changed in this release |

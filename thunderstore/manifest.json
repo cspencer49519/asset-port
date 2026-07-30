@@ -4,6 +4,7 @@
     "website_url": "https://github.com/cspencer49519/asset-port",
     "description": "0.70.3 compatibility patch for Genobear Real TCG Overhaul / ExpansionMod, including pre-ported sharedassets.",
     "dependencies": [
-        "BepInEx-BepInExPack-5.4.2305"
+        "BepInEx-BepInExPack-5.4.2305",
+        "Genobear-Real_TCG_Overhaul-5.1.0"
     ]
 }
