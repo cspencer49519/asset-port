@@ -134,8 +134,9 @@ $env:GITLAB_HOST = $GitLabHost
 
 $notesPath = Join-Path $repoRoot "docs\release-notes\$tagName.md"
 $description = if (Test-Path $notesPath) {
-    # Strip BOM / normalize newlines so ConvertTo-Json stays valid for GitLab.
-    $raw = Get-Content -Raw -LiteralPath $notesPath
+    # Always read as UTF-8. Windows PowerShell 5.1 defaults to the ANSI code page,
+    # which turns UTF-8 em/en dashes into mojibake (â€” / â€") in the GitLab release body.
+    $raw = Get-Content -Raw -LiteralPath $notesPath -Encoding UTF8
     $raw.TrimStart([char]0xFEFF).Replace("`r`n", "`n").Replace("`r", "`n")
 }
 else {
