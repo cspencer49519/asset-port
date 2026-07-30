@@ -1,0 +1,9 @@
+{
+    "name": "TCGShopExpansionMod_0703_Patch",
+    "version_number": "0.0.0",
+    "website_url": "http://192.168.0.50/tcg-cardshopmods/asset-port",
+    "description": "0.70.3 compatibility patch for Genobear Real TCG Overhaul / ExpansionMod, including pre-ported sharedassets.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2305"
+    ]
+}

@@ -49,7 +49,8 @@ ci-build-skipped:
       echo "Populate once with: GAME_PATH=/path/to/game ./scripts/Populate-LibGame.sh"
       echo "See lib/game/README.md"
 
-# Assemble player zip from build artifact on version tags.
+# Assemble player zip + Thunderstore zip from build artifact on version tags.
+# Thunderstore packaging requires sharedassets trio under assets/ or output/ on the runner.
 package-release:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:8.0
@@ -62,16 +63,23 @@ package-release:
     - apt-get update -qq && apt-get install -y -qq zip python3 >/dev/null
   script:
     - test -f TCGShopExpansionMod0703Patch/bin/Release/netstandard2.1/TCGShopExpansionMod0703Patch.dll
+    - |
+      if [[ ! -f assets/sharedassets0.assets && ! -f output/sharedassets0.assets ]]; then
+        echo "ERROR: Thunderstore package requires sharedassets trio in assets/ or output/ on the runner."
+        echo "Place ported sharedassets0.assets, .assets.resS, and .resource before tagging."
+        exit 1
+      fi
     - chmod +x scripts/Build-Release.sh
     - ./scripts/Build-Release.sh --skip-build --patch-only
     - ls -lh dist/*.zip
+    - test -f "dist/TCGPatch-TCGShopExpansionMod_0703_Patch-${CI_COMMIT_TAG#v}.zip"
   artifacts:
     when: on_success
     expire_in: 90 days
     paths:
       - dist/*.zip
 
-# Upload zip to GitLab project uploads; exports ASSET_URL + ZIP_NAME for create_release.
+# Upload patch-only zip (project uploads) + Thunderstore zip (generic package registry for size).
 upload_release_asset:
   stage: release
   image: alpine:3.20
@@ -86,20 +94,31 @@ upload_release_asset:
     - |
       VERSION="${CI_COMMIT_TAG#v}"
       ZIP="dist/TCG-0703-Genobear-${VERSION}-patch-only.zip"
+      TS_ZIP="dist/TCGPatch-TCGShopExpansionMod_0703_Patch-${VERSION}.zip"
       test -f "$ZIP"
-      echo "Uploading $(basename "$ZIP")..."
+      test -f "$TS_ZIP"
+
+      echo "Uploading $(basename "$ZIP") via project uploads..."
       UPLOAD_JSON=$(curl --silent --show-error --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
         --form "file=@${ZIP}" \
         "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/uploads")
       ASSET_PATH=$(echo "$UPLOAD_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['url'])")
       echo "ASSET_URL=${CI_PROJECT_URL}${ASSET_PATH}" >> release.env
       echo "ZIP_NAME=$(basename "$ZIP")" >> release.env
+
+      TS_ZIP_NAME=$(basename "$TS_ZIP")
+      echo "Uploading ${TS_ZIP_NAME} via generic package registry..."
+      curl --silent --show-error --header "JOB-TOKEN: ${CI_JOB_TOKEN}" \
+        --upload-file "${TS_ZIP}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/tcgpatch-thunderstore/${VERSION}/${TS_ZIP_NAME}"
+      echo "TS_ASSET_URL=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/tcgpatch-thunderstore/${VERSION}/${TS_ZIP_NAME}" >> release.env
+      echo "TS_ZIP_NAME=${TS_ZIP_NAME}" >> release.env
       cat release.env
   artifacts:
     reports:
       dotenv: release.env
 
-# Creates a GitLab Release page with the uploaded player zip when a version tag is pushed.
+# Creates a GitLab Release page with installer + Thunderstore zips when a version tag is pushed.
 create_release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
@@ -109,14 +128,15 @@ create_release:
     - job: upload_release_asset
       artifacts: true
   script:
-    - echo "Publishing release ${CI_COMMIT_TAG} with asset ${ZIP_NAME}"
+    - echo "Publishing release ${CI_COMMIT_TAG} with assets ${ZIP_NAME} and ${TS_ZIP_NAME}"
   release:
     tag_name: "$CI_COMMIT_TAG"
     name: "TCGShopExpansionMod 0.70.3 Patch $CI_COMMIT_TAG"
     description: |
       **TCG Card Shop Simulator 0.70.3** compatibility patch for Genobear Real TCG Overhaul.
 
-      Download **TCG-0703-Genobear-*.zip** from release assets below.
+      - **Installer zip** (`$ZIP_NAME`): scripts copy patch + sharedassets (see START_HERE / INSTALL-0703).
+      - **Thunderstore zip** (`$TS_ZIP_NAME`): flat package for manual upload to thunderstore.io under team **TCGPatch**. Mod Manager installs the DLL; copy `Card Shop Simulator_Data/sharedassets0.*` into the game Data folder manually.
 
       Player install: see [docs/INSTALL-0703.md](${CI_PROJECT_URL}/-/blob/${CI_COMMIT_TAG}/docs/INSTALL-0703.md)
 
@@ -125,6 +145,9 @@ create_release:
       links:
         - name: "$ZIP_NAME"
           url: "$ASSET_URL"
+          link_type: "package"
+        - name: "$TS_ZIP_NAME"
+          url: "$TS_ASSET_URL"
           link_type: "package"
         - name: "Source archive (zip)"
           url: "${CI_PROJECT_URL}/-/archive/${CI_COMMIT_TAG}/asset-port-${CI_COMMIT_TAG}.zip"

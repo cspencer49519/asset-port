@@ -8,7 +8,7 @@ Pin these versions when reporting bugs or helping others install.
 | **BepInEx** | 5.4.22+ | Must load before other plugins |
 | **TCGShopNewCardsMod** | 1.6.0.0+ | Add New Cards Mod |
 | **TCGShopExpansionMod** | **1.8.7** | More Card Expansions — **not** 0.70.3-native; requires patch |
-| **TCGShopExpansionMod0703Patch** | **1.1.098** | This repo — graded Destiny/Trainer/Ghost slabs, album/binder unpatch, HandleCards skip |
+| **TCGShopExpansionMod0703Patch** | **1.2.1** | This repo — graded Destiny/Trainer/Ghost slabs, album/binder unpatch, HandleCards skip; Thunderstore package on release |
 | **Imazen.WebP** | **10.0.1** | Place `deps/Imazen.WebP.dll` next to ExpansionMod DLL |
 | **TextureReplacer** | 1.6.1+ | Required by Genobear |
 | **ArtExpander** | Genobear **3.4.3** (+ `cardart.assets`) | Keep Genobear DLL on 0.70.3; `GhostCardPatch` Harmony error is non-fatal. Do not deploy ArtExpander-src 3.8.1 (wrong face sizing). |
@@ -33,7 +33,7 @@ Under **com.DarkDragoon.TCGShopExpansionMod**:
 ### Must fix
 
 - ExpansionMod album close-up / binder sort / `HandleCards` using removed `CardUI.m_GhostCard` — fixed by **0703 Patch 1.1.039+** (Unpatch album/binder hooks; skip HandleCards)
-- Graded Destiny/Trainer/Ghost album slabs empty / wrong size — fixed by **0703 Patch 1.1.098** (portrait GradedCardCase + GradedFace UI slab)
+- Graded Destiny/Trainer/Ghost album slabs empty / wrong size — fixed by **0703 Patch 1.2.1** (portrait GradedCardCase + GradedFace UI slab)
 - ArtExpander: keep Genobear **3.4.3** — `GhostCardPatch` fails soft; ArtExpander-src 3.8.1 caused wrong card face sizes
 - Missing `Imazen.WebP` next to ExpansionMod — install from `deps/Imazen.WebP.dll`
 - `CardOpeningSequence` pack refs `animator=False, mesh=False` after sharedassets port — UI fan may work; pack wrapper animation needs scene object restore (see TROUBLESHOOTING)
@@ -54,7 +54,7 @@ Under **com.DarkDragoon.TCGShopExpansionMod**:
 ## Success checklist
 
 - [ ] Save loads (no “Shelf data not loaded properly”)
-- [ ] Log shows `0703 Patch` **1.1.098**, album/binder unpatched, and Genobear ArtExpander 3.4.3 (GhostCardPatch warning OK)
+- [ ] Log shows `0703 Patch` **1.2.1**, album/binder unpatched, and Genobear ArtExpander 3.4.3 (GhostCardPatch warning OK)
 - [ ] Album close-up and binder sort open without ExpansionMod `MissingFieldException` / NRE spam
 - [ ] Tetramon pack rip: stacked back → flip each card → fan row
 - [ ] Shop display case: fronts toward customer, backs from behind

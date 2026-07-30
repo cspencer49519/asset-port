@@ -86,9 +86,65 @@ $zipPath = Join-Path $repoRoot "dist\$distName.zip"
 if (Test-Path $zipPath) { Remove-Item -Force $zipPath }
 Compress-Archive -Path $distRoot -DestinationPath $zipPath
 
+# Thunderstore package: flat zip root with icon/README/manifest + BepInEx plugin + Data sharedassets.
+$tsMetaDir = Join-Path $repoRoot "thunderstore"
+$tsIcon = Join-Path $tsMetaDir "icon.png"
+$tsReadme = Join-Path $tsMetaDir "README.md"
+$tsManifestTemplate = Join-Path $tsMetaDir "manifest.json"
+foreach ($required in @($tsIcon, $tsReadme, $tsManifestTemplate)) {
+    if (-not (Test-Path -LiteralPath $required)) {
+        throw "Thunderstore metadata missing: $required"
+    }
+}
+
+$assetFiles = @("sharedassets0.assets", "sharedassets0.assets.resS", "sharedassets0.resource")
+$assetSourceDir = $null
+foreach ($src in $assetSources) {
+    if (-not (Test-Path $src)) { continue }
+    $allPresent = $true
+    foreach ($f in $assetFiles) {
+        if (-not (Test-Path (Join-Path $src $f))) { $allPresent = $false; break }
+    }
+    if ($allPresent) {
+        $assetSourceDir = $src
+        break
+    }
+}
+if (-not $assetSourceDir) {
+    throw "Thunderstore package requires sharedassets trio in assets/ or output/ (sharedassets0.assets, .assets.resS, .resource)."
+}
+
+$tsDistName = "TCGPatch-TCGShopExpansionMod_0703_Patch-$version"
+$tsStage = Join-Path $repoRoot "dist\$tsDistName-stage"
+$tsZipPath = Join-Path $repoRoot "dist\$tsDistName.zip"
+if (Test-Path $tsStage) { Remove-Item -Recurse -Force $tsStage }
+if (Test-Path $tsZipPath) { Remove-Item -Force $tsZipPath }
+
+$tsPluginDir = Join-Path $tsStage "BepInEx\plugins\TCGShopExpansionMod0703Patch"
+$tsDataDir = Join-Path $tsStage "Card Shop Simulator_Data"
+New-Item -ItemType Directory -Path $tsPluginDir -Force | Out-Null
+New-Item -ItemType Directory -Path $tsDataDir -Force | Out-Null
+
+Copy-Item -LiteralPath $builtDll -Destination (Join-Path $tsPluginDir "TCGShopExpansionMod0703Patch.dll")
+Copy-Item -LiteralPath $tsIcon -Destination (Join-Path $tsStage "icon.png")
+Copy-Item -LiteralPath $tsReadme -Destination (Join-Path $tsStage "README.md")
+foreach ($f in $assetFiles) {
+    Copy-Item -LiteralPath (Join-Path $assetSourceDir $f) -Destination (Join-Path $tsDataDir $f)
+}
+
+$tsManifest = Get-Content -Raw -LiteralPath $tsManifestTemplate | ConvertFrom-Json
+$tsManifest.version_number = $version
+$tsManifestJson = $tsManifest | ConvertTo-Json -Depth 4
+$tsManifestPath = Join-Path $tsStage "manifest.json"
+[System.IO.File]::WriteAllText($tsManifestPath, $tsManifestJson, [System.Text.UTF8Encoding]::new($false))
+
+Compress-Archive -Path (Join-Path $tsStage "*") -DestinationPath $tsZipPath
+Remove-Item -Recurse -Force $tsStage
+
 Write-Host ""
 Write-Host "Release folder: $distRoot" -ForegroundColor Green
 Write-Host "Release zip:    $zipPath" -ForegroundColor Green
+Write-Host "Thunderstore:   $tsZipPath" -ForegroundColor Green
 if (-not $copiedAssets) {
-    Write-Host "Note: No sharedassets trio in assets/ or output/ - patch-only zip." -ForegroundColor Yellow
+    Write-Host "Note: Installer zip has no assets/ folder; Thunderstore zip includes sharedassets from $assetSourceDir." -ForegroundColor Yellow
 }

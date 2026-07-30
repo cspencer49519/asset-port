@@ -76,6 +76,15 @@ if (-not (Test-Path -LiteralPath $patchOnlyZip)) {
     Compress-Archive -Path "$tempRoot\$folderName" -DestinationPath $patchOnlyZip
 }
 
+$thunderstoreZip = Join-Path $repoRoot "dist\TCGPatch-TCGShopExpansionMod_0703_Patch-$version.zip"
+if (-not (Test-Path -LiteralPath $thunderstoreZip)) {
+    Write-Host "Thunderstore zip not found; running Build-Release.ps1..." -ForegroundColor Yellow
+    & (Join-Path $repoRoot "scripts\Build-Release.ps1")
+    if (-not (Test-Path -LiteralPath $thunderstoreZip)) {
+        throw "Thunderstore zip still missing: $thunderstoreZip"
+    }
+}
+
 $git = "C:\Program Files\Git\bin\git.exe"
 if (-not (Test-Path $git)) {
     $gitCmd = Get-Command git -ErrorAction SilentlyContinue
@@ -135,6 +144,9 @@ else {
 
 Download release assets from this page (requires GitLab login).
 
+- **Installer zip** (`TCG-0703-Genobear-*-full.zip` / `*-patch-only.zip`): scripts copy patch + sharedassets.
+- **Thunderstore zip** (`TCGPatch-TCGShopExpansionMod_0703_Patch-*.zip`): upload manually to thunderstore.io under team **TCGPatch**. Mod Manager installs the DLL; copy `Card Shop Simulator_Data/sharedassets0.*` into the game Data folder manually.
+
 See docs/START_HERE.md and docs/INSTALL-0703.md in the release zip for player install steps.
 "@
 }
@@ -183,6 +195,7 @@ $packageName = "tcg-0703-genobear"
 $uploads = @(
     @{ Path = $zipFile; Label = "$distName-full.zip" }
     @{ Path = $patchOnlyZip; Label = "$distName-patch-only.zip" }
+    @{ Path = $thunderstoreZip; Label = "TCGPatch-TCGShopExpansionMod_0703_Patch-$version.zip" }
 )
 
 foreach ($item in $uploads) {

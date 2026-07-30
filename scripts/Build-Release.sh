@@ -66,9 +66,64 @@ fi
 rm -f "$ZIP_PATH"
 (cd "$REPO_ROOT/dist" && zip -rq "$(basename "$ZIP_PATH")" "$DIST_NAME")
 
+# Thunderstore package: flat zip root (independent of --patch-only).
+TS_META_DIR="$REPO_ROOT/thunderstore"
+TS_ICON="$TS_META_DIR/icon.png"
+TS_README="$TS_META_DIR/README.md"
+TS_MANIFEST_TEMPLATE="$TS_META_DIR/manifest.json"
+for required in "$TS_ICON" "$TS_README" "$TS_MANIFEST_TEMPLATE"; do
+  if [[ ! -f "$required" ]]; then
+    echo "Thunderstore metadata missing: $required" >&2
+    exit 1
+  fi
+done
+
+ASSET_SOURCE_DIR=""
+for src in "$REPO_ROOT/assets" "$REPO_ROOT/output"; do
+  [[ -d "$src" ]] || continue
+  if [[ -f "$src/sharedassets0.assets" && -f "$src/sharedassets0.assets.resS" && -f "$src/sharedassets0.resource" ]]; then
+    ASSET_SOURCE_DIR="$src"
+    break
+  fi
+done
+if [[ -z "$ASSET_SOURCE_DIR" ]]; then
+  echo "Thunderstore package requires sharedassets trio in assets/ or output/ (sharedassets0.assets, .assets.resS, .resource)." >&2
+  exit 1
+fi
+
+TS_DIST_NAME="TCGPatch-TCGShopExpansionMod_0703_Patch-$VERSION"
+TS_STAGE="$REPO_ROOT/dist/${TS_DIST_NAME}-stage"
+TS_ZIP_PATH="$REPO_ROOT/dist/${TS_DIST_NAME}.zip"
+rm -rf "$TS_STAGE"
+rm -f "$TS_ZIP_PATH"
+mkdir -p "$TS_STAGE/BepInEx/plugins/TCGShopExpansionMod0703Patch"
+mkdir -p "$TS_STAGE/Card Shop Simulator_Data"
+
+cp "$BUILT_DLL" "$TS_STAGE/BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll"
+cp "$TS_ICON" "$TS_STAGE/icon.png"
+cp "$TS_README" "$TS_STAGE/README.md"
+cp "$ASSET_SOURCE_DIR/sharedassets0.assets" "$TS_STAGE/Card Shop Simulator_Data/"
+cp "$ASSET_SOURCE_DIR/sharedassets0.assets.resS" "$TS_STAGE/Card Shop Simulator_Data/"
+cp "$ASSET_SOURCE_DIR/sharedassets0.resource" "$TS_STAGE/Card Shop Simulator_Data/"
+
+python3 - "$TS_MANIFEST_TEMPLATE" "$TS_STAGE/manifest.json" "$VERSION" <<'PY'
+import json, sys
+template_path, out_path, version = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(template_path, encoding="utf-8") as f:
+    manifest = json.load(f)
+manifest["version_number"] = version
+with open(out_path, "w", encoding="utf-8", newline="\n") as f:
+    json.dump(manifest, f, indent=4)
+    f.write("\n")
+PY
+
+(cd "$TS_STAGE" && zip -rq "$TS_ZIP_PATH" .)
+rm -rf "$TS_STAGE"
+
 echo ""
 echo "Release folder: $DIST_ROOT"
 echo "Release zip:    $ZIP_PATH"
+echo "Thunderstore:   $TS_ZIP_PATH"
 if [[ "$COPIED_ASSETS" -eq 0 ]]; then
-  echo "Note: No sharedassets trio in assets/ or output/ — patch-only zip."
+  echo "Note: Installer zip has no assets/ folder; Thunderstore zip includes sharedassets from $ASSET_SOURCE_DIR."
 fi
