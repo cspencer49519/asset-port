@@ -10,16 +10,30 @@ Install **[Genobear Real TCG Overhaul](https://old.thunderstore.io/c/tcg-card-sh
 
 From Genobear's page, the following mods are required for proper functionality. Install them in this order:
 
-1. **BepInEx Pack** - Base mod loader required for all mods ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/8) | [Thunderstore](https://thunderstore.io/c/tcg-card-shop-simulator/p/BepInEx/BepInExPack/))
-2. **TextureReplacer** - Handles texture modifications ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/69))
-3. **Add New Cards Mod** - Enables adding new cards to the game ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/200))
-4. **More Card Expansions** - Enables additional card expansion packs; use **1.8.7** ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/48))
+1. **BepInEx Pack** **5.4.23.2** - Base mod loader required for all mods ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/8) | [Thunderstore](https://thunderstore.io/c/tcg-card-shop-simulator/p/BepInEx/BepInExPack/))
+2. **TextureReplacer** **1.6.1** - Handles texture modifications ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/69))
+3. **Add New Cards Mod** **1.6.0** - Enables adding new cards to the game ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/200))
+4. **More Card Expansions** **1.8.7** - Enables additional card expansion packs ([Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/48))
 
-**Note:** ArtExpander is included in the Genobear Real TCG Overhaul package and does **not** need to be downloaded separately. Credit for that component goes to its original creator ([ArtExpander on Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/417)).
+**Note:** ArtExpander is included in the Genobear Real TCG Overhaul package and does **not** need to be downloaded separately. Credit for that component goes to its original creator ([ArtExpander on Nexus](https://www.nexusmods.com/tcgcardshopsimulator/mods/417)). Local Genobear stack uses **ArtExpander 3.4.3**.
 
 Also required (from Genobear's README, not a Thunderstore dependency):
 
-- **HD card art** (~15 GB `cardart.assets`) from MEGA - place under `BepInEx/plugins/ArtExpander/` with Genobear's ArtExpander **3.4.3**
+- **[Genobear Real TCG Overhaul](https://old.thunderstore.io/c/tcg-card-shop-simulator/p/Genobear/Real_TCG_Overhaul/) 5.1.0**
+- **HD card art** (`cardart.assets`, ~15 GB) from MEGA - place under `BepInEx/plugins/ArtExpander/` with Genobear's ArtExpander **3.4.3**
+
+### Tested versions (fingerprinted from a working local install)
+
+| Component | Version found | Source |
+|-----------|---------------|--------|
+| Genobear Real TCG Overhaul | **5.1.0** | Game-root `manifest.json` |
+| BepInEx | **5.4.23.2** | `BepInEx/core/BepInEx.dll` |
+| TextureReplacer | **1.6.1** | Plugin DLL file version |
+| Add New Cards Mod | **1.6.0** | Plugin DLL file version |
+| More Card Expansions | **1.8.7** | Plugin DLL product version |
+| ArtExpander | **3.4.3** | Plugin DLL product version |
+| `cardart.assets` | Present (~14.1 GiB) | `BepInEx/plugins/ArtExpander/cardart.assets` |
+| Imazen.WebP (ExpansionMod side) | **10.0.1** | Next to ExpansionMod DLL |
 
 ## Install process
 
