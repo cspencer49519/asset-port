@@ -143,10 +143,52 @@ $tsManifestPath = Join-Path $tsStage "manifest.json"
 Compress-Archive -Path (Join-Path $tsStage "*") -DestinationPath $tsZipPath
 Remove-Item -Recurse -Force $tsStage
 
+# Nexus Mods packages: Vortex-friendly main (plugin only) + optional sharedassets (manual Data install).
+$nexusMetaDir = Join-Path $repoRoot "nexus"
+$nexusReadme = Join-Path $nexusMetaDir "README.md"
+$nexusSharedReadme = Join-Path $nexusMetaDir "SharedAssets-README.md"
+$nexusChangelog = Join-Path $repoRoot "thunderstore\CHANGELOG.md"
+foreach ($required in @($nexusReadme, $nexusSharedReadme, $nexusChangelog)) {
+    if (-not (Test-Path -LiteralPath $required)) {
+        throw "Nexus metadata missing: $required"
+    }
+}
+
+$nexusMainName = "TCGPatch-TCGShopExpansionMod0703Patch-Nexus-Main-$version"
+$nexusMainStage = Join-Path $repoRoot "dist\$nexusMainName-stage"
+$nexusMainZip = Join-Path $repoRoot "dist\$nexusMainName.zip"
+if (Test-Path $nexusMainStage) { Remove-Item -Recurse -Force $nexusMainStage }
+if (Test-Path $nexusMainZip) { Remove-Item -Force $nexusMainZip }
+
+$nexusPluginDir = Join-Path $nexusMainStage "BepInEx\plugins\TCGShopExpansionMod0703Patch"
+New-Item -ItemType Directory -Path $nexusPluginDir -Force | Out-Null
+Copy-Item -LiteralPath $builtDll -Destination (Join-Path $nexusPluginDir "TCGShopExpansionMod0703Patch.dll")
+Copy-Item -LiteralPath $nexusReadme -Destination (Join-Path $nexusMainStage "README.md")
+Copy-Item -LiteralPath $nexusChangelog -Destination (Join-Path $nexusMainStage "CHANGELOG.md")
+Compress-Archive -Path (Join-Path $nexusMainStage "*") -DestinationPath $nexusMainZip
+Remove-Item -Recurse -Force $nexusMainStage
+
+$nexusAssetsName = "TCGPatch-TCGShopExpansionMod0703Patch-Nexus-SharedAssets-$version"
+$nexusAssetsStage = Join-Path $repoRoot "dist\$nexusAssetsName-stage"
+$nexusAssetsZip = Join-Path $repoRoot "dist\$nexusAssetsName.zip"
+if (Test-Path $nexusAssetsStage) { Remove-Item -Recurse -Force $nexusAssetsStage }
+if (Test-Path $nexusAssetsZip) { Remove-Item -Force $nexusAssetsZip }
+
+$nexusDataDir = Join-Path $nexusAssetsStage "Card Shop Simulator_Data"
+New-Item -ItemType Directory -Path $nexusDataDir -Force | Out-Null
+foreach ($f in $assetFiles) {
+    Copy-Item -LiteralPath (Join-Path $assetSourceDir $f) -Destination (Join-Path $nexusDataDir $f)
+}
+Copy-Item -LiteralPath $nexusSharedReadme -Destination (Join-Path $nexusAssetsStage "README.md")
+Compress-Archive -Path (Join-Path $nexusAssetsStage "*") -DestinationPath $nexusAssetsZip
+Remove-Item -Recurse -Force $nexusAssetsStage
+
 Write-Host ""
 Write-Host "Release folder: $distRoot" -ForegroundColor Green
 Write-Host "Release zip:    $zipPath" -ForegroundColor Green
 Write-Host "Thunderstore:   $tsZipPath" -ForegroundColor Green
+Write-Host "Nexus main:     $nexusMainZip" -ForegroundColor Green
+Write-Host "Nexus assets:   $nexusAssetsZip" -ForegroundColor Green
 if (-not $copiedAssets) {
-    Write-Host "Note: Installer zip has no assets/ folder; Thunderstore zip includes sharedassets from $assetSourceDir." -ForegroundColor Yellow
+    Write-Host "Note: Installer zip has no assets/ folder; Thunderstore/Nexus sharedassets zips include assets from $assetSourceDir." -ForegroundColor Yellow
 }

@@ -2,7 +2,7 @@
 
 Step-by-step guide for **players**. No coding required.
 
-**Tested stack:** TCG Card Shop Simulator **0.70.3** + Genobear Real TCG Overhaul + **TCGShopExpansionMod0703Patch 1.2.8**.
+**Tested stack:** TCG Card Shop Simulator **0.70.3** + Genobear Real TCG Overhaul + **TCGShopExpansionMod0703Patch 1.2.9**.
 
 **New installers:** start with **[START_HERE.md](START_HERE.md)** (short checklist), then return here if something fails.
 
@@ -31,8 +31,8 @@ Download from GitLab Releases:
 
 | Zip | Contents |
 |-----|----------|
-| **TCG-0703-Genobear-1.2.8.zip** | Full: patch + `assets/` + scripts + docs |
-| **TCG-0703-Genobear-1.2.8-patch-only.zip** | Patch DLL + scripts + docs (no sharedassets) |
+| **TCG-0703-Genobear-1.2.9.zip** | Full: patch + `assets/` + scripts + docs |
+| **TCG-0703-Genobear-1.2.9-patch-only.zip** | Patch DLL + scripts + docs (no sharedassets) |
 
 | Folder / file | Purpose |
 |---------------|---------|
@@ -89,7 +89,7 @@ Follow the Genobear pack README. At minimum you need:
 4. Install Nexus mods **3**, **26**, and **48** (ExpansionMod **1.8.7**).
 5. Install **Genobear** — especially `cardart.assets` under `ArtExpander/`. Keep ArtExpander **3.4.3**.
 6. (Recommended) Install **Configuration Manager** for F1 settings.
-7. Download and extract **TCG-0703-Genobear-1.2.8.zip** anywhere (e.g. `Downloads/TCG-0703-Genobear-1.2.8`).
+7. Download and extract **TCG-0703-Genobear-1.2.9.zip** anywhere (e.g. `Downloads/TCG-0703-Genobear-1.2.9`).
 8. Run the **install script** (see platform section below). **Do not** use `--skip-assets` / `-SkipAssets` on a normal first install.
 9. Run the **verify script** on the same game path.
 10. Launch the game. Open config with **F1** → **com.DarkDragoon.TCGShopExpansionMod** → set values in [VERSION_MATRIX.md](VERSION_MATRIX.md).
@@ -105,7 +105,7 @@ Pick **one** platform. Replace the path with your real Steam game folder.
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
-cd "D:\Downloads\TCG-0703-Genobear-1.2.8"
+cd "D:\Downloads\TCG-0703-Genobear-1.2.9"
 .\scripts\Install-TCG0703Mods.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 .\scripts\Verify-TCG0703Install.ps1 -GamePath "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
@@ -113,7 +113,7 @@ cd "D:\Downloads\TCG-0703-Genobear-1.2.8"
 ### Windows — CMD
 
 ```bat
-cd /d D:\Downloads\TCG-0703-Genobear-1.2.8
+cd /d D:\Downloads\TCG-0703-Genobear-1.2.9
 scripts\Install-TCG0703Mods.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 scripts\Verify-TCG0703Install.bat "D:\Steam\steamapps\common\TCG Card Shop Simulator"
 ```
@@ -123,7 +123,7 @@ Requires `python` or `py -3` on PATH.
 ### Linux / macOS (Steam / Proton / CrossOver)
 
 ```bash
-cd ~/Downloads/TCG-0703-Genobear-1.2.8
+cd ~/Downloads/TCG-0703-Genobear-1.2.9
 chmod +x scripts/*.sh
 ./scripts/Install-TCG0703Mods.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
 ./scripts/Verify-TCG0703Install.sh --game-path "$HOME/.steam/steam/steamapps/common/TCG Card Shop Simulator"
@@ -179,7 +179,7 @@ All three must come from the **same ported release**. Never mix 0.62 `.assets` w
 Open `BepInEx/LogOutput.log`. You should see:
 
 ```
-TCGShopExpansionMod 0.70.3 Patch 1.2.8
+TCGShopExpansionMod 0.70.3 Patch 1.2.9
 Patched ExpansionMod for game 0.70.3
 ArtExpander bridge ready
 ```
@@ -227,4 +227,4 @@ Fixes: [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 ## Developers
 
 Build from source and asset porting: [DEVELOPERS.md](DEVELOPERS.md) (maintainers only).
-Release notes: [release-notes/v1.2.8.md](release-notes/v1.2.8.md).
+Release notes: [release-notes/v1.2.9.md](release-notes/v1.2.9.md).

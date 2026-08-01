@@ -1,3 +1,7 @@
+## v1.2.9
+- Add Nexus Mods packaging (Vortex main zip + optional sharedassets zip)
+- Nexus docs avoid Thunderstore links; Genobear soft-required from author distribution
+
 ## v1.2.8
 - Update Thunderstore package icon to the Real TCG Overhaul Patch logo
 

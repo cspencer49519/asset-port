@@ -7,6 +7,7 @@
 | `TCGShopExpansionMod0703Patch/` | Harmony patch source (C#) |
 | `manifest.json` | Version pins and paths for scripts |
 | `thunderstore/` | Thunderstore package metadata (`icon.png`, `README.md`, `CHANGELOG.md`, `manifest.json` template) |
+| `nexus/` | Nexus Mods page copy (`NEXUS_PAGE.md`) + zip READMEs (no Thunderstore links) |
 | `scripts/` | Install, verify, release build |
 | `port_*.py` | Asset port tooling (maintainers only) |
 | `docs/` | Player-facing install docs |
@@ -43,7 +44,16 @@ Creates:
    - `BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll`
    - `Card Shop Simulator_Data/sharedassets0.assets` (+ `.resS`, `.resource`)
 
-Thunderstore Mod Manager installs the DLL under `BepInEx/plugins` correctly, but does **not** place files into `Card Shop Simulator_Data/`. Players must copy the sharedassets trio manually (documented in `thunderstore/README.md`). Upload the Thunderstore zip manually to thunderstore.io under team **TCGPatch** / package **TCGShopExpansionMod_0703_Patch**.
+3. **Nexus main zip** — `dist/TCGPatch-TCGShopExpansionMod0703Patch-Nexus-Main-{version}.zip`:
+   - `BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll`
+   - `README.md`, `CHANGELOG.md` (Nexus-safe copy; no Thunderstore links)
+
+4. **Nexus sharedassets zip** — `dist/TCGPatch-TCGShopExpansionMod0703Patch-Nexus-SharedAssets-{version}.zip`:
+   - `Card Shop Simulator_Data/sharedassets0.*` + short README (manual Data install)
+
+Thunderstore Mod Manager installs the DLL under `BepInEx/plugins` correctly, but does **not** place files into `Card Shop Simulator_Data/`. Players must copy the sharedassets trio manually (documented in `thunderstore/README.md`). Upload the Thunderstore zip to thunderstore.io under team **TCGPatch** / package **TCGShopExpansionMod_0703_Patch**.
+
+Upload Nexus zips via the Nexus file form using [`nexus/NEXUS_PAGE.md`](../nexus/NEXUS_PAGE.md). Do not link Thunderstore from the Nexus description ([file submission guidelines](https://help.nexusmods.com/article/28-file-submission-guidelines)).
 
 ## Port sharedassets (maintainers)
 

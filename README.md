@@ -2,13 +2,13 @@
 
 Compatibility patch and install tooling for **Genobear Real TCG Overhaul** on **TCG Card Shop Simulator 0.70.3**.
 
-**Current release:** **1.2.8**
+**Current release:** **1.2.9**
 
 ## Players — start here
 
 1. **[docs/START_HERE.md](docs/START_HERE.md)** — short install checklist  
 2. **[docs/INSTALL-0703.md](docs/INSTALL-0703.md)** — full step-by-step guide  
-3. **[docs/release-notes/v1.2.8.md](docs/release-notes/v1.2.8.md)** — what’s new
+3. **[docs/release-notes/v1.2.9.md](docs/release-notes/v1.2.9.md)** — what’s new
 
 **What the release zip does for you:** copies the 0.70.3 compatibility patch **and** the pre-ported `sharedassets0` trio (Genobear card frames). You do **not** need to port assets yourself.
 
@@ -43,10 +43,11 @@ Download a release zip from GitLab Releases (or run `scripts/Build-Release.ps1` 
 
 | Path | Purpose |
 |------|---------|
-| `TCGShopExpansionMod0703Patch/` | BepInEx Harmony patch (**1.2.8**) — ExpansionMod + graded slabs + pack/display fixes on 0.70.3 |
+| `TCGShopExpansionMod0703Patch/` | BepInEx Harmony patch (**1.2.9**) — ExpansionMod + graded slabs + pack/display fixes on 0.70.3 |
 | `manifest.json` | Version pins for install/verify scripts |
 | `scripts/` | `Install-TCG0703Mods` / `Verify-TCG0703Install` (`.ps1`, `.bat`, `.sh`), `Build-Release.ps1`, `Publish-GitLabRelease.ps1` |
 | `thunderstore/` | Thunderstore package metadata (`icon.png`, `README.md`, `CHANGELOG.md`, `manifest.json`) |
+| `nexus/` | Nexus Mods page copy + Vortex/sharedassets zip READMEs |
 | `port_*.py` | Maintainer asset port tools (not required for players) |
 
 ## Maintainers — build & publish release
@@ -57,7 +58,7 @@ $env:GITLAB_TOKEN = 'glpat-...'
 .\scripts\Publish-GitLabRelease.ps1
 ```
 
-Upload creates GitLab release **v1.2.8** with full, patch-only, and Thunderstore zips. See [DEVELOPERS.md](docs/DEVELOPERS.md).
+Upload creates GitLab release **v1.2.9** with full, patch-only, Thunderstore, and Nexus zips. See [DEVELOPERS.md](docs/DEVELOPERS.md) and [`nexus/NEXUS_PAGE.md`](nexus/NEXUS_PAGE.md).
 
 ## Legacy notes
 
@@ -70,6 +71,11 @@ GitLab: `git@192.168.0.50:tcg-cardshopmods/asset-port.git`
 GitHub: `https://github.com/cspencer49519/asset-port`
 
 ## Changelog
+
+### 1.2.9
+
+- Add Nexus Mods packaging (Vortex main zip + optional sharedassets zip)
+- Nexus docs avoid Thunderstore links; Genobear soft-required from author distribution
 
 ### 1.2.8
 

@@ -104,6 +104,10 @@ Published under Thunderstore team **TCGPatch**.
 
 See **`CHANGELOG.md`** in this package for the full Thunderstore changelog.
 
+### 1.2.9
+
+- Add Nexus Mods packaging (separate from this Thunderstore zip)
+
 ### 1.2.8
 
 - Update Thunderstore package icon to the Real TCG Overhaul Patch logo

@@ -77,11 +77,19 @@ if (-not (Test-Path -LiteralPath $patchOnlyZip)) {
 }
 
 $thunderstoreZip = Join-Path $repoRoot "dist\TCGPatch-TCGShopExpansionMod_0703_Patch-$version.zip"
-if (-not (Test-Path -LiteralPath $thunderstoreZip)) {
-    Write-Host "Thunderstore zip not found; running Build-Release.ps1..." -ForegroundColor Yellow
+$nexusMainZip = Join-Path $repoRoot "dist\TCGPatch-TCGShopExpansionMod0703Patch-Nexus-Main-$version.zip"
+$nexusAssetsZip = Join-Path $repoRoot "dist\TCGPatch-TCGShopExpansionMod0703Patch-Nexus-SharedAssets-$version.zip"
+if (-not (Test-Path -LiteralPath $thunderstoreZip) -or -not (Test-Path -LiteralPath $nexusMainZip) -or -not (Test-Path -LiteralPath $nexusAssetsZip)) {
+    Write-Host "Platform zips missing; running Build-Release.ps1..." -ForegroundColor Yellow
     & (Join-Path $repoRoot "scripts\Build-Release.ps1")
     if (-not (Test-Path -LiteralPath $thunderstoreZip)) {
         throw "Thunderstore zip still missing: $thunderstoreZip"
+    }
+    if (-not (Test-Path -LiteralPath $nexusMainZip)) {
+        throw "Nexus main zip still missing: $nexusMainZip"
+    }
+    if (-not (Test-Path -LiteralPath $nexusAssetsZip)) {
+        throw "Nexus sharedassets zip still missing: $nexusAssetsZip"
     }
 }
 
@@ -197,6 +205,8 @@ $uploads = @(
     @{ Path = $zipFile; Label = "$distName-full.zip" }
     @{ Path = $patchOnlyZip; Label = "$distName-patch-only.zip" }
     @{ Path = $thunderstoreZip; Label = "TCGPatch-TCGShopExpansionMod_0703_Patch-$version.zip" }
+    @{ Path = $nexusMainZip; Label = "TCGPatch-TCGShopExpansionMod0703Patch-Nexus-Main-$version.zip" }
+    @{ Path = $nexusAssetsZip; Label = "TCGPatch-TCGShopExpansionMod0703Patch-Nexus-SharedAssets-$version.zip" }
 )
 
 foreach ($item in $uploads) {
