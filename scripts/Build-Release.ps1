@@ -90,8 +90,9 @@ Compress-Archive -Path $distRoot -DestinationPath $zipPath
 $tsMetaDir = Join-Path $repoRoot "thunderstore"
 $tsIcon = Join-Path $tsMetaDir "icon.png"
 $tsReadme = Join-Path $tsMetaDir "README.md"
+$tsChangelog = Join-Path $tsMetaDir "CHANGELOG.md"
 $tsManifestTemplate = Join-Path $tsMetaDir "manifest.json"
-foreach ($required in @($tsIcon, $tsReadme, $tsManifestTemplate)) {
+foreach ($required in @($tsIcon, $tsReadme, $tsChangelog, $tsManifestTemplate)) {
     if (-not (Test-Path -LiteralPath $required)) {
         throw "Thunderstore metadata missing: $required"
     }
@@ -128,6 +129,7 @@ New-Item -ItemType Directory -Path $tsDataDir -Force | Out-Null
 Copy-Item -LiteralPath $builtDll -Destination (Join-Path $tsPluginDir "TCGShopExpansionMod0703Patch.dll")
 Copy-Item -LiteralPath $tsIcon -Destination (Join-Path $tsStage "icon.png")
 Copy-Item -LiteralPath $tsReadme -Destination (Join-Path $tsStage "README.md")
+Copy-Item -LiteralPath $tsChangelog -Destination (Join-Path $tsStage "CHANGELOG.md")
 foreach ($f in $assetFiles) {
     Copy-Item -LiteralPath (Join-Path $assetSourceDir $f) -Destination (Join-Path $tsDataDir $f)
 }

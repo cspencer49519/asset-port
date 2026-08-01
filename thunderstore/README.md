@@ -102,6 +102,12 @@ Published under Thunderstore team **TCGPatch**.
 
 ## Changelog
 
+See **`CHANGELOG.md`** in this package for the full Thunderstore changelog.
+
+### 1.2.7
+
+- Add Thunderstore `CHANGELOG.md` ([supported format](https://wiki.thunderstore.io/mods/updating-a-package#changelog))
+
 ### 1.2.6
 
 - Fix graded Destiny/Trainer/Ghost cards on shop display stands showing the mirrored front instead of an opaque card back

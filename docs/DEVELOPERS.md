@@ -6,7 +6,7 @@
 |------|---------|
 | `TCGShopExpansionMod0703Patch/` | Harmony patch source (C#) |
 | `manifest.json` | Version pins and paths for scripts |
-| `thunderstore/` | Thunderstore package metadata (`icon.png`, `README.md`, `manifest.json` template) |
+| `thunderstore/` | Thunderstore package metadata (`icon.png`, `README.md`, `CHANGELOG.md`, `manifest.json` template) |
 | `scripts/` | Install, verify, release build |
 | `port_*.py` | Asset port tooling (maintainers only) |
 | `docs/` | Player-facing install docs |
@@ -39,7 +39,7 @@ Creates:
    - `assets/` (ported sharedassets trio)
 
 2. **Thunderstore zip** — `dist/TCGPatch-TCGShopExpansionMod_0703_Patch-{version}.zip` (flat root, no wrapping folder):
-   - `icon.png`, `README.md`, Thunderstore `manifest.json`
+   - `icon.png`, `README.md`, `CHANGELOG.md`, Thunderstore `manifest.json`
    - `BepInEx/plugins/TCGShopExpansionMod0703Patch/TCGShopExpansionMod0703Patch.dll`
    - `Card Shop Simulator_Data/sharedassets0.assets` (+ `.resS`, `.resource`)
 
