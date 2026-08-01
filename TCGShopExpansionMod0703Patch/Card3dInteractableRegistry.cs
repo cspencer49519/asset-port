@@ -48,8 +48,10 @@ internal static class Card3dInteractableRegistry
             return fromHierarchy;
         }
 
-        if (CardUiFieldAccess.GetValue(cardUi, "m_Card3dUIGroup") is Card3dUIGroup card3d
-            && ByCard3d.TryGetValue(card3d, out InteractableCard3d mapped))
+        // CardUI follows InteractableCard3d by position, not hierarchy — resolve Card3dUIGroup
+        // the same way as CardUiDisplayContext (field or parent), then map to the interactable.
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d != null && ByCard3d.TryGetValue(card3d, out InteractableCard3d mapped))
         {
             return mapped;
         }

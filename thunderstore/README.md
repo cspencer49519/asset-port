@@ -99,3 +99,18 @@ You must still complete steps 1-3 (BepInEx, core mods, Genobear + HD art) first.
 ## Team
 
 Published under Thunderstore team **TCGPatch**.
+
+## Changelog
+
+### 1.2.6
+
+- Fix graded Destiny/Trainer/Ghost cards on shop display stands showing the mirrored front instead of an opaque card back
+- LateUpdate graded-slab face repair re-arms the shelf back instead of wiping it every frame
+- Graded shelf `m_CardBack` faces rearward so UI Cull Off GradedFace art is not visible from behind the stand
+- More reliable shelf interactable lookup via parent `Card3dUIGroup` registry
+
+### 1.2.4
+
+- Thunderstore README: fingerprinted tested dependency versions from a working local install
+- Genobear-first install docs with Nexus links for required mods
+- Patch DLL + pre-ported `sharedassets0` trio in this package

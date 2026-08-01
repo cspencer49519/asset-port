@@ -98,7 +98,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 ## Pack opening / display case visual bugs
 
-Ensure patch version **1.2.4** or newer in log.
+Ensure patch version **1.2.6** or newer in log.
 
 | Issue | Check |
 |-------|--------|
@@ -106,6 +106,7 @@ Ensure patch version **1.2.4** or newer in log.
 | No pack backs / blank white stack during rip | Patch **1.0.50+** resolves Tetramon back sprite via `GetCardBackSprite`; log should show `Pack back sprite resolved from:` |
 | Cards invisible mid-flip, shadows over cards | Patch **1.0.50+** keeps already-revealed cards face-up during flip states |
 | Display case wrong faces | Load save after patch install; check F1 ExpansionMod settings |
+| Graded display back shows mirrored front art | Patch **1.2.6+**; log should show `Graded shelf back armed:` when a graded Destiny/Trainer/Ghost card is on a stand |
 | Pack wrapper anim missing (`animator=False, mesh=False`) | Texture port can leave `CardOpeningSequence` pack mesh/animator refs null. UI card fan may still run. Log `Pack open readiness` and late-sync give-up lines. A/B: compare against `sharedassets0.assets.backup` (vanilla) — if animators only exist on vanilla, restore pack scene objects or re-port carefully. |
 
 ---
@@ -124,7 +125,7 @@ Ensure patch version **1.2.4** or newer in log.
 
 **Fix:**
 
-1. Confirm log shows **`TCGShopExpansionMod 0.70.3 Patch 1.2.4`** (or newer).
+1. Confirm log shows **`TCGShopExpansionMod 0.70.3 Patch 1.2.6`** (or newer).
 2. Re-run the install script (patch-only is fine if sharedassets are already ported).
 3. Keep Genobear **ArtExpander 3.4.3** — newer ArtExpander-src builds can wrong-size faces.
 4. Optional: drop a real `GradedCardCase.png` into `BepInEx/plugins/TextureReplacer/objects_textures/` to replace the procedural slab chrome.

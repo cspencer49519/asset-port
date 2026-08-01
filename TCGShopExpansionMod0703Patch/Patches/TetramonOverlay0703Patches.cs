@@ -239,7 +239,7 @@ internal static class TetramonOverlay0703Patches
         if (cardArt == null || !(fromBridge || LooksLikeFullCard(cardArt)))
         {
             ApplyGradedCardPresentation(cardUi, cardData);
-            HideGradedCardBackFaces(cardUi);
+            FinalizeGradedNonTetramonBacks(cardUi);
             DisableGradedHeaderTextureSlot(cardUi);
             HideOccludingGradedSlabMeshes(cardUi);
             EnsureGradeLabelTextsVisible(cardUi);
@@ -249,7 +249,7 @@ internal static class TetramonOverlay0703Patches
         if (cardUi.m_GradedCardCaseGrp == null)
         {
             ApplyGradedCardPresentation(cardUi, cardData);
-            HideGradedCardBackFaces(cardUi);
+            FinalizeGradedNonTetramonBacks(cardUi);
             DisableGradedHeaderTextureSlot(cardUi);
             return;
         }
@@ -284,6 +284,7 @@ internal static class TetramonOverlay0703Patches
 
         cardUi.m_GradedCardCaseGrp.SetActive(true);
         cardUi.m_GradedCardCaseGrp.transform.SetAsLastSibling();
+        FinalizeGradedNonTetramonBacks(cardUi);
         AlbumHoFoilRepairBehaviour.EnsureOn(cardUi);
 
         if (!_loggedGradedNonTetramonFace)
@@ -1975,11 +1976,79 @@ internal static class TetramonOverlay0703Patches
 
         HideOversizedCardFrontBehindSlab(cardUi);
         HideOccludingGradedSlabMeshes(cardUi);
-        HideGradedCardBackFaces(cardUi);
         DisableGradedHeaderTextureSlot(cardUi);
         EnsureGradeLabelTextsVisible(cardUi);
         cardUi.m_GradedCardCaseGrp.SetActive(true);
         cardUi.m_GradedCardCaseGrp.transform.SetAsLastSibling();
+        // After case sibling order — shelf re-arms CardBack facing rearward so GradedFace
+        // (UI Cull Off) does not paint the mirrored front over the back when walking behind.
+        FinalizeGradedNonTetramonBacks(cardUi);
+    }
+
+    /// <summary>
+    /// Album/held: keep backs off. Shelf display: re-arm opaque m_CardBack facing the rear so
+    /// LateUpdate face repair does not leave GradedFace visible from behind.
+    /// </summary>
+    private static void FinalizeGradedNonTetramonBacks(CardUI cardUi)
+    {
+        if (cardUi == null)
+        {
+            return;
+        }
+
+        if (CardUiDisplayContext.ShouldUseRotatableWorldCardBack(cardUi))
+        {
+            PrepareGradedShelfCardBack(cardUi);
+            return;
+        }
+
+        HideGradedCardBackFaces(cardUi);
+    }
+
+    private static bool _loggedGradedShelfBack;
+
+    /// <summary>
+    /// Graded shelf: opaque expansion/Pokemon back on m_CardBack, rotated to face rearward.
+    /// Identity rotation leaves CardBack co-facing GradedFace so Cull Off shows mirrored front art.
+    /// </summary>
+    private static void PrepareGradedShelfCardBack(CardUI cardUi)
+    {
+        PrepareShopDisplayCardBack(cardUi, faceRearward: true);
+
+        if (cardUi.m_CardBackImage != null && cardUi.m_CardBackImage.gameObject != null)
+        {
+            cardUi.m_CardBackImage.gameObject.SetActive(true);
+            cardUi.m_CardBackImage.enabled = true;
+        }
+
+        if (cardUi.m_CardBack != null)
+        {
+            cardUi.m_CardBack.SetActive(true);
+            // Keep back after GradedCase in hierarchy; with rearward facing + ignoreReversedGraphics
+            // the front still wins from the aisle and the back wins from behind the stand.
+            cardUi.m_CardBack.transform.SetAsLastSibling();
+        }
+
+        Card3dUIGroup? card3d = CardUiDisplayContext.ResolveCard3dGroup(cardUi);
+        if (card3d != null)
+        {
+            ApplyShopDisplayBackMesh(cardUi, card3d, onDisplayShelf: true);
+        }
+
+        EnsureDisplayCardRenderPriority(cardUi);
+
+        if (!_loggedGradedShelfBack)
+        {
+            _loggedGradedShelfBack = true;
+            string spriteName = cardUi.m_CardBackImage?.sprite != null
+                ? cardUi.m_CardBackImage.sprite.name
+                : "null";
+            Plugin.Log.LogInfo(
+                $"Graded shelf back armed: sprite={spriteName} "
+                + $"backActive={cardUi.m_CardBack != null && cardUi.m_CardBack.activeSelf} "
+                + $"imageEnabled={cardUi.m_CardBackImage != null && cardUi.m_CardBackImage.enabled} "
+                + $"imageGoActive={cardUi.m_CardBackImage != null && cardUi.m_CardBackImage.gameObject.activeSelf}");
+        }
     }
 
     public static void ApplyGradedCardPresentationPublic(CardUI cardUi, CardData cardData)
@@ -2094,13 +2163,7 @@ internal static class TetramonOverlay0703Patches
         }
 
         HideOversizedCardFrontBehindSlab(cardUi);
-        PrepareShopDisplayCardBack(cardUi);
-        if (card3d != null)
-        {
-            ApplyShopDisplayBackMesh(cardUi, card3d, onDisplayShelf: true);
-        }
-
-        EnsureDisplayCardRenderPriority(cardUi);
+        PrepareGradedShelfCardBack(cardUi);
         HideOversizedCardFrontBehindSlab(cardUi);
     }
 
@@ -3306,8 +3369,12 @@ internal static class TetramonOverlay0703Patches
     private const float DisplayBackUiOverscanScale = 1.14f;
     private const float DisplayBackUiBleedPixels = 14f;
 
-    /// <summary>Opaque Pokemon back on m_CardBack (opposite face from the front overlay).</summary>
-    private static void PrepareShopDisplayCardBack(CardUI cardUi)
+    /// <summary>
+    /// Opaque Pokemon/expansion back on m_CardBack.
+    /// Graded shelf passes faceRearward so the back faces opposite GradedFace (UI Cull Off otherwise
+    /// shows mirrored front art when walking behind the stand).
+    /// </summary>
+    private static void PrepareShopDisplayCardBack(CardUI cardUi, bool faceRearward = false)
     {
         if (cardUi.m_CardBackImage == null)
         {
@@ -3325,8 +3392,13 @@ internal static class TetramonOverlay0703Patches
             cardUi.m_CardBack.SetActive(true);
         }
 
+        if (cardUi.m_CardBackImage.gameObject != null)
+        {
+            cardUi.m_CardBackImage.gameObject.SetActive(true);
+        }
+
         SetCardBackMirrored(cardUi, mirrored: false);
-        SetCardBackFlipped(cardUi, flipped: false);
+        SetCardBackFlipped(cardUi, flipped: faceRearward);
         cardUi.m_CardBackImage.enabled = true;
         cardUi.m_CardBackImage.sprite = backSprite;
         cardUi.m_CardBackImage.type = Image.Type.Simple;
