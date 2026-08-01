@@ -104,6 +104,10 @@ Published under Thunderstore team **TCGPatch**.
 
 See **`CHANGELOG.md`** in this package for the full Thunderstore changelog.
 
+### 1.2.8
+
+- Update Thunderstore package icon to the Real TCG Overhaul Patch logo
+
 ### 1.2.7
 
 - Add Thunderstore `CHANGELOG.md` ([supported format](https://wiki.thunderstore.io/mods/updating-a-package#changelog))

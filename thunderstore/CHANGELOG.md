@@ -1,3 +1,6 @@
+## v1.2.8
+- Update Thunderstore package icon to the Real TCG Overhaul Patch logo
+
 ## v1.2.7
 - Add Thunderstore `CHANGELOG.md` (supported changelog format)
 - Package build copies `CHANGELOG.md` into the Thunderstore zip root
