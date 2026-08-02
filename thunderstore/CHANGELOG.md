@@ -1,3 +1,6 @@
+## v1.2.10
+- Update Thunderstore package icon (stitched PATCH / needle logo)
+
 ## v1.2.9
 - Add Nexus Mods packaging (Vortex main zip + optional sharedassets zip)
 - Nexus docs avoid Thunderstore links; Genobear soft-required from author distribution

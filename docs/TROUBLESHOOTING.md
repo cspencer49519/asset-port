@@ -98,7 +98,7 @@ See also [SHELF_ERROR_FIX.md](../SHELF_ERROR_FIX.md).
 
 ## Pack opening / display case visual bugs
 
-Ensure patch version **1.2.9** or newer in log.
+Ensure patch version **1.2.10** or newer in log.
 
 | Issue | Check |
 |-------|--------|
@@ -125,7 +125,7 @@ Ensure patch version **1.2.9** or newer in log.
 
 **Fix:**
 
-1. Confirm log shows **`TCGShopExpansionMod 0.70.3 Patch 1.2.9`** (or newer).
+1. Confirm log shows **`TCGShopExpansionMod 0.70.3 Patch 1.2.10`** (or newer).
 2. Re-run the install script (patch-only is fine if sharedassets are already ported).
 3. Keep Genobear **ArtExpander 3.4.3** — newer ArtExpander-src builds can wrong-size faces.
 4. Optional: drop a real `GradedCardCase.png` into `BepInEx/plugins/TextureReplacer/objects_textures/` to replace the procedural slab chrome.

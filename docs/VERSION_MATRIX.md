@@ -8,7 +8,7 @@ Pin these versions when reporting bugs or helping others install.
 | **BepInEx** | 5.4.22+ | Must load before other plugins |
 | **TCGShopNewCardsMod** | 1.6.0.0+ | Add New Cards Mod |
 | **TCGShopExpansionMod** | **1.8.7** | More Card Expansions — **not** 0.70.3-native; requires patch |
-| **TCGShopExpansionMod0703Patch** | **1.2.9** | This repo — graded Destiny/Trainer/Ghost slabs, album/binder unpatch, HandleCards skip; Thunderstore package on release |
+| **TCGShopExpansionMod0703Patch** | **1.2.10** | This repo — graded Destiny/Trainer/Ghost slabs, album/binder unpatch, HandleCards skip; Thunderstore package on release |
 | **Imazen.WebP** | **10.0.1** | Place `deps/Imazen.WebP.dll` next to ExpansionMod DLL |
 | **TextureReplacer** | 1.6.1+ | Required by Genobear |
 | **ArtExpander** | Genobear **3.4.3** (+ `cardart.assets`) | Keep Genobear DLL on 0.70.3; `GhostCardPatch` Harmony error is non-fatal. Do not deploy ArtExpander-src 3.8.1 (wrong face sizing). |
@@ -55,7 +55,7 @@ Under **com.DarkDragoon.TCGShopExpansionMod**:
 ## Success checklist
 
 - [ ] Save loads (no “Shelf data not loaded properly”)
-- [ ] Log shows `0703 Patch` **1.2.9**, album/binder unpatched, and Genobear ArtExpander 3.4.3 (GhostCardPatch warning OK)
+- [ ] Log shows `0703 Patch` **1.2.10**, album/binder unpatched, and Genobear ArtExpander 3.4.3 (GhostCardPatch warning OK)
 - [ ] Album close-up and binder sort open without ExpansionMod `MissingFieldException` / NRE spam
 - [ ] Tetramon pack rip: stacked back → flip each card → fan row
 - [ ] Shop display case: fronts toward customer, backs from behind

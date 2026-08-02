@@ -88,7 +88,7 @@ Vortex does **not** reliably install files into `Card Shop Simulator_Data/`. Do 
 In `BepInEx/LogOutput.log` you should see:
 
 ```
-TCGShopExpansionMod 0.70.3 Patch 1.2.9
+TCGShopExpansionMod 0.70.3 Patch 1.2.10
 Patched ExpansionMod for game 0.70.3
 ```
 
